@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.ribbon {
+    --f: 0.4em;
+    --r: 0.8em;
+
+    position: relative;
+    /* left: 20px;
+    top: calc(-1 * var(--f)); */
+
+    border: solid #0000;
+    border-width: 0 calc(2 * var(--f)) 0 calc(2 * var(--f));
+
+    background:
+        radial-gradient(50% 100% at bottom, #0005 98%, #0000 101%) left
+            top/calc(2 * var(--f)) var(--f) no-repeat border-box,
+        radial-gradient(50% 100% at bottom, #0005 98%, #0000 101%) right
+            top/calc(2 * var(--f)) var(--f) no-repeat border-box,
+        linear-gradient(
+            90deg,
+            rgb(151, 0, 0) 0%,
+            rgb(197, 0, 0) 50%,
+            rgb(151, 0, 0) 100%
+        );
+
+    background-color: #970000;
+
+    border-radius: var(--f) var(--f) 0 0;
+
+    clip-path: polygon(
+        0 var(--f),
+        calc(2 * var(--f)) var(--f),
+        calc(2 * var(--f)) calc(100% - var(--f)),
+        calc(3 * var(--f)) 100%,
+
+        calc(100% - 3 * var(--f)) 100%,
+        calc(100% - 2 * var(--f)) calc(100% - var(--f)),
+        calc(100% - 2 * var(--f)) var(--f),
+        100% var(--f),
+        100% 0,
+        0 0
+    );
 }
