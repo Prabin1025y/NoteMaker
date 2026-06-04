@@ -3,8 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { ElementType } from "react";
 import DefinitionBlock from "@/components/Blocks/DefinitionBlock";
 import NoteBlock from "@/components/Blocks/NoteBlock";
+import { devtools } from 'zustand/middleware'
 
-type blockTypeOptions =
+export type blockTypeOptions =
     | "definition"
     | "note"
     | "tips"
@@ -12,7 +13,9 @@ type blockTypeOptions =
     | "example"
     | "image"
     | "table"
-    | "divider";
+    | "divider"
+    | "formula"
+    | "text";
 
 export interface BlockType {
     id: string;
@@ -53,9 +56,9 @@ type Store = {
     syncLocally: () => void;
 };
 
-export const useStore = create<Store>()((set, get) => ({
+export const useNoteStore = create<Store>()(devtools((set, get) => ({
     currentNote: null,
-    blocks: [],
+    blocks: [{id: "12345", type: "definition", content: "{}", title: "Definition 1.1"}],
     title: "Untitled Note",
     notes: [],
 
@@ -150,4 +153,4 @@ export const useStore = create<Store>()((set, get) => ({
                 return null;
         }
     },
-}));
+})));

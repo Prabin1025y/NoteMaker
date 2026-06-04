@@ -1,5 +1,6 @@
 import { Edit3 } from "lucide-react";
 import React from "react";
+import ReadOnlyEditor from "../ReadOnlyEditor";
 
 type DefinitionBlockProps = {
     title?: string;
@@ -15,6 +16,7 @@ type DefinitionBlockProps = {
     textColor?: string;
 
     icon?: React.ReactNode;
+    onEdit: () => void;
 };
 
 export default function DefinitionBlock({
@@ -27,6 +29,7 @@ export default function DefinitionBlock({
     backgroundColor,
     titleColor,
     textColor,
+    onEdit,
 }: DefinitionBlockProps) {
     return (
         <div
@@ -61,6 +64,7 @@ export default function DefinitionBlock({
                     hover:shadow-lg
                     cursor-pointer
                 "
+                onClick={() => onEdit()}
             >
                 <Edit3 size={14} />
                 Edit
@@ -84,15 +88,16 @@ export default function DefinitionBlock({
             </div>
 
             {/* Content */}
-            <div
+            {/* <div
                 className={`
                     pt-3 text-sm leading-7
                     ${textColor || "text-slate-800"}
                     ${bodyClassName}
                 `}
+                dangerouslySetInnerHTML={{ __html: children?.toString() || "" }}
             >
-                {children}
-            </div>
+            </div> */}
+            <ReadOnlyEditor content={children?.toString() || ""} />
         </div>
     );
 }
