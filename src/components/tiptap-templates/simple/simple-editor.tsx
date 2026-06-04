@@ -245,7 +245,7 @@ export function SimpleEditor({
                 onError: (error) => console.error("Upload failed:", error),
             }),
         ],
-        content: initialContent,
+        content: JSON.parse(initialContent),
     });
 
     const rect = useCursorVisibility({

@@ -24,11 +24,9 @@ export default function DefinitionBlock({
     children,
     className = "",
     titleClassName = "",
-    bodyClassName = "",
     borderColor,
     backgroundColor,
     titleColor,
-    textColor,
     onEdit,
 }: DefinitionBlockProps) {
     return (

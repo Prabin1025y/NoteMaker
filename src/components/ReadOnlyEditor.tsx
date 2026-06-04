@@ -44,6 +44,9 @@ export default function ReadOnlyEditor({ content }: { content: string }) {
         editable: false,
     });
 
-
-    return <EditorContent editor={editor} />;
+    return (
+        <div className="py-5">
+            <EditorContent editor={editor} />
+        </div>
+    );
 }

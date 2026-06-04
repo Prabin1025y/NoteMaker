@@ -26,7 +26,7 @@ const BlockEditorModal = ({
     onClose,
     onSave,
     initialTitle = "",
-    initialContent = "<p></p>",
+    initialContent = "",
     initialType = "text",
 }: BlockEditorModalProps) => {
     const [title, setTitle] = useState(initialTitle);
