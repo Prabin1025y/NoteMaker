@@ -42,7 +42,6 @@ export default function NotePage() {
     };
 
     const handleSaveBlock = (editorData: EditorData) => {
-        console.log("Saving block:", { editorData });
         addSaveBlock(editorData);
         closeBlockEditor();
     };

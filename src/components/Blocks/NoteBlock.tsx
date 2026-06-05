@@ -13,6 +13,7 @@ type NoteBlockProps = {
     titleColor?: string;
 
     onEdit: () => void;
+    onDelete: () => void;
 };
 
 export default function NoteBlock({
@@ -24,6 +25,7 @@ export default function NoteBlock({
     backgroundColor,
     titleColor,
     onEdit,
+    onDelete
 }: NoteBlockProps) {
     return (
         <BaseBlock
@@ -32,6 +34,7 @@ export default function NoteBlock({
             borderColor={borderColor || "border-blue-700"}
             backgroundColor={backgroundColor || "bg-blue-50"}
             onEdit={onEdit}
+            onDelete={onDelete}
         >
             {/* Ribbon Title */}
             <div

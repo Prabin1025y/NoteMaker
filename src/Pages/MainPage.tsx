@@ -1,3 +1,4 @@
+'use client'
 import { blockTypeOptions, useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 
@@ -6,9 +7,9 @@ interface MainPageProps {
 }
 
 const MainPage = ({ openBlockEditor }: MainPageProps) => {
-    const { blocks, mapTypeToElement } = useNoteStore();
+    const { blocks, mapTypeToElement, deleteBlock } = useNoteStore();
     return (
-        <main className="flex-none w-[1000px] h-[calc(100vh-40px)] rounded-3xl border border-slate-200 bg-white p-10 shadow-xl overflow-y-auto">
+        <main className="flex-none w-[1000px] h-[calc(100vh-40px)] rounded-3xl border border-slate-200 bg-white p-10  overflow-y-auto">
             <div className="flex h-full flex-col gap-6">
                 <div className="space-y-3 flex flex-col gap-1">
                     <input
@@ -42,6 +43,7 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                                         action: "save",
                                     })
                                 }
+                                onDelete={() => deleteBlock(block.id)}
                             />
                         );
                     })}

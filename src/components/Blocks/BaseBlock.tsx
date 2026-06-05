@@ -13,6 +13,7 @@ type BaseBlockProps = {
     backgroundColor?: string;
 
     onEdit: () => void;
+    onDelete: () => void;
 };
 
 export default function BaseBlock({
@@ -22,6 +23,7 @@ export default function BaseBlock({
     borderColor,
     backgroundColor,
     onEdit,
+    onDelete
 }: BaseBlockProps) {
     const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
     return (
@@ -36,17 +38,25 @@ export default function BaseBlock({
             `}
         >
             <div
-                className={`absolute right-2 top-2 flex items-center w-fit rounded-md overflow-hidden border`}
+                className={`hidden group-hover:flex absolute right-2 top-2 items-center w-fit rounded-md overflow-hidden`}
             >
                 <BlockActionButton
-                    icon={<EditIcon className={`${iconClassName} hover:text-blue-500`} />}
+                    icon={
+                        <EditIcon
+                            className={`${iconClassName} hover:text-blue-500`}
+                        />
+                    }
                     onClick={() => onEdit()}
                 >
                     Edit
                 </BlockActionButton>
                 <BlockActionButton
-                    icon={<Trash2Icon className={`${iconClassName} hover:text-red-500`} />}
-                    onClick={() => onEdit()}
+                    icon={
+                        <Trash2Icon
+                            className={`${iconClassName} hover:text-red-500`}
+                        />
+                    }
+                    onClick={() => onDelete()}
                 >
                     Delete
                 </BlockActionButton>

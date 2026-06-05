@@ -49,7 +49,7 @@ type Store = {
 
     addSaveBlock: (editorData: EditorData) => void;
     saveBlock: (editorData: EditorData) => void;
-    deletetBlock: (id: string) => void;
+    deleteBlock: (id: string) => void;
     duplicateBlock: (id: string) => void;
 
     syncLocally: () => void;
@@ -172,7 +172,7 @@ export const useNoteStore = create<Store>()(
             get().syncLocally();
         },
 
-        deletetBlock: (id) => {
+        deleteBlock: (id) => {
             set({ blocks: get().blocks.filter((block) => block.id !== id) });
             get().syncLocally();
         },

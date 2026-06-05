@@ -1,7 +1,6 @@
 "use client";
 import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { blockTypeOptions } from "@/Context/DataStore";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
 import {
     DropdownMenu,
@@ -9,17 +8,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
 import { EditorData } from "@/types/Editor";
+import { SimpleEditor } from "./tiptap/tiptap-templates/simple/simple-editor";
 
 interface BlockEditorModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (editorData: EditorData) => void;
     editorData: EditorData;
-    // initialTitle?: string;
-    // initialContent?: string;
-    // initialType: blockTypeOptions;
 }
 
 const BlockEditorModal = ({
@@ -27,9 +23,6 @@ const BlockEditorModal = ({
     onClose,
     onSave,
     editorData,
-    // initialTitle = "",
-    // initialContent = "",
-    // initialType = "text",
 }: BlockEditorModalProps) => {
     const [title, setTitle] = useState(editorData.title);
     const [currentBlock, setCurrentBlock] = useState<BlockItem | null>(

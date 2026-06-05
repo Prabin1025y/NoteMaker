@@ -12,8 +12,8 @@ type DefinitionBlockProps = {
     backgroundColor?: string;
     titleColor?: string;
 
-
     onEdit: () => void;
+    onDelete: () => void;
 };
 
 export default function DefinitionBlock({
@@ -25,6 +25,7 @@ export default function DefinitionBlock({
     backgroundColor,
     titleColor,
     onEdit,
+    onDelete,
 }: DefinitionBlockProps) {
     return (
         <BaseBlock
@@ -33,6 +34,7 @@ export default function DefinitionBlock({
             borderColor={borderColor || "border-red-700"}
             backgroundColor={backgroundColor || "bg-red-50"}
             onEdit={onEdit}
+            onDelete={onDelete}
         >
             {/* Ribbon Title */}
             <div

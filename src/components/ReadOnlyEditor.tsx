@@ -10,11 +10,12 @@ import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
-import { ImageUploadNode } from "./tiptap-node/image-upload-node";
+import { ImageUploadNode } from "./tiptap/tiptap-node/image-upload-node";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 
 export default function ReadOnlyEditor({ content }: { content: string }) {
     const editor = useEditor({
+        immediatelyRender: true,
         extensions: [
             StarterKit.configure({
                 horizontalRule: false,
