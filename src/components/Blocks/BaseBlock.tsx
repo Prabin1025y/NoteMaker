@@ -1,6 +1,7 @@
-import { Edit3 } from "lucide-react";
+import { EditIcon, Trash2Icon } from "lucide-react";
 import React from "react";
 import ReadOnlyEditor from "../ReadOnlyEditor";
+import BlockActionButton from "../ui/BlockActionButton";
 
 type BaseBlockProps = {
     content: string;
@@ -22,6 +23,7 @@ export default function BaseBlock({
     backgroundColor,
     onEdit,
 }: BaseBlockProps) {
+    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
     return (
         <div
             className={`
@@ -33,33 +35,22 @@ export default function BaseBlock({
                 ${className}
             `}
         >
-            {/* Edit Button */}
-            <button
-                className="
-                    absolute right-4 top-4
-                    flex items-center gap-2
-                    rounded-full
-                    bg-blue-500/90 backdrop-blur
-                    px-3 py-1.5
-                    text-xs font-medium
-                    text-white
-                    hover:text-black
-                    shadow-md
-                    border border-blue-200
-                    opacity-0
-                    translate-y-1
-                    transition-all duration-200
-                    group-hover:opacity-100
-                    group-hover:translate-y-0
-                    hover:bg-blue-50
-                    hover:shadow-lg
-                    cursor-pointer
-                "
-                onClick={() => onEdit()}
+            <div
+                className={`absolute right-2 top-2 flex items-center w-fit rounded-md overflow-hidden border`}
             >
-                <Edit3 size={14} />
-                Edit
-            </button>
+                <BlockActionButton
+                    icon={<EditIcon className={`${iconClassName} hover:text-blue-500`} />}
+                    onClick={() => onEdit()}
+                >
+                    Edit
+                </BlockActionButton>
+                <BlockActionButton
+                    icon={<Trash2Icon className={`${iconClassName} hover:text-red-500`} />}
+                    onClick={() => onEdit()}
+                >
+                    Delete
+                </BlockActionButton>
+            </div>
 
             {children}
 

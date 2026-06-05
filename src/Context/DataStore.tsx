@@ -43,6 +43,7 @@ type Store = {
     deleteNote: (id: string) => void;
     loadNote: (id: string) => void;
     setTitle: (title: string) => void;
+    setBlocks: (blocks: BlockType[]) => void;
 
     mapTypeToElement: (type: blockTypeOptions) => ElementType | null;
 
@@ -57,7 +58,38 @@ type Store = {
 export const useNoteStore = create<Store>()(
     devtools((set, get) => ({
         currentNote: null,
-        blocks: [],
+        blocks: [
+            {
+                id: "405a6215-fcaa-4ed8-bd0a-bd80a5e4c201",
+                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 1"}]}]}`,
+                type: "definition",
+                title: "Definition 1",
+            },
+            {
+                id: "2bc3404c-6486-4f28-a42b-73258fa9340b",
+                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Note 1"}]}]}`,
+                type: "note",
+                title: "Note 1",
+            },
+            {
+                id: "7cfc2d35-9c91-4ea2-8862-e87f5f080884",
+                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 2"}]}]}`,
+                type: "definition",
+                title: "Definition 2",
+            },
+            {
+                id: "3a6cb155-203f-4cfa-88eb-a10e9a793999",
+                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Note 2"}]}]}`,
+                type: "note",
+                title: "Note 2",
+            },
+            {
+                id: "ad8e51d2-93b6-4f9a-bfca-cd0a6635c13d",
+                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 3"}]}]}`,
+                type: "definition",
+                title: "Definition 3",
+            },
+        ],
         title: "Untitled Note",
         notes: [],
 
@@ -90,6 +122,7 @@ export const useNoteStore = create<Store>()(
         },
 
         setTitle: (title) => set({ title }),
+        setBlocks: (blocks) => set({blocks}),
 
         addSaveBlock: (editorData) => {
             if (editorData.action === "add") {

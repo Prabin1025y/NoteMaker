@@ -1,5 +1,5 @@
 "use client";
-import { X } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { blockTypeOptions } from "@/Context/DataStore";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
@@ -190,9 +190,16 @@ const BlockEditorModal = ({
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-6 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors"
+                        className="px-6 py-2 cursor-pointer rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors"
                     >
-                        Add Block
+                        {editorData.action === "add" ? (
+                            "Add Block"
+                        ) : (
+                            <p className="flex gap-2 items-center">
+                                <Save size={20} />
+                                <span>Save</span>
+                            </p>
+                        )}
                     </button>
                 </div>
             </div>
