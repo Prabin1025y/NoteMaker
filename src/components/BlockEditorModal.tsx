@@ -9,42 +9,52 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import DomPurify from "dompurify";
 import { SimpleEditor } from "./tiptap-templates/simple/simple-editor";
+import { EditorData } from "@/types/Editor";
 
 interface BlockEditorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (title: string, content: string, type: blockTypeOptions) => void;
-    initialTitle?: string;
-    initialContent?: string;
-    initialType: blockTypeOptions;
+    onSave: (editorData: EditorData) => void;
+    editorData: EditorData;
+    // initialTitle?: string;
+    // initialContent?: string;
+    // initialType: blockTypeOptions;
 }
 
 const BlockEditorModal = ({
     isOpen,
     onClose,
     onSave,
-    initialTitle = "",
-    initialContent = "",
-    initialType = "text",
+    editorData,
+    // initialTitle = "",
+    // initialContent = "",
+    // initialType = "text",
 }: BlockEditorModalProps) => {
-    const [title, setTitle] = useState(initialTitle);
+    const [title, setTitle] = useState(editorData.title);
     const [currentBlock, setCurrentBlock] = useState<BlockItem | null>(
-        allBlocks.find((b) => b.type === initialType) || null,
+        allBlocks.find((b) => b.type === editorData.type) || null,
     );
-    const [content, setContent] = useState(initialContent);
+    const [content, setContent] = useState(editorData.content);
 
     useEffect(() => {
-        setTitle(initialTitle);
-        setCurrentBlock(allBlocks.find((b) => b.type === initialType) || null);
-    }, [initialTitle, initialContent, initialType]);
+        setTitle(editorData.title);
+        setCurrentBlock(
+            allBlocks.find((b) => b.type === editorData.type) || null,
+        );
+        setContent(editorData.content);
+    }, [editorData]);
 
     if (!isOpen) return null;
 
     const handleSave = () => {
-        const cleanedContent = DomPurify.sanitize(content);
-        onSave(title, cleanedContent, currentBlock?.type || "text");
+        onSave({
+            id: editorData.id,
+            title,
+            content,
+            type: currentBlock?.type || "text",
+            action: editorData.action,
+        });
         setTitle("");
     };
 
@@ -162,10 +172,8 @@ const BlockEditorModal = ({
                             <div className=" p-4 min-h-64 max-h-[400px] overflow-y-hidden">
                                 <SimpleEditor
                                     className="max-w-full max-h-[400px]"
-                                    initialContent={initialContent}
-                                    onChange={(content) =>
-                                        setContent(content)
-                                    }
+                                    initialContent={editorData.content}
+                                    onChange={(content) => setContent(content)}
                                 />
                             </div>
                         </div>

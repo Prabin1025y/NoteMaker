@@ -200,6 +200,7 @@ export function SimpleEditor({
     onChange?: (content: string) => void;
     initialContent: string;
 }) {
+    console.log(initialContent)
     const isMobile = useIsBreakpoint();
     const { height } = useWindowSize();
     const [mobileView, setMobileView] = useState<

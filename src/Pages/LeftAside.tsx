@@ -1,18 +1,20 @@
 import { blockTypeOptions } from "@/Context/DataStore";
+import { EditorData } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 
 interface LeftAsideProps {
-    openBlockEditor: (
-        title?: string,
-        content?: string,
-        type?: blockTypeOptions,
-    ) => void;
+    openBlockEditor: (editorData: EditorData) => void;
 }
 
 const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
     const handleBlockClick = (type: blockTypeOptions) => {
-        console.log(`Adding block of type: ${type}`);
-        openBlockEditor("", "<p></p>", type);
+        openBlockEditor({
+            id: "",
+            action: "add",
+            content: "{}",
+            title: "",
+            type: type,
+        });
     };
 
     return (

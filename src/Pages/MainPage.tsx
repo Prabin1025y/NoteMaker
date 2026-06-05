@@ -1,17 +1,14 @@
 import { blockTypeOptions, useNoteStore } from "@/Context/DataStore";
+import { EditorData } from "@/types/Editor";
 
 interface MainPageProps {
-    openBlockEditor: (
-        title?: string,
-        content?: string,
-        type?: blockTypeOptions,
-    ) => void;
+    openBlockEditor: (editorData: EditorData) => void;
 }
 
 const MainPage = ({ openBlockEditor }: MainPageProps) => {
     const { blocks, mapTypeToElement } = useNoteStore();
     return (
-        <main className="flex-none w-[1000px] h-[1123px] rounded-3xl border border-slate-200 bg-white p-10 shadow-xl">
+        <main className="flex-none w-[1000px] h-[calc(100vh-40px)] rounded-3xl border border-slate-200 bg-white p-10 shadow-xl overflow-y-auto">
             <div className="flex h-full flex-col gap-6">
                 <div className="space-y-3 flex flex-col gap-1">
                     <input
@@ -26,7 +23,7 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                     />
                     <hr className="border-t bg-transparent border-dashed border-slate-300" />
                 </div>
-                <div>
+                <div className="pb-10">
                     {blocks.map((block) => {
                         const Component = mapTypeToElement(block.type);
                         if (!Component) return null;
@@ -35,24 +32,20 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                             <Component
                                 key={block.id}
                                 title={block.title}
+                                content={block.content}
                                 onEdit={() =>
-                                    openBlockEditor(
-                                        block.title,
-                                        block.content,
-                                        block.type,
-                                    )
+                                    openBlockEditor({
+                                        id: block.id,
+                                        title: block.title || "",
+                                        content: block.content,
+                                        type: block.type,
+                                        action: "save",
+                                    })
                                 }
-                            >
-                                {block.content}
-                            </Component>
+                            />
                         );
                     })}
                 </div>
-                {/* <div className="flex justify-center">
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-full cursor-pointer hover:bg-blue-600 font-medium">
-                        Add Block
-                    </button>
-                </div> */}
             </div>
         </main>
     );
