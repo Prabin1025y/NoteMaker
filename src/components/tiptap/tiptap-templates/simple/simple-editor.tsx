@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
+import 'katex/dist/katex.min.css'
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit";
@@ -13,6 +14,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
+import Mathematics from '@tiptap/extension-mathematics'
 
 // --- UI Primitives ---
 import { Button } from "@/components/tiptap/tiptap-ui-primitive/button";
@@ -73,6 +75,7 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 // --- Styles ---
 import "@/components/tiptap/tiptap-templates/simple/simple-editor.scss";
 import { CustomHardBreak } from "@/components/tiptap/tiptap-extension/hardbreak";
+import { CustomMathDelimiters } from "../../tiptap-extension/CustomMathDelimeters";
 
 const MainToolbarContent = ({
     onHighlighterClick,
@@ -228,6 +231,12 @@ export function SimpleEditor({
                     enableClickSelection: true,
                 },
             }),
+            Mathematics.configure({
+                // You can pass any custom KaTeX options here
+                katexOptions: {
+                    macros: { "\\R": "\\mathbb{R}" },
+                },
+            }),
             HorizontalRule,
             TextAlign.configure({ types: ["heading", "paragraph"] }),
             TaskList,
@@ -245,7 +254,8 @@ export function SimpleEditor({
                 upload: handleImageUpload,
                 onError: (error) => console.error("Upload failed:", error),
             }),
-            CustomHardBreak
+            CustomHardBreak,
+            CustomMathDelimiters,
         ],
         content: JSON.parse(initialContent),
     });

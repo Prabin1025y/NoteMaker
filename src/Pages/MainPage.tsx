@@ -34,9 +34,11 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                                 key={block.id}
                                 title={block.title}
                                 content={block.content}
+                                designId={block.designId}
                                 onEdit={() =>
                                     openBlockEditor({
                                         id: block.id,
+                                        designId: block.designId,
                                         title: block.title || "",
                                         content: block.content,
                                         type: block.type,

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 export interface BlockItem {
+    defaultDesignId: number;
     type: blockTypeOptions;
     title: string;
     description: string;
@@ -23,6 +24,7 @@ export interface BlockItem {
 
 export const allBlocks: BlockItem[] = [
     {
+        defaultDesignId: 1,
         type: "text",
         title: "Text",
         description: "Add a paragraph of text",
@@ -41,6 +43,7 @@ export const allBlocks: BlockItem[] = [
     //     hoverColor: "hover:bg-blue-100",
     // },
     {
+        defaultDesignId: 1,
         type: "definition",
         title: "Definition",
         description: "Define a term or concept",
@@ -50,6 +53,7 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-purple-100",
     },
     {
+        defaultDesignId: 2,
         type: "note",
         title: "Note",
         description: "Add an important note",
@@ -59,6 +63,7 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-amber-100",
     },
     {
+        defaultDesignId: 3,
         type: "example",
         title: "Example",
         description: "Show an example or use case",
@@ -68,6 +73,7 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-green-100",
     },
     {
+        defaultDesignId: 1,
         type: "tips",
         title: "Tip",
         description: "Share a helpful tip",
@@ -77,7 +83,8 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-yellow-100",
     },
     // {
-    //     type: "warning",
+    // defaultDesignId: 1,//
+    // type: "warning",
     //     title: "Warning",
     //     description: "Highlight a warning or caution",
     //     icon: <AlertCircle size={20} />,
@@ -86,6 +93,7 @@ export const allBlocks: BlockItem[] = [
     //     hoverColor: "hover:bg-red-100",
     // },
     {
+        defaultDesignId: 1,
         type: "code",
         title: "Code",
         description: "Insert code snippet",
@@ -95,6 +103,7 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-indigo-100",
     },
     {
+        defaultDesignId: 1,
         type: "formula",
         title: "Formula",
         description: "Add a math formula",
@@ -104,6 +113,7 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-cyan-100",
     },
     {
+        defaultDesignId: 1,
         type: "image",
         title: "Image",
         description: "Insert an image",
@@ -113,6 +123,7 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-pink-100",
     },
     {
+        defaultDesignId: 1,
         type: "table",
         title: "Table",
         description: "Create a data table",
@@ -122,7 +133,8 @@ export const allBlocks: BlockItem[] = [
         hoverColor: "hover:bg-teal-100",
     },
     // {
-    //     type: "quote",
+    // defaultDesignId: 1,
+    // type: "quote",
     //     title: "Quote",
     //     description: "Add a blockquote",
     //     icon: <Quote size={20} />,
@@ -131,7 +143,8 @@ export const allBlocks: BlockItem[] = [
     //     hoverColor: "hover:bg-gray-100",
     // },
     // {
-    //     type: "checklist",
+    // defaultDesignId: 1,
+    // type: "checklist",
     //     title: "Checklist",
     //     description: "Create a task list",
     //     icon: <CheckSquare size={20} />,
@@ -140,6 +153,7 @@ export const allBlocks: BlockItem[] = [
     //     hoverColor: "hover:bg-lime-100",
     // },
     {
+        defaultDesignId: 1,
         type: "divider",
         title: "Divider",
         description: "Add a section divider",

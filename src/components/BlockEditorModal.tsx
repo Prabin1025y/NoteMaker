@@ -2,6 +2,7 @@
 import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
+import { allBlockDesigns } from "@/utils/DesignInfo";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,6 +29,12 @@ const BlockEditorModal = ({
     const [currentBlock, setCurrentBlock] = useState<BlockItem | null>(
         allBlocks.find((b) => b.type === editorData.type) || null,
     );
+    const [designId, setDesignId] = useState<number>(
+        editorData.action === "add"
+            ? allBlocks.find((b) => b.type === editorData.type)
+                  ?.defaultDesignId || 1
+            : editorData.designId,
+    );
     const [content, setContent] = useState(editorData.content);
 
     useEffect(() => {
@@ -36,6 +43,12 @@ const BlockEditorModal = ({
             allBlocks.find((b) => b.type === editorData.type) || null,
         );
         setContent(editorData.content);
+        setDesignId(
+            editorData.action === "add"
+                ? allBlocks.find((b) => b.type === editorData.type)
+                      ?.defaultDesignId || 1
+                : editorData.designId,
+        );
     }, [editorData]);
 
     if (!isOpen) return null;
@@ -43,6 +56,7 @@ const BlockEditorModal = ({
     const handleSave = () => {
         onSave({
             id: editorData.id,
+            designId: designId,
             title,
             content,
             type: currentBlock?.type || "text",
@@ -78,67 +92,160 @@ const BlockEditorModal = ({
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto flex flex-col px-8 py-6 space-y-6">
                     {/* Type Dropdown */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-3">
-                            Block Type
-                        </label>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger className="w-full">
-                                <div
-                                    className={`w-full cursor-pointer text-left p-3 rounded-lg transition-colors border border-transparent ${currentBlock?.bgColor} ${currentBlock?.hoverColor} focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-orange-300`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div
-                                            className={`shrink-0 mt-0.5 ${currentBlock?.color}`}
-                                        >
-                                            {currentBlock?.icon}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3
-                                                className={`text-sm font-semibold ${currentBlock?.color}`}
-                                            >
-                                                {currentBlock?.title}
-                                            </h3>
-                                            <p className="text-xs text-slate-500 truncate">
-                                                {currentBlock?.description}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {allBlocks.map((b) => (
-                                    <DropdownMenuItem
-                                        key={b.type}
-                                        onSelect={() => setCurrentBlock(b)}
-                                        className="rounded-none"
-                                        asChild
+                    <div className="flex gap-5">
+                        <div className="flex-1">
+                            <label className="block text-sm font-semibold text-slate-700 mb-3">
+                                Block Type
+                            </label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="w-full">
+                                    <div
+                                        className={`w-full cursor-pointer text-left p-3 rounded-lg transition-colors border border-transparent ${currentBlock?.bgColor} ${currentBlock?.hoverColor} focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-orange-300`}
                                     >
-                                        <div
-                                            className={`w-full cursor-pointer text-left p-3 transition-colors border border-transparent ${b.bgColor} ${b.hoverColor} hover:border-slate-300`}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div
-                                                    className={`shrink-0 mt-0.5 ${b.color}`}
+                                        <div className="flex items-start gap-3">
+                                            <div
+                                                className={`shrink-0 mt-0.5 ${currentBlock?.color}`}
+                                            >
+                                                {currentBlock?.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3
+                                                    className={`text-sm font-semibold ${currentBlock?.color}`}
                                                 >
-                                                    {b.icon}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3
-                                                        className={`text-sm font-semibold ${b.color}`}
-                                                    >
-                                                        {b.title}
-                                                    </h3>
-                                                    <p className="text-xs text-slate-500 truncate">
-                                                        {b.description}
-                                                    </p>
-                                                </div>
+                                                    {currentBlock?.title}
+                                                </h3>
+                                                <p className="text-xs text-slate-500 truncate">
+                                                    {currentBlock?.description}
+                                                </p>
                                             </div>
                                         </div>
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {allBlocks.map((b) => (
+                                        <DropdownMenuItem
+                                            key={b.type}
+                                            onSelect={() => setCurrentBlock(b)}
+                                            className="rounded-none"
+                                            asChild
+                                        >
+                                            <div
+                                                className={`w-full cursor-pointer text-left p-3 transition-colors border border-transparent ${b.bgColor} ${b.hoverColor} hover:border-slate-300`}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div
+                                                        className={`shrink-0 mt-0.5 ${b.color}`}
+                                                    >
+                                                        {b.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3
+                                                            className={`text-sm font-semibold ${b.color}`}
+                                                        >
+                                                            {b.title}
+                                                        </h3>
+                                                        <p className="text-xs text-slate-500 truncate">
+                                                            {b.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+
+                    {/* second part */}
+                    <div className="flex gap-5">
+                        <div className="flex-1">
+                            <label className="block text-sm font-semibold text-slate-700 mb-3">
+                                Design Type
+                            </label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="w-full border cursor-pointer hover:bg-amber-50 border-dashed rounded-lg flex items-center justify-center py-2">
+                                    {
+                                        allBlockDesigns.find(
+                                            (b) => b.id === designId,
+                                        )?.exampleDesign
+                                    }
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {allBlockDesigns.map((b) => (
+                                        <DropdownMenuItem
+                                            key={b.id}
+                                            onSelect={() => setDesignId(b.id)}
+                                            className="rounded-none flex items-center justify-center py-2"
+                                        >
+                                            {b.exampleDesign}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-semibold text-slate-700 mb-3">
+                                Color Options
+                            </label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="w-full">
+                                    <div
+                                        className={`w-full cursor-pointer text-left p-3 rounded-lg transition-colors border border-transparent ${currentBlock?.bgColor} ${currentBlock?.hoverColor} focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-orange-300`}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div
+                                                className={`shrink-0 mt-0.5 ${currentBlock?.color}`}
+                                            >
+                                                {currentBlock?.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3
+                                                    className={`text-sm font-semibold ${currentBlock?.color}`}
+                                                >
+                                                    {currentBlock?.title}
+                                                </h3>
+                                                <p className="text-xs text-slate-500 truncate">
+                                                    {currentBlock?.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {allBlocks.map((b) => (
+                                        <DropdownMenuItem
+                                            key={b.type}
+                                            onSelect={() => setCurrentBlock(b)}
+                                            className="rounded-none"
+                                            asChild
+                                        >
+                                            <div
+                                                className={`w-full cursor-pointer text-left p-3 transition-colors border border-transparent ${b.bgColor} ${b.hoverColor} hover:border-slate-300`}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div
+                                                        className={`shrink-0 mt-0.5 ${b.color}`}
+                                                    >
+                                                        {b.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3
+                                                            className={`text-sm font-semibold ${b.color}`}
+                                                        >
+                                                            {b.title}
+                                                        </h3>
+                                                        <p className="text-xs text-slate-500 truncate">
+                                                            {b.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
 
                     {/* Title Input */}

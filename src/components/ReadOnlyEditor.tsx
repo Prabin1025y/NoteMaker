@@ -12,8 +12,18 @@ import { Selection } from "@tiptap/extensions";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import { ImageUploadNode } from "./tiptap/tiptap-node/image-upload-node";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import Mathematics from "@tiptap/extension-mathematics";
+import "katex/dist/katex.min.css";
 
-export default function ReadOnlyEditor({ content }: { content: string }) {
+export default function ReadOnlyEditor({
+    content,
+    className = "",
+    hasTitle = true,
+}: {
+    content: string;
+    className?: string;
+    hasTitle?: boolean;
+}) {
     const editor = useEditor({
         immediatelyRender: true,
         extensions: [
@@ -22,6 +32,12 @@ export default function ReadOnlyEditor({ content }: { content: string }) {
                 link: {
                     openOnClick: false,
                     enableClickSelection: true,
+                },
+            }),
+            Mathematics.configure({
+                // You can pass any custom KaTeX options here
+                katexOptions: {
+                    macros: { "\\R": "\\mathbb{R}" },
                 },
             }),
             HorizontalRule,
@@ -54,7 +70,7 @@ export default function ReadOnlyEditor({ content }: { content: string }) {
     }, [content, editor]);
 
     return (
-        <div className="py-5">
+        <div className={`${className} ${hasTitle ? "pt-5" : "pt-1"} pb-1`}>
             <EditorContent editor={editor} />
         </div>
     );

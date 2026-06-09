@@ -5,6 +5,7 @@ import BlockActionButton from "../ui/BlockActionButton";
 
 type BaseBlockProps = {
     content: string;
+    title: string;
     children: React.ReactNode;
 
     className?: string;
@@ -18,19 +19,20 @@ type BaseBlockProps = {
 
 export default function BaseBlock({
     content,
+    title,
     children,
     className = "",
     borderColor,
     backgroundColor,
     onEdit,
-    onDelete
+    onDelete,
 }: BaseBlockProps) {
     const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
     return (
         <div
             className={`
                 group relative mt-8 rounded-xl border-2
-                p-5 shadow-sm transition-all duration-300
+                px-5 ${!!title ? "pt-5" : "pt-3"} pb-3 shadow-sm transition-all duration-300
                 hover:shadow-lg
                 ${borderColor || "border-slate-700"}
                 ${backgroundColor || "bg-slate-50"}
@@ -62,9 +64,10 @@ export default function BaseBlock({
                 </BlockActionButton>
             </div>
 
-            {children}
+            {/* Ribbon */}
+            {title && title !== "" && children}
 
-            <ReadOnlyEditor content={content} />
+            <ReadOnlyEditor hasTitle={!!title} content={content} />
         </div>
     );
 }

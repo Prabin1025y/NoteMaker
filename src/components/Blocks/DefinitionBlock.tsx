@@ -1,7 +1,9 @@
+import { allBlockDesigns } from "@/utils/DesignInfo";
 import BaseBlock from "./BaseBlock";
 
 type DefinitionBlockProps = {
     title?: string;
+    designId?: number;
     content: string;
 
     className?: string;
@@ -17,7 +19,7 @@ type DefinitionBlockProps = {
 };
 
 export default function DefinitionBlock({
-    title = "Note",
+    title = "Definition",
     content,
     className = "",
     titleClassName = "",
@@ -26,10 +28,12 @@ export default function DefinitionBlock({
     titleColor,
     onEdit,
     onDelete,
+    designId = 2,
 }: DefinitionBlockProps) {
     return (
         <BaseBlock
-            content={content || "{}"}
+            title={title}
+            content={content || `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`}
             className={className}
             borderColor={borderColor || "border-red-700"}
             backgroundColor={backgroundColor || "bg-red-50"}
@@ -37,9 +41,18 @@ export default function DefinitionBlock({
             onDelete={onDelete}
         >
             {/* Ribbon Title */}
-            <div
+            {allBlockDesigns
+                .find((b) => b.id === designId)
+                ?.applyDesign(
+                    title,
+                    "#c50000",
+                    "#970000",
+                    titleColor,
+                    titleClassName,
+                )}
+            {/* <div
                 className={`
-                    absolute -top-2 left-5
+                    absolute top-2 -left-2.5
                     inline-flex items-center
                     h-9
                     text-xs font-semibold
@@ -49,9 +62,9 @@ export default function DefinitionBlock({
                 `}
             >
                 <div>
-                    <div className="ribbon px-5 py-2 ">{title}</div>
+                    <div className="ribbon1 px-5 pb-3 pt-2 flex items-center justify-center ">{title}</div>
                 </div>
-            </div>
+            </div> */}
         </BaseBlock>
     );
 }

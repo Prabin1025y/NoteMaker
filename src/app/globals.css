@@ -58,48 +58,6 @@
   }
 } */
 
-.ribbon {
-    --f: 0.4em;
-    --r: 0.8em;
-
-    position: relative;
-    /* left: 20px;
-    top: calc(-1 * var(--f)); */
-
-    border: solid #0000;
-    border-width: 0 calc(2 * var(--f)) 0 calc(2 * var(--f));
-
-    background:
-        radial-gradient(50% 100% at bottom, #0005 98%, #0000 101%) left
-            top/calc(2 * var(--f)) var(--f) no-repeat border-box,
-        radial-gradient(50% 100% at bottom, #0005 98%, #0000 101%) right
-            top/calc(2 * var(--f)) var(--f) no-repeat border-box,
-        linear-gradient(
-            90deg,
-            rgb(151, 0, 0) 0%,
-            rgb(197, 0, 0) 50%,
-            rgb(151, 0, 0) 100%
-        );
-
-    background-color: #970000;
-
-    border-radius: var(--f) var(--f) 0 0;
-
-    clip-path: polygon(
-        0 var(--f),
-        calc(2 * var(--f)) var(--f),
-        calc(2 * var(--f)) calc(100% - var(--f)),
-        calc(3 * var(--f)) 100%,
-
-        calc(100% - 3 * var(--f)) 100%,
-        calc(100% - 2 * var(--f)) calc(100% - var(--f)),
-        calc(100% - 2 * var(--f)) var(--f),
-        100% var(--f),
-        100% 0,
-        0 0
-    );
-}
-
 :root {
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
@@ -181,8 +139,77 @@
     }
 }
 
-div.tiptap.ProseMirror.simple-editor{
+div.tiptap.ProseMirror.simple-editor {
     width: 100% !important;
     padding-bottom: 48px !important;
     height: 370px !important;
+}
+
+.ribbon {
+    --f: 0.4em;
+    --r: 0.8em;
+
+    position: relative;
+
+    border: solid #0000;
+    border-width: 0 calc(2 * var(--f)) 0 calc(2 * var(--f));
+
+    border-radius: var(--f) var(--f) 0 0;
+
+    clip-path: polygon(
+        0 var(--f),
+        calc(2 * var(--f)) var(--f),
+        calc(2 * var(--f)) calc(100% - var(--f)),
+        calc(3 * var(--f)) 100%,
+
+        calc(100% - 3 * var(--f)) 100%,
+        calc(100% - 2 * var(--f)) calc(100% - var(--f)),
+        calc(100% - 2 * var(--f)) var(--f),
+        100% var(--f),
+        100% 0,
+        0 0
+    );
+}
+
+/* .ribbon1 {
+    --r: 0.8em; 
+
+    position: relative;
+    line-height: 1.8;
+    border-radius: var(--r) 0 0 var(--r);
+    background:
+        radial-gradient(100% 50% at left, var(--c) 98%, #0000 101%) 100% 0/0.5lh
+            calc(100% - var(--r)),
+        radial-gradient(100% 50% at right, #0005 98%, #0000 101%) 0 150% /
+            var(--r) calc(2 * var(--r)),
+        linear-gradient(to right, yellow 0%, orange 50%, red 100%) 0 0 /
+            calc(101% - 0.5lh) 100%;
+    background-repeat: no-repeat;
+} */
+
+.ribbon1 {
+    --r: 0.6em;
+    /* control the ribbon shape (the radius) */
+
+    line-height: 2.6;
+    padding: 0 1.5em calc(2 * var(--r));
+    border-radius: var(--r) 0 0 var(--r);
+    /* background:
+        radial-gradient(100% 50% at left, var(--c) 98%, #0000 101%) 100% 0/0.5lh
+            calc(100% - 2 * var(--r)),
+        radial-gradient(100% 50% at right, #0005 98%, #0000 101%) 0 100% /
+            var(--r) calc(2 * var(--r)),
+        linear-gradient(to right, yellow 0%, orange 50%, red 100%) 0 0 /
+            calc(101% - 0.5lh) 100%; */
+    /* conic-gradient(from 90deg at var(--r) calc(100% - 2*var(--r)),#0000 25%,var(--c) 0)
+     0 0/calc(101% - .5lh) 100%; */
+    clip-path: polygon(
+        0 0,
+        0 100%,
+        var(--r) 100%,
+        var(--r) calc(100% - 2 * var(--r)),
+        100% calc(100% - 2 * var(--r)),
+        100% 0
+    );
+    background-repeat: no-repeat;
 }

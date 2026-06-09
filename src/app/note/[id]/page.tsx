@@ -4,15 +4,16 @@ import LeftAside from "@/Pages/LeftAside";
 import MainPage from "@/Pages/MainPage";
 import RightAside from "@/Pages/RightAside";
 import BlockEditorModal from "@/components/BlockEditorModal";
-import { blockTypeOptions, useNoteStore } from "@/Context/DataStore";
+import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 
 export default function NotePage() {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
         id: "",
+        designId: 1,
         title: "",
-        content: "{}",
+        content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
         type: "text",
         action: "add",
     });
@@ -38,7 +39,14 @@ export default function NotePage() {
 
     const closeBlockEditor = () => {
         setIsEditorOpen(false);
-        setEditorData({ title: "", content: "{}", type: "text", action: "add", id: "" });
+        setEditorData({
+            title: "",
+            content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
+            type: "text",
+            action: "add",
+            id: "",
+            designId: 1,
+        });
     };
 
     const handleSaveBlock = (editorData: EditorData) => {

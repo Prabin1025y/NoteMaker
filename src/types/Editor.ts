@@ -5,5 +5,6 @@ export interface EditorData {
     title: string;
     type: blockTypeOptions;
     content: string;
+    designId: number;
     action: "save" | "add";
 }

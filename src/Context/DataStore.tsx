@@ -5,6 +5,9 @@ import DefinitionBlock from "@/components/Blocks/DefinitionBlock";
 import NoteBlock from "@/components/Blocks/NoteBlock";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
+import ExampleBlock from "@/components/Blocks/ExampleBlock";
+import TextBlock from "@/components/Blocks/TextBlock";
+import TipsBlock from "@/components/Blocks/TipsBlock";
 
 export type blockTypeOptions =
     | "definition"
@@ -20,6 +23,7 @@ export type blockTypeOptions =
 
 export interface BlockType {
     id: string;
+    designId: number;
     type: blockTypeOptions;
     content: string;
     title?: string;
@@ -48,7 +52,6 @@ type Store = {
     mapTypeToElement: (type: blockTypeOptions) => ElementType | null;
 
     addSaveBlock: (editorData: EditorData) => void;
-    saveBlock: (editorData: EditorData) => void;
     deleteBlock: (id: string) => void;
     duplicateBlock: (id: string) => void;
 
@@ -60,30 +63,35 @@ export const useNoteStore = create<Store>()(
         currentNote: null,
         blocks: [
             {
+                designId: 1,
                 id: "405a6215-fcaa-4ed8-bd0a-bd80a5e4c201",
                 content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 1"}]}]}`,
                 type: "definition",
                 title: "Definition 1",
             },
             {
+                designId: 1,
                 id: "2bc3404c-6486-4f28-a42b-73258fa9340b",
                 content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Note 1"}]}]}`,
                 type: "note",
                 title: "Note 1",
             },
             {
+                designId: 1,
                 id: "7cfc2d35-9c91-4ea2-8862-e87f5f080884",
                 content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 2"}]}]}`,
                 type: "definition",
                 title: "Definition 2",
             },
             {
+                designId: 1,
                 id: "3a6cb155-203f-4cfa-88eb-a10e9a793999",
                 content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Note 2"}]}]}`,
                 type: "note",
                 title: "Note 2",
             },
             {
+                designId: 1,
                 id: "ad8e51d2-93b6-4f9a-bfca-cd0a6635c13d",
                 content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 3"}]}]}`,
                 type: "definition",
@@ -122,12 +130,13 @@ export const useNoteStore = create<Store>()(
         },
 
         setTitle: (title) => set({ title }),
-        setBlocks: (blocks) => set({blocks}),
+        setBlocks: (blocks) => set({ blocks }),
 
         addSaveBlock: (editorData) => {
             if (editorData.action === "add") {
                 const block: BlockType = {
                     id: uuidv4(),
+                    designId: editorData.designId,
                     content: editorData.content,
                     type: editorData.type,
                     title: editorData.title,
@@ -139,6 +148,7 @@ export const useNoteStore = create<Store>()(
                         b.id === editorData.id
                             ? {
                                   ...b,
+                                  designId: editorData.designId,
                                   content: editorData.content,
                                   title: editorData.title,
                                   type: editorData.type,
@@ -147,28 +157,6 @@ export const useNoteStore = create<Store>()(
                     ),
                 });
             }
-            get().syncLocally();
-        },
-
-        saveBlock: (editorData) => {
-            set({
-                blocks: get().blocks.map((b) =>
-                    b.id === editorData.id
-                        ? {
-                              ...b,
-                              content: editorData.content,
-                              title: editorData.title,
-                              type: editorData.type,
-                          }
-                        : b,
-                ),
-            });
-            // const block = get().blocks.find((b) => b.id === id);
-            // if (!block) return;
-            // block.content = content;
-            // block.type = type;
-            // block.title = title;
-            // set({ blocks: [...get().blocks, block] });
             get().syncLocally();
         },
 
@@ -219,6 +207,12 @@ export const useNoteStore = create<Store>()(
                     return DefinitionBlock;
                 case "note":
                     return NoteBlock;
+                case "example":
+                    return ExampleBlock;
+                case "text":
+                    return TextBlock;
+                case "tips":
+                    return TipsBlock;
 
                 default:
                     return null;

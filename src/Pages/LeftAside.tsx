@@ -11,7 +11,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
         openBlockEditor({
             id: "",
             action: "add",
-            content: "{}",
+            content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
             title: "",
             type: type,
         });

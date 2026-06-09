@@ -1,8 +1,10 @@
+import { allBlockDesigns } from "@/utils/DesignInfo";
 import BaseBlock from "./BaseBlock";
 
 type NoteBlockProps = {
     title?: string;
     content: string;
+    designId?: number;
 
     className?: string;
     titleClassName?: string;
@@ -25,19 +27,21 @@ export default function NoteBlock({
     backgroundColor,
     titleColor,
     onEdit,
-    onDelete
+    onDelete,
+    designId = 1,
 }: NoteBlockProps) {
     return (
         <BaseBlock
-            content={content || "{}"}
+            title={title}
+            content={content || `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`}
             className={className}
-            borderColor={borderColor || "border-blue-700"}
-            backgroundColor={backgroundColor || "bg-blue-50"}
+            borderColor={borderColor || "border-sky-700"}
+            backgroundColor={backgroundColor || "bg-sky-50"}
             onEdit={onEdit}
             onDelete={onDelete}
         >
             {/* Ribbon Title */}
-            <div
+            {/* <div
                 className={`
                     absolute top-0 left-10
                     inline-flex items-center
@@ -53,7 +57,16 @@ export default function NoteBlock({
                     <div className="size-2 bg-blue-700 rounded-full absolute left-0 top-1/2 -translate-x-full -translate-y-1/2" />
                     <div className="size-2 bg-blue-700 rounded-full absolute right-0 top-1/2 translate-x-full -translate-y-1/2" />
                 </div>
-            </div>
+            </div> */}
+            {allBlockDesigns
+                .find((b) => b.id === designId)
+                ?.applyDesign(
+                    title,
+                    "#008ad4",
+                    "#004080",
+                    titleColor,
+                    titleClassName,
+                )}
         </BaseBlock>
     );
 }
