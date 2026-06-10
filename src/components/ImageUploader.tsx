@@ -1,3 +1,4 @@
+import { EditorData } from "@/types/Editor";
 import { ImagePlus, Trash2 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -9,9 +10,14 @@ export type PreviewFile = File & {
 interface ImageDropZoneProps {
     file: PreviewFile | null;
     setFile: React.Dispatch<React.SetStateAction<PreviewFile | null>>;
+    editorData: EditorData;
 }
 
-export function ImageDropZone({ file, setFile }: ImageDropZoneProps) {
+export function ImageDropZone({
+    file,
+    setFile,
+    editorData,
+}: ImageDropZoneProps) {
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const uploaded = acceptedFiles[0];
         if (!uploaded) return;
@@ -92,8 +98,9 @@ export function ImageDropZone({ file, setFile }: ImageDropZoneProps) {
                             </div>
                             <div className="flex items-center justify-center gap-2">
                                 <p className="truncate font-medium">
-                                    {file.name}
+                                    {!!file ? file.name : editorData.title}
                                 </p>
+
                                 <p className="text-sm text-neutral-500">
                                     {(file.size / 1024 / 1024).toFixed(2)} MB
                                 </p>

@@ -52,6 +52,27 @@ const BlockEditorModal = ({
             editorData.action === "add" ? 1 : editorData.colorOptionId,
         );
         setDesignId(editorData.action === "add" ? 1 : editorData.designId);
+
+        (async () => {
+            if (editorData.action === "save" && editorData.type === "image") {
+                const response = await fetch(editorData.content);
+                const blob = await response.blob();
+
+                const new_file = new File([blob], editorData.title, {
+                    type: blob.type,
+                });
+
+                const withPreview = Object.assign(new_file, {
+                    preview: URL.createObjectURL(new_file),
+                });
+
+                setFile((prev) => {
+                    if (prev) URL.revokeObjectURL(prev.preview);
+                    return withPreview;
+                });
+                // setFile(new_file);
+            }
+        })();
     }, [editorData]);
 
     useEffect(() => {
@@ -73,26 +94,40 @@ const BlockEditorModal = ({
 
     if (!isOpen) return null;
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!currentBlock) return;
+        let imageURL = "";
+        if (currentBlock.type === "image" && !!file) {
+            const formData = new FormData();
+            formData.append("image", file);
+            const response = await fetch("/api/upload-image", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await response.json();
+            imageURL = data.url;
+        }
 
         onSave({
             id: editorData.id,
             designId: designId,
             colorOptionId: colorOptionId,
             title,
-            content,
+            content:
+                currentBlock.type === "image" && !!file ? imageURL : content,
             type: currentBlock.type,
             action: editorData.action,
         });
         setContent(
             `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 1"}]}]}`,
         );
+        setFile(null);
         setTitle("");
     };
 
     const handleClose = () => {
         setTitle("");
+        setFile(null);
         onClose();
     };
 
@@ -216,6 +251,7 @@ const BlockEditorModal = ({
                         if (currentBlock.type === "image")
                             return (
                                 <ImageDropZone
+                                    editorData={editorData}
                                     file={file}
                                     setFile={setFile}
                                 />
@@ -230,9 +266,9 @@ const BlockEditorModal = ({
                                     </label>
                                     <div className="border flex-1 border-slate-300 rounded-lg overflow-hidden ">
                                         {/* Editor */}
-                                        <div className=" p-4 min-h-64 max-h-[400px] overflow-y-hidden">
+                                        <div className=" p-4 min-h-64 max-h-100 overflow-y-hidden">
                                             <SimpleEditor
-                                                className="max-w-full max-h-[400px]"
+                                                className="max-w-full max-h-100"
                                                 initialContent={
                                                     editorData.content
                                                 }

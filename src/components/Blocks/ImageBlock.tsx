@@ -74,11 +74,7 @@ export default function ImageBlock({
                     className="
                         max-h-[600px]
                         max-w-full
-                        rounded-lg
-                        border
-                        border-neutral-200
                         object-contain
-                        shadow-sm
                         transition-all
                         duration-300
                         group-hover:shadow-md
