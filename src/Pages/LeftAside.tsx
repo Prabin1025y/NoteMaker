@@ -1,6 +1,7 @@
 import { blockTypeOptions } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
+import { initialJsonForEditor } from "@/utils/UtilFunctions";
 
 interface LeftAsideProps {
     openBlockEditor: (editorData: EditorData) => void;
@@ -13,7 +14,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
             designId: 1,
             colorOptionId: 1,
             action: "add",
-            content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
+            content: initialJsonForEditor,
             title: "",
             type: type,
         });

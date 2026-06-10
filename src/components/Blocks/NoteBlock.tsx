@@ -1,5 +1,6 @@
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import BaseBlock from "./BaseBlock";
+import { initialJsonForEditor } from "@/utils/UtilFunctions";
 
 type NoteBlockProps = {
     title?: string;
@@ -33,7 +34,7 @@ export default function NoteBlock({
     return (
         <BaseBlock
             title={title}
-            content={content || `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`}
+            content={content || initialJsonForEditor}
             className={className}
             borderColor={borderColor || "border-sky-700"}
             backgroundColor={backgroundColor || "bg-sky-50"}

@@ -1,5 +1,5 @@
 "use client";
-import { Save, X } from "lucide-react";
+import { Divide, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
 import {
@@ -12,7 +12,7 @@ import { EditorData } from "@/types/Editor";
 import { SimpleEditor } from "../tiptap/tiptap-templates/simple/simple-editor";
 import DesignSelection from "./DesignSelection";
 import { ImageDropZone, type PreviewFile } from "../ImageUploader";
-import { isValidJson } from "@/utils/UtilFunctions";
+import { initialJsonForEditor, isValidJson } from "@/utils/UtilFunctions";
 
 interface BlockEditorModalProps {
     isOpen: boolean;
@@ -87,8 +87,9 @@ const BlockEditorModal = ({
                         )?.content?.[0].content?.[0].text?.trim()),
             );
 
-            if (currentBlock.type !== "image") setFile(null);
-            else setContent(file?.preview.toString() || "");
+            if (currentBlock.type !== "image") {
+                setFile(null);
+            } else setContent(file?.preview.toString() || "");
         }
     }, [currentBlock, file, content, title]);
 
@@ -119,7 +120,7 @@ const BlockEditorModal = ({
             action: editorData.action,
         });
         setContent(
-            `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 1"}]}]}`,
+            initialJsonForEditor,
         );
         setFile(null);
         setTitle("");
@@ -267,15 +268,22 @@ const BlockEditorModal = ({
                                     <div className="border flex-1 border-slate-300 rounded-lg overflow-hidden ">
                                         {/* Editor */}
                                         <div className=" p-4 min-h-64 max-h-100 overflow-y-hidden">
-                                            <SimpleEditor
-                                                className="max-w-full max-h-100"
-                                                initialContent={
-                                                    editorData.content
-                                                }
-                                                onChange={(content) =>
-                                                    setContent(content)
-                                                }
-                                            />
+                                            {
+                                                <SimpleEditor
+                                                    className="max-w-full max-h-100"
+                                                    initialContent={
+                                                        isValidJson(
+                                                            editorData.content,
+                                                        )
+                                                            ? editorData.content
+                                                            : initialJsonForEditor
+                                                    }
+                                                    onChange={(content) =>{
+                                                        console.log(content)
+                                                        setContent(content)}
+                                                    }
+                                                />
+                                            }
                                         </div>
                                     </div>
                                 </div>

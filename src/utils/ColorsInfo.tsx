@@ -50,4 +50,14 @@ export const colorOptions: ColorOptionType[] = [
         titleColorHex: "#ffffff",
         contentColorHex: "#000000",
     },
+    {
+        id: 5,
+        name: "White",
+        primaryColorHex: "#FFFFFF",
+        secondaryColorHex: "#d9d9d9",
+        borderColorHex: "#545454",
+        backgroundColorHex: "#FFFFFF",
+        titleColorHex: "#000000",
+        contentColorHex: "#000000",
+    },
 ];

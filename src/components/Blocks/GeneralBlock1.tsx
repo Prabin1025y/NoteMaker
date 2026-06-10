@@ -1,6 +1,7 @@
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import BaseBlock from "./BaseBlock";
 import { colorOptions } from "@/utils/ColorsInfo";
+import { initialJsonForEditor } from "@/utils/UtilFunctions";
 
 type GeneralBlockProps = {
     title?: string;
@@ -40,7 +41,7 @@ export default function GeneralBlock({
             title={title}
             content={
                 content ||
-                `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`
+                initialJsonForEditor
             }
             className={className}
             borderColor={borderColor || `border-["${colorOption.borderColorHex}"]`}

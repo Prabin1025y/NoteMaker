@@ -31,7 +31,7 @@ export default function GeneralBlock({
         <div
             className={`
                 group relative mt-8 rounded-xl border-2
-                px-5 ${!!title ? "pt-5" : "pt-3"} pb-3 shadow-sm transition-all duration-300
+                px-5 ${!!title?.trim() ? "pt-5" : "pt-3"} pb-3 shadow-sm transition-all duration-300
                 hover:shadow-lg
                 ${className}
             `}
@@ -67,7 +67,7 @@ export default function GeneralBlock({
 
             {/* Ribbon */}
             {title &&
-                title !== "" &&
+                title.trim() !== "" &&
                 allBlockDesigns
                     .find((b) => b.id === designId)
                     ?.applyDesign(
@@ -78,7 +78,7 @@ export default function GeneralBlock({
                     )}
 
             <ReadOnlyEditor
-                hasTitle={!!title}
+                hasTitle={!!title?.trim()}
                 content={content}
             />
         </div>

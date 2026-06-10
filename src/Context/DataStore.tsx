@@ -9,6 +9,7 @@ import ExampleBlock from "@/components/Blocks/ExampleBlock";
 import TextBlock from "@/components/Blocks/TextBlock";
 import TipsBlock from "@/components/Blocks/TipsBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
+import { initialJsonForEditor } from "@/utils/UtilFunctions";
 
 export type blockTypeOptions =
     | "block"
@@ -67,7 +68,7 @@ export const useNoteStore = create<Store>()(
                 designId: 1,
                 colorOptionId: 1,
                 id: "405a6215-fcaa-4ed8-bd0a-bd80a5e4c201",
-                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 1"}]}]}`,
+                content: initialJsonForEditor,
                 type: "block",
                 title: "Definition 1",
             },

@@ -6,6 +6,7 @@ import RightAside from "@/Pages/RightAside";
 import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
+import { initialJsonForEditor } from "@/utils/UtilFunctions";
 
 export default function NotePage() {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -14,7 +15,7 @@ export default function NotePage() {
         designId: 1,
         colorOptionId: 1,
         title: "",
-        content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
+        content: initialJsonForEditor,
         type: "unset",
         action: "add",
     });
@@ -42,7 +43,7 @@ export default function NotePage() {
         setIsEditorOpen(false);
         setEditorData({
             title: "",
-            content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
+            content: initialJsonForEditor,
             type: "unset",
             action: "add",
             id: "",
