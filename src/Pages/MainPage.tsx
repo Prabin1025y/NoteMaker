@@ -1,5 +1,5 @@
 'use client'
-import { blockTypeOptions, useNoteStore } from "@/Context/DataStore";
+import {  useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 
 interface MainPageProps {
@@ -35,10 +35,12 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                                 title={block.title}
                                 content={block.content}
                                 designId={block.designId}
+                                colorOptionId={block.colorOptionId}
                                 onEdit={() =>
                                     openBlockEditor({
                                         id: block.id,
                                         designId: block.designId,
+                                        colorOptionId: block.colorOptionId,
                                         title: block.title || "",
                                         content: block.content,
                                         type: block.type,

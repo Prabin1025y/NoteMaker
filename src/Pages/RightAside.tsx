@@ -3,19 +3,11 @@ import { BlockType, blockTypeOptions, useNoteStore } from "@/Context/DataStore";
 import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 import { allBlocks } from "@/utils/BlocksInfo";
-import { useEffect, useState } from "react";
 import Sortable from "@/components/dnd-Kit/Sortable";
 
 const RightAside = () => {
     const { blocks, setBlocks } = useNoteStore();
 
-    // temporary
-    const [blocksState, setBlocksState] = useState<BlockType[]>(blocks);
-    useEffect(() => {
-        setBlocksState(blocks);
-    }, [blocks]);
-
-    // temporary
     const getBlockInfo = (type: blockTypeOptions) => {
         const block = allBlocks.find((b) => b.type === type);
         return {
@@ -46,7 +38,12 @@ const RightAside = () => {
                                     id={block.id}
                                     index={index}
                                     blockTitle={block.title}
-                                    otherInfo={{bgColor: otherInfo.bgColor, color: otherInfo.color, hoverColor: otherInfo.hoverColor, icon: otherInfo.icon}}
+                                    otherInfo={{
+                                        bgColor: otherInfo.bgColor,
+                                        color: otherInfo.color,
+                                        hoverColor: otherInfo.hoverColor,
+                                        icon: otherInfo.icon,
+                                    }}
                                 />
                             );
                         })}

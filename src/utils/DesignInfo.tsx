@@ -1,13 +1,15 @@
+import { ColorOptionType } from "./ColorsInfo";
+
 interface DesignType {
     id: number;
     applyDesign: (
         title: string,
         primaryColorHex: string,
-        secondaryColorHex?: string,
-        titleColor?: string,
+        secondaryColorHex: string,
+        titleColor: string,
         titleClassName?: string,
     ) => React.ReactNode;
-    exampleDesign: React.ReactNode;
+    exampleDesign: (colorOption: ColorOptionType) => React.ReactNode;
 }
 
 export const allBlockDesigns: DesignType[] = [
@@ -16,8 +18,8 @@ export const allBlockDesigns: DesignType[] = [
         applyDesign: (
             title: string,
             primaryColorHex: string,
-            secondaryColorHex?: string,
-            titleColor?: string,
+            secondaryColorHex: string,
+            titleColor: string,
             titleClassName?: string,
         ) => (
             <div
@@ -27,7 +29,6 @@ export const allBlockDesigns: DesignType[] = [
                     h-9
                     text-xs font-semibold
                      tracking-[0.18em]
-                    ${titleColor || "text-white"}
                     ${titleClassName}
                 `}
             >
@@ -44,9 +45,10 @@ export const allBlockDesigns: DesignType[] = [
                                     ${secondaryColorHex} 0%,
                                     ${primaryColorHex} 50%,
                                     ${secondaryColorHex} 100%
-                                    )
+                                    ) no-repeat
                                 `,
                                 backgroundColor: primaryColorHex,
+                                color: titleColor,
                             } as React.CSSProperties & Record<"--f", string>
                         }
                         className="ribbon px-5 py-2 "
@@ -56,7 +58,7 @@ export const allBlockDesigns: DesignType[] = [
                 </div>
             </div>
         ),
-        exampleDesign: (
+        exampleDesign: (colorOption) => (
             <div
                 className={`
                     inline-flex items-center
@@ -76,12 +78,13 @@ export const allBlockDesigns: DesignType[] = [
                                     radial-gradient(50% 100% at bottom, #0005 98%, #0000 101%) right top / calc(2 * var(--f)) var(--f) no-repeat border-box,
                                     linear-gradient(
                                     90deg,
-                                    #970000 0%,
-                                    #ce0000 50%,
-                                    #970000 100%
+                                    ${colorOption.secondaryColorHex} 0%,
+                                    ${colorOption.primaryColorHex} 50%,
+                                    ${colorOption.secondaryColorHex} 100%
                                     )
                                 `,
-                                backgroundColor: "#970000",
+                                backgroundColor: colorOption.primaryColorHex,
+                                color: colorOption.titleColorHex,
                             } as React.CSSProperties & Record<"--f", string>
                         }
                         className="ribbon px-5 py-2 "
@@ -97,8 +100,8 @@ export const allBlockDesigns: DesignType[] = [
         applyDesign: (
             title: string,
             primaryColorHex: string,
-            secondaryColorHex?: string,
-            titleColor?: string,
+            _secondaryColorHex: string,
+            titleColor: string,
             titleClassName?: string,
         ) => (
             <div
@@ -108,7 +111,6 @@ export const allBlockDesigns: DesignType[] = [
                     h-9
                     text-xs font-semibold
                      tracking-[0.18em]
-                    ${titleColor || "text-white"}
                     ${titleClassName}
                 `}
             >
@@ -128,7 +130,7 @@ export const allBlockDesigns: DesignType[] = [
                 </div>
             </div>
         ),
-        exampleDesign: (
+        exampleDesign: (colorOption) => (
             <div
                 className={`
                     inline-flex items-center
@@ -139,16 +141,18 @@ export const allBlockDesigns: DesignType[] = [
                 `}
             >
                 <div
-                    style={{ borderColor: "blue" }}
+                    style={{
+                        borderColor: colorOption.primaryColorHex,
+                    }}
                     className={`bg-white relative border-2 rounded-sm text-black px-5 py-2 `}
                 >
                     Title Here
                     <div
-                        style={{ backgroundColor: "blue" }}
+                        style={{ backgroundColor: colorOption.primaryColorHex }}
                         className={`size-2  rounded-full absolute left-0 top-1/2 -translate-x-full -translate-y-1/2`}
                     />
                     <div
-                        style={{ backgroundColor: "blue" }}
+                        style={{ backgroundColor: colorOption.primaryColorHex }}
                         className={`size-2  rounded-full absolute right-0 top-1/2 translate-x-full -translate-y-1/2`}
                     />
                 </div>
@@ -160,8 +164,8 @@ export const allBlockDesigns: DesignType[] = [
         applyDesign: (
             title: string,
             primaryColorHex: string,
-            secondaryColorHex?: string,
-            titleColor?: string,
+            secondaryColorHex: string,
+            titleColor: string,
             titleClassName?: string,
         ) => (
             <div
@@ -171,7 +175,6 @@ export const allBlockDesigns: DesignType[] = [
                     h-9
                     text-xs font-semibold
                      tracking-[0.18em]
-                    ${titleColor || "text-white"}
                     ${titleClassName}
                 `}
             >
@@ -180,10 +183,10 @@ export const allBlockDesigns: DesignType[] = [
                         style={
                             {
                                 "--c": secondaryColorHex,
-                                background: `radial-gradient(100% 50% at left, var(--c) 98%, #0000 101%) 100% 0/0.5lh calc(100% - 2 * var(--r)),
-                                            radial-gradient(100% 50% at right, #0005 98%, #0000 101%) 0 100% / var(--r) calc(2 * var(--r)),
-                                            linear-gradient(to right, ${secondaryColorHex} 0%, ${primaryColorHex} 50%, ${secondaryColorHex} 100%) 0 0 / calc(101% - 0.5lh) 100%`,
-                                backgroundRepeat: "no-repeat",
+                                background: `radial-gradient(100% 50% at left, ${secondaryColorHex} 98%, #0000 101%) 100% 0/0.5lh calc(100% - 2 * var(--r)) no-repeat,
+                                            radial-gradient(100% 50% at right, #0005 98%, #0000 101%) 0 100% / var(--r) calc(2 * var(--r)) no-repeat,
+                                            linear-gradient(to right, ${secondaryColorHex} 0%, ${primaryColorHex} 50%, ${secondaryColorHex} 100%) 0 0 / calc(101% - 0.5lh) 100% no-repeat`,
+                                color: titleColor,
                             } as React.CSSProperties & Record<"--c", string>
                         }
                         className="ribbon1 relative w-fit px-5 pb-3 pt-2 flex items-center justify-center "
@@ -193,27 +196,23 @@ export const allBlockDesigns: DesignType[] = [
                 </div>
             </div>
         ),
-        exampleDesign: (
+        exampleDesign: (colorOption) => (
             <div
                 className={`
                     inline-flex items-center
                     h-9
                     text-xs font-semibold
                      tracking-[0.18em]
-                    text-white
                 `}
             >
                 <div>
                     <div
-                        style={
-                            {
-                                "--c": "#468100",
-                                background: `radial-gradient(100% 50% at left, var(--c) 98%, #0000 101%) 100% 0/0.5lh calc(100% - 2 * var(--r)),
-                                            radial-gradient(100% 50% at right, #0005 98%, #0000 101%) 0 100% / var(--r) calc(2 * var(--r)),
-                                            linear-gradient(to right, #468100 0%, #4eba00 50%, #468100 100%) 0 0 / calc(101% - 0.5lh) 100%`,
-                                backgroundRepeat: "no-repeat",
-                            } as React.CSSProperties & Record<"--c", string>
-                        }
+                        style={{
+                            background: `radial-gradient(100% 50% at left, ${colorOption.secondaryColorHex} 98%, #0000 101%) 100% 0/0.5lh calc(100% - 2 * var(--r)) no-repeat,
+                                            radial-gradient(100% 50% at right, #0005 98%, #0000 101%) 0 100% / var(--r) calc(2 * var(--r)) no-repeat,
+                                            linear-gradient(to right, ${colorOption.secondaryColorHex} 0%, ${colorOption.primaryColorHex} 50%, ${colorOption.secondaryColorHex} 100%) 0 0 / calc(101% - 0.5lh) 100% no-repeat`,
+                            color: colorOption.titleColorHex,
+                        }}
                         className="ribbon1 px-5 pb-3 pt-2 flex items-center justify-center "
                     >
                         Title Here

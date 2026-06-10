@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import LeftAside from "@/Pages/LeftAside";
 import MainPage from "@/Pages/MainPage";
 import RightAside from "@/Pages/RightAside";
-import BlockEditorModal from "@/components/BlockEditorModal";
+import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 
@@ -12,9 +12,10 @@ export default function NotePage() {
     const [editorData, setEditorData] = useState<EditorData>({
         id: "",
         designId: 1,
+        colorOptionId: 1,
         title: "",
         content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
-        type: "text",
+        type: "unset",
         action: "add",
     });
 
@@ -42,9 +43,10 @@ export default function NotePage() {
         setEditorData({
             title: "",
             content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
-            type: "text",
+            type: "unset",
             action: "add",
             id: "",
+            colorOptionId: 1,
             designId: 1,
         });
     };

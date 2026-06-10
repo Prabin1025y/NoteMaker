@@ -184,7 +184,6 @@ div.tiptap.ProseMirror.simple-editor {
             var(--r) calc(2 * var(--r)),
         linear-gradient(to right, yellow 0%, orange 50%, red 100%) 0 0 /
             calc(101% - 0.5lh) 100%;
-    background-repeat: no-repeat;
 } */
 
 .ribbon1 {
@@ -211,5 +210,4 @@ div.tiptap.ProseMirror.simple-editor {
         100% calc(100% - 2 * var(--r)),
         100% 0
     );
-    background-repeat: no-repeat;
 }

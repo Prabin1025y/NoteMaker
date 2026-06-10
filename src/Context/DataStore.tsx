@@ -1,33 +1,34 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { ElementType } from "react";
-import DefinitionBlock from "@/components/Blocks/DefinitionBlock";
+import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import NoteBlock from "@/components/Blocks/NoteBlock";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
 import ExampleBlock from "@/components/Blocks/ExampleBlock";
 import TextBlock from "@/components/Blocks/TextBlock";
 import TipsBlock from "@/components/Blocks/TipsBlock";
+import ImageBlock from "@/components/Blocks/ImageBlock";
 
 export type blockTypeOptions =
-    | "definition"
-    | "note"
-    | "tips"
+    | "block"
     | "code"
-    | "example"
     | "image"
     | "table"
     | "divider"
     | "formula"
-    | "text";
+    | "text"
+    | "unset";
 
 export interface BlockType {
     id: string;
     designId: number;
+    colorOptionId: number;
     type: blockTypeOptions;
     content: string;
     title?: string;
 }
+
 export interface NoteType {
     id: string;
     title: string;
@@ -64,38 +65,11 @@ export const useNoteStore = create<Store>()(
         blocks: [
             {
                 designId: 1,
+                colorOptionId: 1,
                 id: "405a6215-fcaa-4ed8-bd0a-bd80a5e4c201",
                 content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 1"}]}]}`,
-                type: "definition",
+                type: "block",
                 title: "Definition 1",
-            },
-            {
-                designId: 1,
-                id: "2bc3404c-6486-4f28-a42b-73258fa9340b",
-                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Note 1"}]}]}`,
-                type: "note",
-                title: "Note 1",
-            },
-            {
-                designId: 1,
-                id: "7cfc2d35-9c91-4ea2-8862-e87f5f080884",
-                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 2"}]}]}`,
-                type: "definition",
-                title: "Definition 2",
-            },
-            {
-                designId: 1,
-                id: "3a6cb155-203f-4cfa-88eb-a10e9a793999",
-                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Note 2"}]}]}`,
-                type: "note",
-                title: "Note 2",
-            },
-            {
-                designId: 1,
-                id: "ad8e51d2-93b6-4f9a-bfca-cd0a6635c13d",
-                content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Definition 3"}]}]}`,
-                type: "definition",
-                title: "Definition 3",
             },
         ],
         title: "Untitled Note",
@@ -137,6 +111,7 @@ export const useNoteStore = create<Store>()(
                 const block: BlockType = {
                     id: uuidv4(),
                     designId: editorData.designId,
+                    colorOptionId: editorData.colorOptionId,
                     content: editorData.content,
                     type: editorData.type,
                     title: editorData.title,
@@ -149,6 +124,7 @@ export const useNoteStore = create<Store>()(
                             ? {
                                   ...b,
                                   designId: editorData.designId,
+                                  colorOptionId: editorData.colorOptionId,
                                   content: editorData.content,
                                   title: editorData.title,
                                   type: editorData.type,
@@ -203,16 +179,12 @@ export const useNoteStore = create<Store>()(
 
         mapTypeToElement: (type) => {
             switch (type) {
-                case "definition":
-                    return DefinitionBlock;
-                case "note":
-                    return NoteBlock;
-                case "example":
-                    return ExampleBlock;
+                case "block":
+                    return GeneralBlock;
                 case "text":
                     return TextBlock;
-                case "tips":
-                    return TipsBlock;
+                case "image":
+                    return ImageBlock;
 
                 default:
                     return null;

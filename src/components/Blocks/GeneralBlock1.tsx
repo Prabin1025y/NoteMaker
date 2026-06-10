@@ -1,9 +1,11 @@
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import BaseBlock from "./BaseBlock";
+import { colorOptions } from "@/utils/ColorsInfo";
 
-type DefinitionBlockProps = {
+type GeneralBlockProps = {
     title?: string;
     designId?: number;
+    colorOptionId?: number;
     content: string;
 
     className?: string;
@@ -18,7 +20,7 @@ type DefinitionBlockProps = {
     onDelete: () => void;
 };
 
-export default function DefinitionBlock({
+export default function GeneralBlock({
     title = "Definition",
     content,
     className = "",
@@ -29,14 +31,20 @@ export default function DefinitionBlock({
     onEdit,
     onDelete,
     designId = 2,
-}: DefinitionBlockProps) {
+    colorOptionId = 1,
+}: GeneralBlockProps) {
+    const colorOption =
+        colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
     return (
         <BaseBlock
             title={title}
-            content={content || `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`}
+            content={
+                content ||
+                `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`
+            }
             className={className}
-            borderColor={borderColor || "border-red-700"}
-            backgroundColor={backgroundColor || "bg-red-50"}
+            borderColor={borderColor || `border-["${colorOption.borderColorHex}"]`}
+            backgroundColor={backgroundColor || `bg-["${colorOption.backgroundColorHex}"]`}
             onEdit={onEdit}
             onDelete={onDelete}
         >
@@ -45,9 +53,9 @@ export default function DefinitionBlock({
                 .find((b) => b.id === designId)
                 ?.applyDesign(
                     title,
-                    "#c50000",
-                    "#970000",
-                    titleColor,
+                    colorOption.primaryColorHex,
+                    colorOption.secondaryColorHex,
+                    colorOption.titleColorHex,
                     titleClassName,
                 )}
             {/* <div

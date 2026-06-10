@@ -10,6 +10,8 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
     const handleBlockClick = (type: blockTypeOptions) => {
         openBlockEditor({
             id: "",
+            designId: 1,
+            colorOptionId: 1,
             action: "add",
             content: `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`,
             title: "",

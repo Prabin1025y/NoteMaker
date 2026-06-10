@@ -6,5 +6,6 @@ export interface EditorData {
     type: blockTypeOptions;
     content: string;
     designId: number;
+    colorOptionId: number;
     action: "save" | "add";
 }

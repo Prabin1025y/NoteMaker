@@ -1,5 +1,5 @@
 "use client";
-import DefinitionBlock from "@/components/Blocks/DefinitionBlock";
+import GeneralBlock from "@/components/Blocks/GeneralBlock1";
 import NoteBlock from "@/components/Blocks/NoteBlock";
 import { Toolbar } from "@/components/ToolBar";
 import MainPage from "@/Pages/MainPage";
