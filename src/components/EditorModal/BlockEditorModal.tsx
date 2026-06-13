@@ -13,6 +13,7 @@ import { SimpleEditor } from "../tiptap/tiptap-templates/simple/simple-editor";
 import DesignSelection from "./DesignSelection";
 import { ImageDropZone, type PreviewFile } from "../ImageUploader";
 import { initialJsonForEditor, isValidJson } from "@/utils/UtilFunctions";
+import FormulaSection from "./FormulaSection";
 
 interface BlockEditorModalProps {
     isOpen: boolean;
@@ -119,9 +120,7 @@ const BlockEditorModal = ({
             type: currentBlock.type,
             action: editorData.action,
         });
-        setContent(
-            initialJsonForEditor,
-        );
+        setContent(initialJsonForEditor);
         setFile(null);
         setTitle("");
     };
@@ -278,16 +277,18 @@ const BlockEditorModal = ({
                                                             ? editorData.content
                                                             : initialJsonForEditor
                                                     }
-                                                    onChange={(content) =>{
-                                                        console.log(content)
-                                                        setContent(content)}
-                                                    }
+                                                    onChange={(content) => {
+                                                        console.log(content);
+                                                        setContent(content);
+                                                    }}
                                                 />
                                             }
                                         </div>
                                     </div>
                                 </div>
                             );
+                        else if (currentBlock.type === "formula")
+                            return <FormulaSection content={content} />;
 
                         return "hello";
                     })()}

@@ -1,3 +1,4 @@
+
 export function isValidJson(str: string) {
     try {
         JSON.parse(str);

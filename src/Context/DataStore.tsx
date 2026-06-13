@@ -2,12 +2,9 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { ElementType } from "react";
 import GeneralBlock from "@/components/Blocks/GeneralBlock";
-import NoteBlock from "@/components/Blocks/NoteBlock";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
-import ExampleBlock from "@/components/Blocks/ExampleBlock";
 import TextBlock from "@/components/Blocks/TextBlock";
-import TipsBlock from "@/components/Blocks/TipsBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
 
