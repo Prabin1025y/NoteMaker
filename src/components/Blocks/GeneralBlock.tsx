@@ -27,18 +27,24 @@ export default function GeneralBlock({
     const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
+
+    const isDesignDisabled = designId === 0;
     return (
         <div
             className={`
-                group relative mt-8 rounded-xl border-2
-                px-5 ${!!title?.trim() ? "pt-5" : "pt-3"} pb-3 shadow-sm transition-all duration-300
+                group relative mt-8 rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5"}
+                 ${!!title?.trim() ? "pt-5" : "pt-3"} pb-3 transition-all duration-300
                 hover:shadow-lg
                 ${className}
             `}
-            style={{
-                backgroundColor: colorOption.backgroundColorHex,
-                borderColor: colorOption.borderColorHex,
-            }}
+            style={
+                !isDesignDisabled
+                    ? {
+                          backgroundColor: colorOption.backgroundColorHex,
+                          borderColor: colorOption.borderColorHex,
+                      }
+                    : {}
+            }
         >
             <div
                 className={`hidden group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
@@ -68,17 +74,22 @@ export default function GeneralBlock({
             {/* Ribbon */}
             {title &&
                 title.trim() !== "" &&
-                allBlockDesigns
-                    .find((b) => b.id === designId)
-                    ?.applyDesign(
-                        title,
-                        colorOption.primaryColorHex,
-                        colorOption.secondaryColorHex,
-                        colorOption.titleColorHex,
-                    )}
+                (isDesignDisabled ? (
+                    <h2 className="text-2xl font-bold">{title}</h2>
+                ) : (
+                    allBlockDesigns
+                        .find((b) => b.id === designId)
+                        ?.applyDesign(
+                            title,
+                            colorOption.primaryColorHex,
+                            colorOption.secondaryColorHex,
+                            colorOption.titleColorHex,
+                        )
+                ))}
 
             <ReadOnlyEditor
                 hasTitle={!!title?.trim()}
+                className={isDesignDisabled ? "pt-2" : ""}
                 content={content}
             />
         </div>

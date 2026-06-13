@@ -23,16 +23,16 @@ export interface BlockItem {
 }
 
 export const allBlocks: BlockItem[] = [
-    {
-        defaultDesignId: 1,
-        type: "text",
-        title: "Text",
-        description: "Add a paragraph of text",
-        icon: <Type size={20} />,
-        color: "text-slate-600",
-        bgColor: "bg-slate-50",
-        hoverColor: "hover:bg-slate-100",
-    },
+    // {
+    //     defaultDesignId: 1,
+    //     type: "text",
+    //     title: "Text",
+    //     description: "Add a paragraph of text",
+    //     icon: <Type size={20} />,
+    //     color: "text-slate-600",
+    //     bgColor: "bg-slate-50",
+    //     hoverColor: "hover:bg-slate-100",
+    // },
     // {
     //     type: "heading",
     //     title: "Heading",

@@ -4,9 +4,9 @@ import { ElementType } from "react";
 import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
-import TextBlock from "@/components/Blocks/TextBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
+import FormulaBlock from "@/components/Blocks/FormulaBlock";
 
 export type blockTypeOptions =
     | "block"
@@ -15,7 +15,6 @@ export type blockTypeOptions =
     | "table"
     | "divider"
     | "formula"
-    | "text"
     | "unset";
 
 export interface BlockType {
@@ -179,10 +178,10 @@ export const useNoteStore = create<Store>()(
             switch (type) {
                 case "block":
                     return GeneralBlock;
-                case "text":
-                    return TextBlock;
                 case "image":
                     return ImageBlock;
+                case "formula":
+                    return FormulaBlock;
 
                 default:
                     return null;

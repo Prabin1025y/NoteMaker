@@ -14,6 +14,7 @@ import DesignSelection from "./DesignSelection";
 import { ImageDropZone, type PreviewFile } from "../ImageUploader";
 import { initialJsonForEditor, isValidJson } from "@/utils/UtilFunctions";
 import FormulaSection from "./FormulaSection";
+import ToogleButton from "../ui/ToogleButton";
 
 interface BlockEditorModalProps {
     isOpen: boolean;
@@ -29,6 +30,7 @@ const BlockEditorModal = ({
     editorData,
 }: BlockEditorModalProps) => {
     const [disabled, setDisabled] = useState(true);
+    const [designEnabled, setDesignEnabled] = useState<boolean>(true);
 
     const [title, setTitle] = useState(editorData.title);
     const [file, setFile] = useState<PreviewFile | null>(null);
@@ -36,7 +38,7 @@ const BlockEditorModal = ({
         allBlocks.find((b) => b.type === editorData.type) || null,
     );
     const [designId, setDesignId] = useState<number>(
-        editorData.action === "add" ? 1 : editorData.designId,
+        editorData.action === "add" ? 1 : editorData.designId || 1,
     );
     const [colorOptionId, setColorOptionId] = useState<number>(
         editorData.action === "add" ? 1 : editorData.colorOptionId,
@@ -52,7 +54,7 @@ const BlockEditorModal = ({
         setColorOptionId(
             editorData.action === "add" ? 1 : editorData.colorOptionId,
         );
-        setDesignId(editorData.action === "add" ? 1 : editorData.designId);
+        setDesignId(editorData.action === "add" ? 1 : editorData.designId || 1);
 
         (async () => {
             if (editorData.action === "save" && editorData.type === "image") {
@@ -112,8 +114,8 @@ const BlockEditorModal = ({
 
         onSave({
             id: editorData.id,
-            designId: designId,
-            colorOptionId: colorOptionId,
+            designId: designEnabled ? designId : 0,
+            colorOptionId: colorOptionId || 1,
             title,
             content:
                 currentBlock.type === "image" && !!file ? imageURL : content,
@@ -218,17 +220,28 @@ const BlockEditorModal = ({
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
+                        <div className="flex flex-col items-center">
+                            <label className="block text-sm font-semibold text-slate-700 mb-3">
+                                Apply Design
+                            </label>
+                            <ToogleButton
+                                setDesignEnabled={setDesignEnabled}
+                                designEnabled={designEnabled}
+                                className="flex-1"
+                            />
+                        </div>
                     </div>
 
                     {/* second part */}
-                    {!["text", "image"].includes(currentBlock.type || "") && (
-                        <DesignSelection
-                            colorOptionId={colorOptionId}
-                            designId={designId}
-                            setDesignId={setDesignId}
-                            setColorOptionId={setColorOptionId}
-                        />
-                    )}
+                    {!["text", "image"].includes(currentBlock.type || "") &&
+                        designEnabled && (
+                            <DesignSelection
+                                colorOptionId={colorOptionId}
+                                designId={designId}
+                                setDesignId={setDesignId}
+                                setColorOptionId={setColorOptionId}
+                            />
+                        )}
 
                     {/* Title Input */}
                     <div>
@@ -288,7 +301,14 @@ const BlockEditorModal = ({
                                 </div>
                             );
                         else if (currentBlock.type === "formula")
-                            return <FormulaSection content={content} />;
+                            return (
+                                <FormulaSection
+                                    content={content}
+                                    onChangeHandler={(content) =>
+                                        setContent(content)
+                                    }
+                                />
+                            );
 
                         return "hello";
                     })()}
