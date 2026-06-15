@@ -1,5 +1,5 @@
 "use client";
-import { Divide, Save, X } from "lucide-react";
+import { Check, ChevronDown, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
 import {
@@ -12,9 +12,16 @@ import { EditorData } from "@/types/Editor";
 import { SimpleEditor } from "../tiptap/tiptap-templates/simple/simple-editor";
 import DesignSelection from "./DesignSelection";
 import { ImageDropZone, type PreviewFile } from "../ImageUploader";
-import { initialJsonForEditor, isValidJson } from "@/utils/UtilFunctions";
+import {
+    initialJsonForEditor,
+    isValidJson,
+    MONACO_LANGUAGES,
+    MonacoLanguage,
+} from "@/utils/UtilFunctions";
 import FormulaSection from "./FormulaSection";
 import ToogleButton from "../ui/ToogleButton";
+import CodeSection from "./CodeSection";
+import EditableTable from "./TableSection";
 
 interface BlockEditorModalProps {
     isOpen: boolean;
@@ -37,6 +44,7 @@ const BlockEditorModal = ({
     const [currentBlock, setCurrentBlock] = useState<BlockItem | null>(
         allBlocks.find((b) => b.type === editorData.type) || null,
     );
+    const [language, setLanguage] = useState<MonacoLanguage>("javascript");
     const [designId, setDesignId] = useState<number>(
         editorData.action === "add" ? 1 : editorData.designId || 1,
     );
@@ -79,11 +87,16 @@ const BlockEditorModal = ({
     }, [editorData]);
 
     useEffect(() => {
+        if (currentBlock?.type !== "code") return;
+        setTitle(language);
+    }, [language, currentBlock]);
+
+    useEffect(() => {
         if (currentBlock) {
             setDisabled(
                 (currentBlock.type === "image" &&
                     (file === null || !!!title)) ||
-                    (["text", "block"].includes(currentBlock.type) &&
+                    (["block"].includes(currentBlock.type) &&
                         isValidJson(content) &&
                         !!!JSON.parse(
                             content,
@@ -244,20 +257,73 @@ const BlockEditorModal = ({
                         )}
 
                     {/* Title Input */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-3">
-                            {currentBlock.type === "image"
-                                ? "Caption"
-                                : "Title"}
-                        </label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder={`${currentBlock.type === "image" ? "Enter caption" : "Enter title (optional)"}`}
-                            className={`w-full px-4 py-3 rounded-lg border border-transparent font-medium transition-all outline-none placeholder:text-slate-400 hover:shadow-md focus:ring-2 focus:ring-offset-1 focus:ring-orange-300 bg-white text-slate-900`}
-                        />
-                    </div>
+                    {(() => {
+                        if (currentBlock.type === "code")
+                            return (
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                                        Language
+                                    </label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                type="button"
+                                                className="flex h-9 min-w-[140px] items-center justify-between gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                            >
+                                                <span className="capitalize">
+                                                    {language}
+                                                </span>
+                                                <ChevronDown className="h-4 w-4 opacity-60" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+
+                                        <DropdownMenuContent
+                                            align="start"
+                                            className="max-h-80 w-56 overflow-y-auto"
+                                        >
+                                            {MONACO_LANGUAGES.map((lang) => (
+                                                <DropdownMenuItem
+                                                    key={lang}
+                                                    onSelect={() =>
+                                                        setLanguage(lang)
+                                                    }
+                                                    className="cursor-pointer"
+                                                >
+                                                    <div className="flex w-full items-center justify-between">
+                                                        <span className="capitalize">
+                                                            {lang}
+                                                        </span>
+
+                                                        {language === lang && (
+                                                            <Check className="h-4 w-4" />
+                                                        )}
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            );
+                        else
+                            return (
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                                        {currentBlock.type === "image"
+                                            ? "Caption"
+                                            : "Title"}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={title}
+                                        onChange={(e) =>
+                                            setTitle(e.target.value)
+                                        }
+                                        placeholder={`${currentBlock.type === "image" ? "Enter caption" : "Enter title (optional)"}`}
+                                        className={`w-full px-4 py-3 rounded-lg border border-transparent font-medium transition-all outline-none placeholder:text-slate-400 hover:shadow-md focus:ring-2 focus:ring-offset-1 focus:ring-orange-300 bg-white text-slate-900`}
+                                    />
+                                </div>
+                            );
+                    })()}
 
                     {/* Content Editor */}
                     {(() => {
@@ -304,9 +370,28 @@ const BlockEditorModal = ({
                             return (
                                 <FormulaSection
                                     content={content}
-                                    onChangeHandler={(content) =>
-                                        setContent(content)
+                                    onChangeHandler={(value) =>
+                                        setContent(value)
                                     }
+                                />
+                            );
+                        else if (currentBlock.type === "code")
+                            return (
+                                <CodeSection
+                                    onChangeHandler={(value) =>
+                                        setContent(value)
+                                    }
+                                    language={language}
+                                    editorData={editorData}
+                                />
+                            );
+                        else if (currentBlock.type === "table")
+                            return (
+                                <EditableTable
+                                    onChangeHandler={(value) =>
+                                        setContent(value)
+                                    }
+                                    editorData={editorData}
                                 />
                             );
 

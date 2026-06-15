@@ -7,6 +7,7 @@ import { EditorData } from "@/types/Editor";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
 import FormulaBlock from "@/components/Blocks/FormulaBlock";
+import CodeBlock from "@/components/Blocks/CodeBlock";
 
 export type blockTypeOptions =
     | "block"
@@ -182,6 +183,8 @@ export const useNoteStore = create<Store>()(
                     return ImageBlock;
                 case "formula":
                     return FormulaBlock;
+                case "code":
+                    return CodeBlock;
 
                 default:
                     return null;

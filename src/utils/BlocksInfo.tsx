@@ -10,6 +10,8 @@ import {
     Divide,
     Table2,
 } from "lucide-react";
+import { initialJsonForEditor } from "./UtilFunctions";
+import { makeInitialState } from "@/components/EditorModal/TableSection";
 
 export interface BlockItem {
     defaultDesignId: number;
@@ -17,6 +19,7 @@ export interface BlockItem {
     title: string;
     description: string;
     icon: React.ReactNode;
+    defaultContent: string;
     color: string;
     bgColor: string;
     hoverColor: string;
@@ -47,6 +50,7 @@ export const allBlocks: BlockItem[] = [
         type: "block",
         title: "General Block",
         description: "Definition, Example, Notes, Tips etc.",
+        defaultContent: initialJsonForEditor,
         icon: <BookOpen size={20} />,
         color: "text-purple-600",
         bgColor: "bg-purple-50",
@@ -96,6 +100,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 1,
         type: "code",
         title: "Code",
+        defaultContent: "// Do Something",
         description: "Insert code snippet",
         icon: <Code size={20} />,
         color: "text-indigo-600",
@@ -107,6 +112,7 @@ export const allBlocks: BlockItem[] = [
         type: "formula",
         title: "Formula",
         description: "Add a math formula",
+        defaultContent: "E=mc^2",
         icon: <FlaskConical size={20} />,
         color: "text-cyan-600",
         bgColor: "bg-cyan-50",
@@ -116,6 +122,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 1,
         type: "image",
         title: "Image",
+        defaultContent: "",
         description: "Insert an image",
         icon: <Image size={20} />,
         color: "text-pink-600",
@@ -126,6 +133,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 1,
         type: "table",
         title: "Table",
+        defaultContent: JSON.stringify(makeInitialState()),
         description: "Create a data table",
         icon: <Table2 size={20} />,
         color: "text-teal-600",
@@ -156,6 +164,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 1,
         type: "divider",
         title: "Divider",
+        defaultContent: initialJsonForEditor,
         description: "Add a section divider",
         icon: <Divide size={20} />,
         color: "text-neutral-600",

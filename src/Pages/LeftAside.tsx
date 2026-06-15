@@ -8,13 +8,16 @@ interface LeftAsideProps {
 }
 
 const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
-    const handleBlockClick = (type: blockTypeOptions) => {
+    const handleBlockClick = (
+        type: blockTypeOptions,
+        content: string = initialJsonForEditor,
+    ) => {
         openBlockEditor({
             id: "",
             designId: 1,
             colorOptionId: 1,
             action: "add",
-            content: initialJsonForEditor,
+            content: content,
             title: "",
             type: type,
         });
@@ -29,7 +32,9 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                 {allBlocks.map((block) => (
                     <button
                         key={block.type}
-                        onClick={() => handleBlockClick(block.type)}
+                        onClick={() =>
+                            handleBlockClick(block.type, block.defaultContent)
+                        }
                         className={`w-full cursor-pointer text-left p-3 rounded-lg transition-colors border border-transparent ${block.bgColor} ${block.hoverColor} focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-orange-300`}
                     >
                         <div className="flex items-start gap-3">
