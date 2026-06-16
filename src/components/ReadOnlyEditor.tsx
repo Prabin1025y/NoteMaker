@@ -70,7 +70,7 @@ export default function ReadOnlyEditor({
     }, [content, editor]);
 
     return (
-        <div className={`${className} ${hasTitle ? "pt-5" : "pt-1"} pb-1`}>
+        <div className={`${className} ${hasTitle ? "pt-2" : "pt-1"} pb-1`}>
             <EditorContent editor={editor} />
         </div>
     );

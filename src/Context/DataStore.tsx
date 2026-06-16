@@ -43,6 +43,7 @@ type Store = {
     blocks: BlockType[];
     title: string;
     notes: NoteType[];
+    draggingBlockId: string | null;
 
     createNote: () => void;
     deleteNote: (id: string) => void;
@@ -57,6 +58,7 @@ type Store = {
     duplicateBlock: (id: string) => void;
 
     syncLocally: () => void;
+    setDraggingBlockId: (id: string | null) => void;
 };
 
 export const useNoteStore = create<Store>()(
@@ -74,6 +76,7 @@ export const useNoteStore = create<Store>()(
         ],
         title: "Untitled Note",
         notes: [],
+        draggingBlockId: null,
 
         createNote: () => {
             const newNote: NoteType = {
@@ -196,5 +199,7 @@ export const useNoteStore = create<Store>()(
                     return null;
             }
         },
+
+        setDraggingBlockId: (id) => set({ draggingBlockId: id }),
     })),
 );

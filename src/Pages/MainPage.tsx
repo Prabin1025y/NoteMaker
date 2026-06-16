@@ -1,5 +1,5 @@
-'use client'
-import {  useNoteStore } from "@/Context/DataStore";
+"use client";
+import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 
 interface MainPageProps {
@@ -7,7 +7,8 @@ interface MainPageProps {
 }
 
 const MainPage = ({ openBlockEditor }: MainPageProps) => {
-    const { blocks, mapTypeToElement, deleteBlock } = useNoteStore();
+    const { blocks, mapTypeToElement, deleteBlock, draggingBlockId } =
+        useNoteStore();
     return (
         <main className="flex-none w-[1000px] h-[calc(100vh-40px)] rounded-3xl border border-slate-200 bg-white p-10  overflow-y-auto">
             <div className="flex h-full flex-col gap-6">
@@ -36,6 +37,11 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                                 content={block.content}
                                 designId={block.designId}
                                 colorOptionId={block.colorOptionId}
+                                className={
+                                    `${draggingBlockId === block.id
+                                        ? "ring-4 ring-offset-1 -translate-y-2.5 ring-sky-300 shadow-2xl"
+                                        : ""}`
+                                }
                                 onEdit={() =>
                                     openBlockEditor({
                                         id: block.id,

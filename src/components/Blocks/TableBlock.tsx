@@ -190,8 +190,9 @@ export default function TableBlock({
     return (
         <figure
             className={`
-                group relative mt-5 rounded-xl
+                group relative  rounded-xl
                  transition-all duration-300
+                 py-3
                 hover:shadow-lg
                 ${className}
             `}

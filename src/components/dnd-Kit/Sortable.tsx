@@ -1,6 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { GripVerticalIcon } from "lucide-react";
+import { useNoteStore } from "@/Context/DataStore";
 
 function Sortable({
     id,
@@ -20,12 +21,18 @@ function Sortable({
 }) {
     const [element, setElement] = useState<Element | null>(null);
     const handleRef = useRef<HTMLDivElement | null>(null);
+    const { setDraggingBlockId } = useNoteStore();
     const { isDragging } = useSortable({
         id,
         index,
         element,
         handle: handleRef,
     });
+
+    useEffect(() => {
+        if (isDragging) setDraggingBlockId(id);
+        else setDraggingBlockId(null);
+    }, [isDragging]);
 
     return (
         <div
@@ -37,11 +44,16 @@ function Sortable({
                     {otherInfo.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className={`text-sm font-semibold ${otherInfo.color}`}>
+                    <h3
+                        className={`text-sm font-semibold ${otherInfo.color} truncate`}
+                    >
                         {blockTitle}
                     </h3>
                 </div>
-                <div ref={handleRef} className={`${otherInfo.color} cursor-grab`}>
+                <div
+                    ref={handleRef}
+                    className={`${otherInfo.color} cursor-grab`}
+                >
                     <GripVerticalIcon />
                 </div>
             </div>

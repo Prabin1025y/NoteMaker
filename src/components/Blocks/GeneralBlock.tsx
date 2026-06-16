@@ -32,8 +32,8 @@ export default function GeneralBlock({
     return (
         <div
             className={`
-                group relative mt-8 rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5"}
-                 ${!!title?.trim() ? "pt-5" : "pt-3"} pb-3 transition-all duration-300
+                group relative  rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5 my-3"}
+                 ${!!title?.trim() && !isDesignDisabled ? "pt-6" : "pt-3"} pb-3 transition-all duration-300
                 hover:shadow-lg
                 ${className}
             `}
@@ -89,7 +89,7 @@ export default function GeneralBlock({
 
             <ReadOnlyEditor
                 hasTitle={!!title?.trim()}
-                className={isDesignDisabled ? "pt-2" : ""}
+                className={!isDesignDisabled ? "pt-2" : ""}
                 content={content}
             />
         </div>

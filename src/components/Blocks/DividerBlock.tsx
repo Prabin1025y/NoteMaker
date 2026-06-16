@@ -35,7 +35,7 @@ export default function DividerBlock({
     return (
         <div
             className={`
-                group relative mt-8
+                group relative  rounded-lg
                 hover:shadow-lg
                 ${className}
             `}

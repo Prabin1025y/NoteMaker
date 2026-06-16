@@ -37,7 +37,10 @@ const RightAside = () => {
                                     key={block.id}
                                     id={block.id}
                                     index={index}
-                                    blockTitle={block.title}
+                                    blockTitle={
+                                        block.title ||
+                                        `${block.type.charAt(0).toUpperCase() + block.type.slice(1).toLowerCase()}`
+                                    }
                                     otherInfo={{
                                         bgColor: otherInfo.bgColor,
                                         color: otherInfo.color,
