@@ -1,12 +1,4 @@
-import {
-    useState,
-    useRef,
-    useCallback,
-    KeyboardEvent,
-    Dispatch,
-    SetStateAction,
-    useEffect,
-} from "react";
+import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Plus, X, Trash2, Check } from "lucide-react";
 import { EditorData } from "@/types/Editor";
 
@@ -192,26 +184,6 @@ export default function EditableTable({
             ...s,
             data: { ...s.data, [cellKey(rowId, colId)]: value },
         }));
-
-    // function addColumn(direction: "left" | "right") {
-    //   setState((s) => {
-    //     const newId = uid();
-    //     const refIdx = lastFocused.current?.kind === "header" || lastFocused.current?.kind === "cell"
-    //       ? s.cols.indexOf((lastFocused.current as any).colId)
-    //       : s.cols.length - 1;
-    //     const insertAt = direction === "left"
-    //       ? Math.max(0, refIdx)
-    //       : Math.min(s.cols.length, refIdx + 1);
-    //     const cols = [...s.cols];
-    //     cols.splice(insertAt, 0, newId);
-    //     const newData = { ...s.data };
-    //     s.rows.forEach((r) => { newData[cellKey(r, newId)] = ""; });
-    //     return { ...s, cols, headers: { ...s.headers, [newId]: "" }, data: newData };
-    //   });
-    //   requestAnimationFrame(() =>
-    //     applyFocus({ kind: "header", colId: uid }) // recalculated below
-    //   );
-    // }
 
     function addColumnWithId(direction: "left" | "right") {
         const newId = uid();

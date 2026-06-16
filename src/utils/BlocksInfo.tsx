@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { initialJsonForEditor } from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
+import { ALL_DIVIDERS } from "./Dividers";
 
 export interface BlockItem {
     defaultDesignId: number;
@@ -164,7 +165,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 1,
         type: "divider",
         title: "Divider",
-        defaultContent: initialJsonForEditor,
+        defaultContent: ALL_DIVIDERS[0].name,
         description: "Add a section divider",
         icon: <Divide size={20} />,
         color: "text-neutral-600",
