@@ -272,7 +272,7 @@ const BlockEditorModal = ({
                                         <DropdownMenuTrigger asChild>
                                             <button
                                                 type="button"
-                                                className="flex h-9 min-w-[140px] items-center justify-between gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                                className="flex h-9 min-w-35 items-center justify-between gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
                                             >
                                                 <span className="capitalize">
                                                     {language}

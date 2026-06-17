@@ -25,11 +25,9 @@ const RightAside = () => {
             </h2>
             <div className="space-y-2">
                 <DragDropProvider
-                    onDragEnd={() => {
-                        setDraggingBlockId(null)
-                    }}
-                    onDragOver={(event: DragOverEvent) => {
+                    onDragEnd={(event) => {
                         setBlocks(move(blocks, event));
+                        setDraggingBlockId(null);
                     }}
                 >
                     <div className="flex flex-col gap-2">

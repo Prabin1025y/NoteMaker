@@ -8,8 +8,15 @@ interface MainPageProps {
 }
 
 const MainPage = ({ openBlockEditor }: MainPageProps) => {
-    const { blocks, mapTypeToElement, deleteBlock, draggingBlockId, title, currentNote, updateNoteTitle } =
-        useNoteStore();
+    const {
+        blocks,
+        mapTypeToElement,
+        deleteBlock,
+        draggingBlockId,
+        title,
+        currentNote,
+        updateNoteTitle,
+    } = useNoteStore();
     const [localTitle, setLocalTitle] = useState(title || "");
     const [localDescription, setLocalDescription] = useState("");
 
@@ -24,9 +31,9 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
     };
 
     return (
-        <main className="flex-none w-[1000px] h-[calc(100vh-40px)]  border border-slate-200 bg-white p-10  overflow-y-auto">
-            <div className="flex h-full flex-col gap-6">
-                <div className="space-y-3 flex flex-col gap-1">
+        <main className="flex-none w-[1000px] max-h-[calc(100vh-100px)]  overflow-y-auto">
+            <div className="flex flex-col gap-6 w-full h-[1414px] p-10 border border-slate-200 bg-white">
+                {/* <div className="space-y-3 flex flex-col gap-1">
                     <input
                         value={localTitle}
                         onChange={handleTitleChange}
@@ -42,39 +49,40 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
                         aria-label="Note description"
                     />
                     <hr className="border-t bg-transparent border-dashed border-slate-300" />
-                </div>
+                </div> */}
                 <div className="pb-10">
-                    {blocks && blocks.map((block) => {
-                        const Component = mapTypeToElement(block.type);
-                        if (!Component) return null;
+                    {blocks &&
+                        blocks.map((block) => {
+                            const Component = mapTypeToElement(block.type);
+                            if (!Component) return null;
 
-                        return (
-                            <Component
-                                key={block.id}
-                                title={block.title}
-                                content={block.content}
-                                designId={block.designId}
-                                colorOptionId={block.colorOptionId}
-                                className={
-                                    `${draggingBlockId === block.id
-                                        ? "ring-4 ring-offset-1 -translate-y-2.5 ring-sky-300 shadow-2xl"
-                                        : ""}`
-                                }
-                                onEdit={() =>
-                                    openBlockEditor({
-                                        id: block.id,
-                                        designId: block.designId,
-                                        colorOptionId: block.colorOptionId,
-                                        title: block.title || "",
-                                        content: block.content,
-                                        type: block.type,
-                                        action: "save",
-                                    })
-                                }
-                                onDelete={() => deleteBlock(block.id)}
-                            />
-                        );
-                    })}
+                            return (
+                                <Component
+                                    key={block.id}
+                                    title={block.title}
+                                    content={block.content}
+                                    designId={block.designId}
+                                    colorOptionId={block.colorOptionId}
+                                    className={`${
+                                        draggingBlockId === block.id
+                                            ? "ring-4 ring-offset-1 -translate-y-2.5 ring-sky-300 shadow-2xl"
+                                            : ""
+                                    }`}
+                                    onEdit={() =>
+                                        openBlockEditor({
+                                            id: block.id,
+                                            designId: block.designId,
+                                            colorOptionId: block.colorOptionId,
+                                            title: block.title || "",
+                                            content: block.content,
+                                            type: block.type,
+                                            action: "save",
+                                        })
+                                    }
+                                    onDelete={() => deleteBlock(block.id)}
+                                />
+                            );
+                        })}
                 </div>
             </div>
         </main>

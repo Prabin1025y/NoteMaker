@@ -5,11 +5,11 @@ import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
 import ImageBlock from "@/components/Blocks/ImageBlock";
-import { initialJsonForEditor } from "@/utils/UtilFunctions";
 import FormulaBlock from "@/components/Blocks/FormulaBlock";
 import CodeBlock from "@/components/Blocks/CodeBlock";
 import TableBlock from "@/components/Blocks/TableBlock";
 import DividerBlock from "@/components/Blocks/DividerBlock";
+import { isValidJson } from "@/utils/UtilFunctions";
 
 export type blockTypeOptions =
     | "block"
@@ -35,6 +35,7 @@ export interface NoteType {
     blocks: BlockType[];
     createdAt: Date;
     updatedAt: Date;
+    description: string;
     author: string;
 }
 
@@ -46,6 +47,7 @@ type Store = {
     draggingBlockId: string | null;
 
     createNote: (title?: string, description?: string) => NoteType;
+    LoadNotesFromLocalStorage: () => void;
     deleteNote: (id: string) => void;
     loadNote: (id: string) => void;
     setTitle: (title: string) => void;
@@ -65,16 +67,7 @@ type Store = {
 export const useNoteStore = create<Store>()(
     devtools((set, get) => ({
         currentNote: null,
-        blocks: [
-            {
-                designId: 1,
-                colorOptionId: 1,
-                id: "405a6215-fcaa-4ed8-bd0a-bd80a5e4c201",
-                content: initialJsonForEditor,
-                type: "block",
-                title: "Definition 1",
-            },
-        ],
+        blocks: [],
         title: "Untitled Note",
         notes: [],
         draggingBlockId: null,
@@ -83,6 +76,7 @@ export const useNoteStore = create<Store>()(
             const newNote: NoteType = {
                 id: uuidv4(),
                 author: "Author",
+                description: description,
                 title: title,
                 blocks: [],
                 createdAt: new Date(),
@@ -92,7 +86,20 @@ export const useNoteStore = create<Store>()(
                 notes: [...get().notes, newNote],
             });
             get().loadNote(newNote.id);
+            get().syncLocally();
             return newNote;
+        },
+
+        LoadNotesFromLocalStorage: () => {
+            const notesString = localStorage.getItem("notes");
+            if (!notesString) return;
+            const notes = isValidJson(notesString)
+                ? JSON.parse(notesString)
+                : null;
+
+            if (!notes) return;
+
+            set({ notes: notes.notes });
         },
 
         deleteNote: (id) => {
@@ -115,7 +122,7 @@ export const useNoteStore = create<Store>()(
             set({ title });
             const currentNoteId = get().currentNote?.id;
             if (!currentNoteId) return;
-            
+
             const updatedNotes = get().notes.map((note) =>
                 note.id === currentNoteId
                     ? { ...note, title, updatedAt: new Date() }
@@ -193,6 +200,14 @@ export const useNoteStore = create<Store>()(
                     note.id === currentNoteId ? updatedNote : note,
                 ),
             });
+            localStorage.setItem(
+                "notes",
+                JSON.stringify({
+                    notes: get().notes.map((note) =>
+                        note.id === currentNoteId ? updatedNote : note,
+                    ),
+                }),
+            );
         },
 
         mapTypeToElement: (type) => {

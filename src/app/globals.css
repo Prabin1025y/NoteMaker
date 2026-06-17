@@ -3,7 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @import "../styles/_variables.scss";
-@import "../styles/_keyframe-animations.scss";
+/* @import "../styles/_keyframe-animations.scss"; */
 
 @custom-variant dark (&:is(.dark *));
 
