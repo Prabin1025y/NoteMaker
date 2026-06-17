@@ -2,7 +2,6 @@
 import { Check, ChevronDown, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
-import { ALL_DIVIDERS } from "@/utils/Dividers";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,7 +22,6 @@ import FormulaSection from "./FormulaSection";
 import ToogleButton from "../ui/ToogleButton";
 import CodeSection from "./CodeSection";
 import EditableTable from "./TableSection";
-import CodeBlock from "../Blocks/CodeBlock";
 import DividerSelection from "./DividerSelection";
 
 interface BlockEditorModalProps {
@@ -249,7 +247,9 @@ const BlockEditorModal = ({
                     </div>
 
                     {/* second part */}
-                    {!["text", "image", "divider"].includes(currentBlock.type || "") &&
+                    {!["text", "image", "divider"].includes(
+                        currentBlock.type || "",
+                    ) &&
                         designEnabled && (
                             <DesignSelection
                                 currentBlock={currentBlock}
@@ -362,7 +362,6 @@ const BlockEditorModal = ({
                                                             : initialJsonForEditor
                                                     }
                                                     onChange={(content) => {
-                                                        console.log(content);
                                                         setContent(content);
                                                     }}
                                                 />

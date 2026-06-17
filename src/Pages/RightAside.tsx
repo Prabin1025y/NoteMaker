@@ -1,12 +1,12 @@
 "use client";
 import { BlockType, blockTypeOptions, useNoteStore } from "@/Context/DataStore";
-import { DragDropProvider } from "@dnd-kit/react";
+import { DragDropProvider, DragOverEvent } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 import { allBlocks } from "@/utils/BlocksInfo";
 import Sortable from "@/components/dnd-Kit/Sortable";
 
 const RightAside = () => {
-    const { blocks, setBlocks } = useNoteStore();
+    const { blocks, setBlocks, setDraggingBlockId } = useNoteStore();
 
     const getBlockInfo = (type: blockTypeOptions) => {
         const block = allBlocks.find((b) => b.type === type);
@@ -25,7 +25,10 @@ const RightAside = () => {
             </h2>
             <div className="space-y-2">
                 <DragDropProvider
-                    onDragEnd={(event) => {
+                    onDragEnd={() => {
+                        setDraggingBlockId(null)
+                    }}
+                    onDragOver={(event: DragOverEvent) => {
                         setBlocks(move(blocks, event));
                     }}
                 >

@@ -45,11 +45,12 @@ type Store = {
     notes: NoteType[];
     draggingBlockId: string | null;
 
-    createNote: () => void;
+    createNote: (title?: string, description?: string) => NoteType;
     deleteNote: (id: string) => void;
     loadNote: (id: string) => void;
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[]) => void;
+    updateNoteTitle: (title: string) => void;
 
     mapTypeToElement: (type: blockTypeOptions) => ElementType | null;
 
@@ -78,11 +79,11 @@ export const useNoteStore = create<Store>()(
         notes: [],
         draggingBlockId: null,
 
-        createNote: () => {
+        createNote: (title = "Untitled Note", description = "") => {
             const newNote: NoteType = {
                 id: uuidv4(),
                 author: "Author",
-                title: "Untitled Note",
+                title: title,
                 blocks: [],
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -91,6 +92,7 @@ export const useNoteStore = create<Store>()(
                 notes: [...get().notes, newNote],
             });
             get().loadNote(newNote.id);
+            return newNote;
         },
 
         deleteNote: (id) => {
@@ -108,6 +110,19 @@ export const useNoteStore = create<Store>()(
 
         setTitle: (title) => set({ title }),
         setBlocks: (blocks) => set({ blocks }),
+
+        updateNoteTitle: (title) => {
+            set({ title });
+            const currentNoteId = get().currentNote?.id;
+            if (!currentNoteId) return;
+            
+            const updatedNotes = get().notes.map((note) =>
+                note.id === currentNoteId
+                    ? { ...note, title, updatedAt: new Date() }
+                    : note,
+            );
+            set({ notes: updatedNotes });
+        },
 
         addSaveBlock: (editorData) => {
             if (editorData.action === "add") {

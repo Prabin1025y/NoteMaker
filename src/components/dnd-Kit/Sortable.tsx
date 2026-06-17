@@ -31,8 +31,8 @@ function Sortable({
 
     useEffect(() => {
         if (isDragging) setDraggingBlockId(id);
-        else setDraggingBlockId(null);
     }, [isDragging]);
+
 
     return (
         <div
