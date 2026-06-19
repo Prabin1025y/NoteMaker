@@ -81,7 +81,6 @@ model Block {
 
 model Note {
   id       String @id @default(uuid())
-  publicId String @unique
 
   title       String
   description String?
