@@ -17,8 +17,7 @@ export type blockTypeOptions =
     | "image"
     | "table"
     | "divider"
-    | "formula"
-    | "unset";
+    | "formula";
 
 export interface BlockType {
     id: string;

@@ -31,8 +31,8 @@ const MainPage = ({ openBlockEditor }: MainPageProps) => {
     };
 
     return (
-        <main className="flex-none w-[1000px] max-h-[calc(100vh-100px)]  overflow-y-auto">
-            <div className="flex flex-col gap-6 w-full h-[1414px] p-10 border border-slate-200 bg-white">
+        <main className="flex w-[1000px] max-h-[calc(100vh-100px)]  overflow-y-auto flex-col gap-5">
+            <div className="flex flex-col gap-6 w-full min-h-[1414px] p-10 border border-slate-200 bg-white">
                 {/* <div className="space-y-3 flex flex-col gap-1">
                     <input
                         value={localTitle}
