@@ -1,4 +1,3 @@
-import { blockTypeOptions } from "@/Context/DataStore";
 import {
     Type,
     BookOpen,
@@ -13,6 +12,7 @@ import {
 import { initialJsonForEditor } from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { ALL_DIVIDERS } from "./Dividers";
+import { blockTypeOptions } from "@/types/Editor";
 
 export interface BlockItem {
     defaultDesignId: number;

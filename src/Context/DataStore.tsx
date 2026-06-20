@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ElementType } from "react";
 import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import { devtools } from "zustand/middleware";
-import { EditorData } from "@/types/Editor";
+import { blockTypeOptions, EditorData } from "@/types/Editor";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import FormulaBlock from "@/components/Blocks/FormulaBlock";
 import CodeBlock from "@/components/Blocks/CodeBlock";
@@ -11,20 +11,13 @@ import TableBlock from "@/components/Blocks/TableBlock";
 import DividerBlock from "@/components/Blocks/DividerBlock";
 import { isValidJson } from "@/utils/UtilFunctions";
 
-export type blockTypeOptions =
-    | "block"
-    | "code"
-    | "image"
-    | "table"
-    | "divider"
-    | "formula";
-
 export interface BlockType {
     id: string;
     designId: number;
     colorOptionId: number;
     type: blockTypeOptions;
     content: string;
+    order: number;
     title?: string;
 }
 
@@ -38,12 +31,29 @@ export interface NoteType {
     author: string;
 }
 
+export type BlockSyncType = {
+    id: string;
+} & (
+    | {
+          action: "add";
+          block: Omit<BlockType, "id">;
+      }
+    | {
+          action: "delete";
+      }
+    | {
+          action: "edit";
+          data: Partial<Omit<BlockType, "id">>;
+      }
+);
+
 type Store = {
     currentNote: NoteType | null;
     blocks: BlockType[];
     title: string;
     notes: NoteType[];
     draggingBlockId: string | null;
+    blocksToBeSynced: BlockSyncType[];
 
     createNote: (title?: string, description?: string) => NoteType;
     LoadNotesFromLocalStorage: () => void;
@@ -52,6 +62,7 @@ type Store = {
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[]) => void;
     updateNoteTitle: (title: string) => void;
+    pushToBlocksToBeSynced: (data: BlockSyncType) => void;
 
     mapTypeToElement: (type: blockTypeOptions) => ElementType | null;
 
@@ -70,6 +81,7 @@ export const useNoteStore = create<Store>()(
         title: "Untitled Note",
         notes: [],
         draggingBlockId: null,
+        blocksToBeSynced: [],
 
         createNote: (title = "Untitled Note", description = "") => {
             const newNote: NoteType = {
@@ -114,6 +126,65 @@ export const useNoteStore = create<Store>()(
             });
         },
 
+        pushToBlocksToBeSynced: (data) => {
+            const exists = get().blocksToBeSynced.find(
+                (item) => item.id === data.id,
+            );
+            if (!exists) {
+                set({ blocksToBeSynced: [...get().blocksToBeSynced, data] });
+                return;
+            }
+
+            // Invalid cases
+            if (exists.action === "delete" || data.action === "add") return;
+
+            if (exists.action === "add") {
+                // add --> delete
+                if (data.action === "delete") {
+                    set({
+                        blocksToBeSynced: get().blocksToBeSynced.filter(
+                            (b) => b.id !== exists.id,
+                        ),
+                    });
+                    return;
+                }
+
+                // Guaranteed that new action will is edit: add --> edit
+                const newAddData = { ...exists.block, ...data.data };
+                set({
+                    blocksToBeSynced: [
+                        ...get().blocksToBeSynced.filter(
+                            (b) => b.id !== exists.id,
+                        ),
+                        { ...exists, block: newAddData },
+                    ],
+                });
+                return;
+            }
+
+            // Guaranteed that existing action is edit: edit --> delete
+            if (data.action === "delete") {
+                set({
+                    blocksToBeSynced: [
+                        ...get().blocksToBeSynced.filter(
+                            (b) => b.id !== exists.id,
+                        ),
+                        data,
+                    ],
+                });
+                return;
+            }
+
+            //Guaranteed that new action will be edit: edit --> edit
+            const newAddData = { ...exists.data, ...data.data };
+            set({
+                blocksToBeSynced: [
+                    ...get().blocksToBeSynced.filter((b) => b.id !== exists.id),
+                    { ...exists, data: newAddData },
+                ],
+            });
+        },
+
         setTitle: (title) => set({ title }),
         setBlocks: (blocks) => set({ blocks }),
 
@@ -132,8 +203,11 @@ export const useNoteStore = create<Store>()(
 
         addSaveBlock: (editorData) => {
             if (editorData.action === "add") {
+                const lastBlockOrder = get().blocks.at(-1)?.order;
+                console.log(lastBlockOrder);
                 const block: BlockType = {
                     id: uuidv4(),
+                    order: lastBlockOrder ? lastBlockOrder + 1 : 1,
                     designId: editorData.designId,
                     colorOptionId: editorData.colorOptionId,
                     content: editorData.content,
@@ -141,20 +215,49 @@ export const useNoteStore = create<Store>()(
                     title: editorData.title,
                 };
                 set({ blocks: [...get().blocks, block] });
+
+                const { id, ...blockToSync } = block;
+                get().pushToBlocksToBeSynced({
+                    id: block.id,
+                    action: "add",
+                    block: blockToSync,
+                });
             } else {
+                const blockToBeChanged = get().blocks.find(
+                    (b) => b.id === editorData.id,
+                );
+                if (!blockToBeChanged) return;
+
+                const changedBlock: Partial<Omit<BlockType, "id">> = {};
+                const keysToCompare: Array<keyof Omit<BlockType, "id">> = [
+                    "designId",
+                    "colorOptionId",
+                    "content",
+                    "title",
+                    "type",
+                ];
+
+                for (const key of keysToCompare) {
+                    const editorValue = editorData[key as keyof EditorData];
+                    if (editorValue !== blockToBeChanged[key]) {
+                        (changedBlock as any)[key] = editorValue;
+                    }
+                }
+
                 set({
                     blocks: get().blocks.map((b) =>
                         b.id === editorData.id
                             ? {
                                   ...b,
-                                  designId: editorData.designId,
-                                  colorOptionId: editorData.colorOptionId,
-                                  content: editorData.content,
-                                  title: editorData.title,
-                                  type: editorData.type,
+                                  ...changedBlock,
                               }
                             : b,
                     ),
+                });
+                get().pushToBlocksToBeSynced({
+                    id: editorData.id,
+                    action: "edit",
+                    data: changedBlock,
                 });
             }
             get().syncLocally();
@@ -163,6 +266,7 @@ export const useNoteStore = create<Store>()(
         deleteBlock: (id) => {
             set({ blocks: get().blocks.filter((block) => block.id !== id) });
             get().syncLocally();
+            get().pushToBlocksToBeSynced({ id, action: "delete" });
         },
 
         duplicateBlock: (id) => {

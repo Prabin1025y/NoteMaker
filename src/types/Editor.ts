@@ -1,4 +1,10 @@
-import { blockTypeOptions } from "@/Context/DataStore";
+export type blockTypeOptions =
+    | "block"
+    | "code"
+    | "image"
+    | "table"
+    | "divider"
+    | "formula";
 
 export interface EditorData {
     id: string;

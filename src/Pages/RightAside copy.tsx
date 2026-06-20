@@ -1,5 +1,6 @@
 "use client";
-import { BlockType, blockTypeOptions, useNoteStore } from "@/Context/DataStore";
+import { BlockType, useNoteStore } from "@/Context/DataStore";
+import { blockTypeOptions } from "@/types/Editor";
 import { allBlocks, BlockItem } from "@/utils/BlocksInfo";
 import { useEffect, useState } from "react";
 

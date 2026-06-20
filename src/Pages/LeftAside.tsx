@@ -1,5 +1,4 @@
-import { blockTypeOptions } from "@/Context/DataStore";
-import { EditorData } from "@/types/Editor";
+import { blockTypeOptions, EditorData } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
 

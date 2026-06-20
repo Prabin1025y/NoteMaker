@@ -1,12 +1,20 @@
 "use client";
-import { BlockType, blockTypeOptions, useNoteStore } from "@/Context/DataStore";
+import { BlockType, useNoteStore } from "@/Context/DataStore";
 import { DragDropProvider, DragOverEvent } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 import { allBlocks } from "@/utils/BlocksInfo";
 import Sortable from "@/components/dnd-Kit/Sortable";
+import { blockTypeOptions } from "@/types/Editor";
+import { randomBetweenExclusive } from "@/utils/UtilFunctions";
 
 const RightAside = () => {
-    const { blocks, setBlocks, setDraggingBlockId } = useNoteStore();
+    const {
+        blocks,
+        setBlocks,
+        setDraggingBlockId,
+        draggingBlockId,
+        pushToBlocksToBeSynced,
+    } = useNoteStore();
 
     const getBlockInfo = (type: blockTypeOptions) => {
         const block = allBlocks.find((b) => b.type === type);
@@ -26,7 +34,47 @@ const RightAside = () => {
             <div className="space-y-2">
                 <DragDropProvider
                     onDragEnd={(event) => {
-                        setBlocks(move(blocks, event));
+                        const newBlocks = move(blocks, event);
+
+                        const orderUpdatedBlocks = newBlocks.map((b, index) => {
+                            if (b.id === draggingBlockId) {
+                                const prevOrder = newBlocks[index - 1]?.order;
+                                const nextOrder = newBlocks[index + 1]?.order;
+
+                                if (!prevOrder && !nextOrder) return b;
+
+                                if (b.id === blocks[index].id) return b;
+
+                                if (!nextOrder) {
+                                    const newOrder =
+                                        (blocks.at(-1)?.order || 0) + 1;
+                                    pushToBlocksToBeSynced({
+                                        id: b.id,
+                                        action: "edit",
+                                        data: { order: newOrder },
+                                    });
+                                    return {
+                                        ...b,
+                                        order: newOrder,
+                                    };
+                                }
+
+                                const newOrder = randomBetweenExclusive(
+                                    prevOrder ? prevOrder : 0,
+                                    nextOrder,
+                                );
+                                pushToBlocksToBeSynced({
+                                    id: b.id,
+                                    action: "edit",
+                                    data: { order: newOrder },
+                                });
+
+                                return { ...b, order: newOrder };
+                            } else {
+                                return b;
+                            }
+                        });
+                        setBlocks(orderUpdatedBlocks);
                         setDraggingBlockId(null);
                     }}
                 >

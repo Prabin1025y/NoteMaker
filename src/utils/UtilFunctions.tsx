@@ -1,4 +1,3 @@
-
 export function isValidJson(str: string) {
     try {
         JSON.parse(str);
@@ -39,3 +38,12 @@ export const MONACO_LANGUAGES = [
 ];
 
 export type MonacoLanguage = (typeof MONACO_LANGUAGES)[number];
+
+export function randomBetweenExclusive(min: number, max: number) {
+    let r;
+    do {
+        r = Math.random();
+    } while (r === 0);
+
+    return min + r * (max - min);
+}
