@@ -1,3 +1,4 @@
+import { ForbiddenError, UnauthorizedError } from "@/lib/custom-errors";
 import prisma from "@/lib/prisma";
 import requireAuth from "@/lib/requireAuth";
 import { blockSchema } from "@/validation/blocks";

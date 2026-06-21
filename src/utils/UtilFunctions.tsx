@@ -1,3 +1,13 @@
+import CodeBlock from "@/components/Blocks/CodeBlock";
+import DividerBlock from "@/components/Blocks/DividerBlock";
+import FormulaBlock from "@/components/Blocks/FormulaBlock";
+import GeneralBlock from "@/components/Blocks/GeneralBlock";
+import ImageBlock from "@/components/Blocks/ImageBlock";
+import TableBlock from "@/components/Blocks/TableBlock";
+import { NoteType } from "@/Context/DataStore";
+import { apiFetch } from "@/lib/api-client";
+import { blockTypeOptions } from "@/types/Editor";
+
 export function isValidJson(str: string) {
     try {
         JSON.parse(str);
@@ -47,3 +57,45 @@ export function randomBetweenExclusive(min: number, max: number) {
 
     return min + r * (max - min);
 }
+
+export const mapTypeToElement = (type: blockTypeOptions) => {
+    switch (type) {
+        case "block":
+            return GeneralBlock;
+        case "image":
+            return ImageBlock;
+        case "formula":
+            return FormulaBlock;
+        case "code":
+            return CodeBlock;
+        case "table":
+            return TableBlock;
+        case "divider":
+            return DividerBlock;
+
+        default:
+            return null;
+    }
+};
+
+export const createNote = async (note: NoteType) => {
+    try {
+        const response = await apiFetch("http://localhost:3000/api/notes", {
+            method: "POST",
+            body: JSON.stringify({
+                title: note.title,
+                description: note.description,
+                publicId: note.id,
+            }),
+        });
+
+        const data = await response.json();
+        console.log(data)
+
+        return data?.note;
+    } catch (error) {
+        if (process.env.NODE_ENV === "development") console.log(error);
+
+        alert("Unable to create Note");
+    }
+};

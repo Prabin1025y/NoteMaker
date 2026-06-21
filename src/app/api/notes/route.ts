@@ -1,3 +1,4 @@
+import { ForbiddenError, UnauthorizedError } from "@/lib/custom-errors";
 import prisma from "@/lib/prisma";
 import requireAuth from "@/lib/requireAuth";
 import { createNoteSchema } from "@/validation/notes";
@@ -43,10 +44,11 @@ export async function POST(req: Request) {
         const user = await requireAuth();
         const body = await req.json();
         const parsed = createNoteSchema.parse(body);
-        const { title, description } = parsed;
+        const { title, description, publicId } = parsed;
 
         const note = await prisma.note.create({
             data: {
+                publicId,
                 title,
                 description: description || "",
                 authorId: user.id,
@@ -55,6 +57,7 @@ export async function POST(req: Request) {
                 _count: { select: { blocks: true } },
                 createdAt: true,
                 description: true,
+                publicId: true,
                 id: true,
                 title: true,
                 updatedAt: true,
@@ -63,6 +66,8 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ note });
     } catch (error) {
+        if (process.env.NODE_ENV === "development") console.log(error);
+        
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: error.message || "Unauthorized" },
@@ -79,6 +84,7 @@ export async function POST(req: Request) {
                 { status: 400 },
             );
         }
+
 
         return NextResponse.json({ message: "Server Error" }, { status: 500 });
     }

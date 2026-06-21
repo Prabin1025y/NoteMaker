@@ -36,9 +36,9 @@ model User {
   email    String  @unique
   password String
   name     String?
-  role         Role     @default(USER)
+  role     Role    @default(USER)
 
-  refreshToken String?
+  refreshToken          String?
   refreshTokenCreatedAt DateTime?
 
   notes Note[]
@@ -52,7 +52,8 @@ model User {
 //
 
 model Block {
-  id String @id @default(uuid())
+  id      String @id @default(uuid())
+  publicId String @unique
 
   type    BlockType
   content String
@@ -60,7 +61,7 @@ model Block {
   designId      Int
   colorOptionId Int
 
-  title    String?
+  title String?
 
   order Float
 
@@ -71,8 +72,8 @@ model Block {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([noteId])
   @@unique([noteId, order])
+  @@index([noteId])
 }
 
 //
@@ -80,7 +81,8 @@ model Block {
 //
 
 model Note {
-  id       String @id @default(uuid())
+  id      String @id @default(uuid())
+  publicId String @unique
 
   title       String
   description String?

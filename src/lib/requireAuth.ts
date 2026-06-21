@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "./auth-jwt";
 import prisma from "./prisma";
 import { NextResponse } from "next/server";
+import { ForbiddenError, UnauthorizedError } from "./custom-errors";
 
 type Role = "USER" | "ADMIN";
 

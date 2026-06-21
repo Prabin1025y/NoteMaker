@@ -1,6 +1,7 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
+import { mapTypeToElement } from "@/utils/UtilFunctions";
 import { useEffect, useState } from "react";
 
 interface MainPageProps {
@@ -10,7 +11,6 @@ interface MainPageProps {
 const MainPage = ({ openBlockEditor }: MainPageProps) => {
     const {
         blocks,
-        mapTypeToElement,
         deleteBlock,
         draggingBlockId,
         title,

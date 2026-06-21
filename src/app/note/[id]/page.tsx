@@ -8,7 +8,7 @@ import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 
 export default function NotePage() {
     const params = useParams();
@@ -22,11 +22,11 @@ export default function NotePage() {
         colorOptionId: 1,
         title: "",
         content: initialJsonForEditor,
-        type: "unset",
+        type: "block",
         action: "add",
     });
 
-    const { addSaveBlock, loadNote, currentNote } = useNoteStore();
+    const { addSaveBlock, loadNote, syncToDB, blocksToBeSynced } = useNoteStore();
 
     // Load the note when component mounts
     useEffect(() => {
@@ -57,7 +57,7 @@ export default function NotePage() {
         setEditorData({
             title: "",
             content: initialJsonForEditor,
-            type: "unset",
+            type: "block",
             action: "add",
             id: "",
             colorOptionId: 1,
@@ -73,16 +73,33 @@ export default function NotePage() {
     return (
         <div className="min-h-screen min-w-screen bg-orange-50 px-10 py-5 flex flex-col">
             {/* Back Button */}
-            <div className="mb-4">
+            <div className="mb-4 flex gap-3">
                 <button
                     onClick={() => router.push("/")}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
                     title="Go back to home"
                 >
-                    <ArrowLeft size={18} className="text-slate-600" />
+                    <ArrowLeft
+                        size={18}
+                        className="text-slate-600"
+                    />
                     <span className="text-sm font-medium text-slate-600">
                         Home
                     </span>
+                </button>
+                <button
+                    onClick={() => syncToDB()}
+                    className="flex relative cursor-pointer items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
+                    title="Go back to home"
+                >
+                    <Save
+                        size={18}
+                        className="text-slate-600"
+                    />
+                    <span className="text-sm font-medium text-slate-600">
+                        Save
+                    </span>
+                    {blocksToBeSynced.length !== 0 && <p className="absolute right-2 top-1 text-red-500">*</p>}
                 </button>
             </div>
 

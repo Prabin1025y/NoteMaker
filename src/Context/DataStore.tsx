@@ -1,15 +1,9 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { ElementType } from "react";
-import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import { devtools } from "zustand/middleware";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
-import ImageBlock from "@/components/Blocks/ImageBlock";
-import FormulaBlock from "@/components/Blocks/FormulaBlock";
-import CodeBlock from "@/components/Blocks/CodeBlock";
-import TableBlock from "@/components/Blocks/TableBlock";
-import DividerBlock from "@/components/Blocks/DividerBlock";
-import { isValidJson } from "@/utils/UtilFunctions";
+import { createNote, isValidJson } from "@/utils/UtilFunctions";
+import { apiFetch } from "@/lib/api-client";
 
 export interface BlockType {
     id: string;
@@ -55,23 +49,23 @@ type Store = {
     draggingBlockId: string | null;
     blocksToBeSynced: BlockSyncType[];
 
-    createNote: (title?: string, description?: string) => NoteType;
-    LoadNotesFromLocalStorage: () => void;
-    deleteNote: (id: string) => void;
-    loadNote: (id: string) => void;
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[]) => void;
-    updateNoteTitle: (title: string) => void;
-    pushToBlocksToBeSynced: (data: BlockSyncType) => void;
+    setDraggingBlockId: (id: string | null) => void;
 
-    mapTypeToElement: (type: blockTypeOptions) => ElementType | null;
+    createNote: (title?: string, description?: string) => Promise<NoteType>;
+    LoadNotesFromLocalStorage: () => Promise<void>;
+    deleteNote: (id: string) => void;
+    loadNote: (id: string) => void;
+    updateNoteTitle: (title: string) => void;
 
     addSaveBlock: (editorData: EditorData) => void;
     deleteBlock: (id: string) => void;
     duplicateBlock: (id: string) => void;
 
+    pushToBlocksToBeSynced: (data: BlockSyncType) => void;
     syncLocally: () => void;
-    setDraggingBlockId: (id: string | null) => void;
+    syncToDB: () => Promise<void>;
 };
 
 export const useNoteStore = create<Store>()(
@@ -83,7 +77,11 @@ export const useNoteStore = create<Store>()(
         draggingBlockId: null,
         blocksToBeSynced: [],
 
-        createNote: (title = "Untitled Note", description = "") => {
+        setTitle: (title) => set({ title }),
+        setBlocks: (blocks) => set({ blocks }),
+        setDraggingBlockId: (id) => set({ draggingBlockId: id }),
+
+        createNote: async (title = "Untitled Note", description = "") => {
             const newNote: NoteType = {
                 id: uuidv4(),
                 author: "Author",
@@ -96,12 +94,34 @@ export const useNoteStore = create<Store>()(
             set({
                 notes: [...get().notes, newNote],
             });
-            get().loadNote(newNote.id);
+            const note = await createNote(newNote);
+            if (note.id) newNote.id = note.id;
             get().syncLocally();
+            get().loadNote(newNote.id);
             return newNote;
         },
 
-        LoadNotesFromLocalStorage: () => {
+        LoadNotesFromLocalStorage: async () => {
+            // try {
+            //     const res = await apiFetch("http://localhost:3000/api/notes", {
+            //         method: "GET",
+            //     });
+
+            //     const data = await res.json()
+
+            //     set({notes: data.notes.map(item=>({
+            //         id: item.id,
+            //         author: "Author",
+            //         description: item.description,
+            //         title: item.title,
+            //         blocks: 
+            //     }))})
+            // } catch (error) {
+            //     if (process.env.NODE_ENV === "development") console.log(error);
+
+            //     alert("Error while fetching data");
+            // }
+
             const notesString = localStorage.getItem("notes");
             if (!notesString) return;
             const notes = isValidJson(notesString)
@@ -125,68 +145,6 @@ export const useNoteStore = create<Store>()(
                 blocks: note?.blocks,
             });
         },
-
-        pushToBlocksToBeSynced: (data) => {
-            const exists = get().blocksToBeSynced.find(
-                (item) => item.id === data.id,
-            );
-            if (!exists) {
-                set({ blocksToBeSynced: [...get().blocksToBeSynced, data] });
-                return;
-            }
-
-            // Invalid cases
-            if (exists.action === "delete" || data.action === "add") return;
-
-            if (exists.action === "add") {
-                // add --> delete
-                if (data.action === "delete") {
-                    set({
-                        blocksToBeSynced: get().blocksToBeSynced.filter(
-                            (b) => b.id !== exists.id,
-                        ),
-                    });
-                    return;
-                }
-
-                // Guaranteed that new action will is edit: add --> edit
-                const newAddData = { ...exists.block, ...data.data };
-                set({
-                    blocksToBeSynced: [
-                        ...get().blocksToBeSynced.filter(
-                            (b) => b.id !== exists.id,
-                        ),
-                        { ...exists, block: newAddData },
-                    ],
-                });
-                return;
-            }
-
-            // Guaranteed that existing action is edit: edit --> delete
-            if (data.action === "delete") {
-                set({
-                    blocksToBeSynced: [
-                        ...get().blocksToBeSynced.filter(
-                            (b) => b.id !== exists.id,
-                        ),
-                        data,
-                    ],
-                });
-                return;
-            }
-
-            //Guaranteed that new action will be edit: edit --> edit
-            const newAddData = { ...exists.data, ...data.data };
-            set({
-                blocksToBeSynced: [
-                    ...get().blocksToBeSynced.filter((b) => b.id !== exists.id),
-                    { ...exists, data: newAddData },
-                ],
-            });
-        },
-
-        setTitle: (title) => set({ title }),
-        setBlocks: (blocks) => set({ blocks }),
 
         updateNoteTitle: (title) => {
             set({ title });
@@ -303,36 +261,99 @@ export const useNoteStore = create<Store>()(
                     note.id === currentNoteId ? updatedNote : note,
                 ),
             });
-            localStorage.setItem(
-                "notes",
-                JSON.stringify({
-                    notes: get().notes.map((note) =>
-                        note.id === currentNoteId ? updatedNote : note,
-                    ),
-                }),
+            // localStorage.setItem(
+            //     "notes",
+            //     JSON.stringify({
+            //         notes: get().notes.map((note) =>
+            //             note.id === currentNoteId ? updatedNote : note,
+            //         ),
+            //     }),
+            // );
+        },
+        pushToBlocksToBeSynced: (data) => {
+            const exists = get().blocksToBeSynced.find(
+                (item) => item.id === data.id,
             );
+            if (!exists) {
+                set({ blocksToBeSynced: [...get().blocksToBeSynced, data] });
+                return;
+            }
+
+            // Invalid cases
+            if (exists.action === "delete" || data.action === "add") return;
+
+            if (exists.action === "add") {
+                // add --> delete
+                if (data.action === "delete") {
+                    set({
+                        blocksToBeSynced: get().blocksToBeSynced.filter(
+                            (b) => b.id !== exists.id,
+                        ),
+                    });
+                    return;
+                }
+
+                // Guaranteed that new action will is edit: add --> edit
+                const newAddData = { ...exists.block, ...data.data };
+                set({
+                    blocksToBeSynced: [
+                        ...get().blocksToBeSynced.filter(
+                            (b) => b.id !== exists.id,
+                        ),
+                        { ...exists, block: newAddData },
+                    ],
+                });
+                return;
+            }
+
+            // Guaranteed that existing action is edit: edit --> delete
+            if (data.action === "delete") {
+                set({
+                    blocksToBeSynced: [
+                        ...get().blocksToBeSynced.filter(
+                            (b) => b.id !== exists.id,
+                        ),
+                        data,
+                    ],
+                });
+                return;
+            }
+
+            //Guaranteed that new action will be edit: edit --> edit
+            const newAddData = { ...exists.data, ...data.data };
+            set({
+                blocksToBeSynced: [
+                    ...get().blocksToBeSynced.filter((b) => b.id !== exists.id),
+                    { ...exists, data: newAddData },
+                ],
+            });
         },
 
-        mapTypeToElement: (type) => {
-            switch (type) {
-                case "block":
-                    return GeneralBlock;
-                case "image":
-                    return ImageBlock;
-                case "formula":
-                    return FormulaBlock;
-                case "code":
-                    return CodeBlock;
-                case "table":
-                    return TableBlock;
-                case "divider":
-                    return DividerBlock;
+        syncToDB: async () => {
+            try {
+                if (get().blocksToBeSynced.length === 0) return;
 
-                default:
-                    return null;
+                const res = await apiFetch(
+                    "http://localhost:3000/api/notes/save",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            noteId: get().currentNote?.id,
+                            data: get().blocksToBeSynced,
+                        }),
+                    },
+                );
+
+                set({ blocksToBeSynced: [] });
+
+                const data = await res.json();
+
+                if (data?.success) alert("Saved successfully");
+            } catch (error) {
+                if (process.env.NODE_ENV === "development") console.log(error);
+
+                console.log("Error while saving document");
             }
         },
-
-        setDraggingBlockId: (id) => set({ draggingBlockId: id }),
     })),
 );

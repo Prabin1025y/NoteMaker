@@ -13,8 +13,8 @@ export default function HomeLayout() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const router = useRouter();
 
-    const handleCreateNote = (title: string, description: string) => {
-        const newNote = createNoteInStore(title, description);
+    const handleCreateNote = async (title: string, description: string) => {
+        const newNote = await createNoteInStore(title, description);
         setIsCreateModalOpen(false);
         router.push(`/note/${newNote.id}`);
     };
