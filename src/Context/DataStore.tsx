@@ -2,42 +2,63 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
-import { createNote, isValidJson } from "@/utils/UtilFunctions";
+import { getBlocksFromNoteId, isValidJson } from "@/utils/UtilFunctions";
 import { apiFetch } from "@/lib/api-client";
+import { createNote } from "@/services/noteService";
 
-export interface BlockType {
+// export interface BlockType {
+//     id: string;
+//     type: blockTypeOptions;
+//     content: string;
+//     designId: number;
+//     colorOptionId: number;
+//     title: string | null;
+//     order: number;
+// }
+
+interface BlockType {
     id: string;
-    designId: number;
-    colorOptionId: number;
+    publicId: string;
+    noteId: string;
+    createdAt: Date;
+    updatedAt: Date;
     type: blockTypeOptions;
     content: string;
+    designId: number;
+    colorOptionId: number;
+    title: string | null;
     order: number;
-    title?: string;
 }
 
 export interface NoteType {
     id: string;
     title: string;
-    blocks: BlockType[];
+    blocksCount: number;
     createdAt: Date;
     updatedAt: Date;
     description: string;
-    author: string;
+    authorName: string;
+    authorId: string;
 }
+
+type AddBlockType = Omit<BlockType, "id" | "updatedAt">;
+type EditBlockType = Partial<
+    Omit<BlockType, "id" | "publicId" | "createdAt" | "updatedAt" | "noteId">
+>;
 
 export type BlockSyncType = {
     id: string;
 } & (
     | {
           action: "add";
-          block: Omit<BlockType, "id">;
+          block: AddBlockType;
       }
     | {
           action: "delete";
       }
     | {
           action: "edit";
-          data: Partial<Omit<BlockType, "id">>;
+          data: EditBlockType;
       }
 );
 
@@ -82,20 +103,20 @@ export const useNoteStore = create<Store>()(
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
 
         createNote: async (title = "Untitled Note", description = "") => {
+            const { note, authorName } = await createNote(title, description);
             const newNote: NoteType = {
-                id: uuidv4(),
-                author: "Author",
-                description: description,
-                title: title,
-                blocks: [],
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                id: note.id,
+                authorName: authorName,
+                description: note.description,
+                title: note.title,
+                blocksCount: note._count.blocks,
+                createdAt: note.createdAt,
+                updatedAt: note.updatedAt,
+                authorId: note.authorId,
             };
             set({
                 notes: [...get().notes, newNote],
             });
-            const note = await createNote(newNote);
-            if (note.id) newNote.id = note.id;
             get().syncLocally();
             get().loadNote(newNote.id);
             return newNote;
@@ -114,7 +135,7 @@ export const useNoteStore = create<Store>()(
             //         author: "Author",
             //         description: item.description,
             //         title: item.title,
-            //         blocks: 
+            //         blocks:
             //     }))})
             // } catch (error) {
             //     if (process.env.NODE_ENV === "development") console.log(error);
@@ -137,12 +158,13 @@ export const useNoteStore = create<Store>()(
             set({ notes: get().notes.filter((note) => note.id !== id) });
         },
 
-        loadNote: (id) => {
+        loadNote: async (id) => {
             const note = get().notes.find((note) => note.id === id);
+            const blocks: BlockType[] = await getBlocksFromNoteId(id);
             set({
                 title: note?.title,
                 currentNote: note,
-                blocks: note?.blocks,
+                blocks: blocks,
             });
         },
 
@@ -163,20 +185,28 @@ export const useNoteStore = create<Store>()(
             if (editorData.action === "add") {
                 const lastBlockOrder = get().blocks.at(-1)?.order;
                 console.log(lastBlockOrder);
+                const publicId = uuidv4();
+                const currentNote = get().currentNote;
+                if (!currentNote)
+                    return alert("No note is currently in session");
                 const block: BlockType = {
-                    id: uuidv4(),
+                    id: publicId,
+                    publicId,
                     order: lastBlockOrder ? lastBlockOrder + 1 : 1,
                     designId: editorData.designId,
                     colorOptionId: editorData.colorOptionId,
                     content: editorData.content,
                     type: editorData.type,
                     title: editorData.title,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    noteId: currentNote.id,
                 };
                 set({ blocks: [...get().blocks, block] });
 
-                const { id, ...blockToSync } = block;
+                const { id, updatedAt, ...blockToSync } = block;
                 get().pushToBlocksToBeSynced({
-                    id: block.id,
+                    id,
                     action: "add",
                     block: blockToSync,
                 });
@@ -186,7 +216,7 @@ export const useNoteStore = create<Store>()(
                 );
                 if (!blockToBeChanged) return;
 
-                const changedBlock: Partial<Omit<BlockType, "id">> = {};
+                const changedBlock: EditBlockType = {};
                 const keysToCompare: Array<keyof Omit<BlockType, "id">> = [
                     "designId",
                     "colorOptionId",
@@ -252,7 +282,7 @@ export const useNoteStore = create<Store>()(
             if (!note) return;
             const updatedNote: NoteType = {
                 ...note,
-                blocks: get().blocks,
+                blocksCount: get().blocks.length,
                 updatedAt: new Date(),
             };
 
@@ -261,15 +291,8 @@ export const useNoteStore = create<Store>()(
                     note.id === currentNoteId ? updatedNote : note,
                 ),
             });
-            // localStorage.setItem(
-            //     "notes",
-            //     JSON.stringify({
-            //         notes: get().notes.map((note) =>
-            //             note.id === currentNoteId ? updatedNote : note,
-            //         ),
-            //     }),
-            // );
         },
+
         pushToBlocksToBeSynced: (data) => {
             const exists = get().blocksToBeSynced.find(
                 (item) => item.id === data.id,
@@ -295,6 +318,9 @@ export const useNoteStore = create<Store>()(
 
                 // Guaranteed that new action will is edit: add --> edit
                 const newAddData = { ...exists.block, ...data.data };
+                console.log(exists.block)
+                console.log(data.data)
+                console.log(newAddData)
                 set({
                     blocksToBeSynced: [
                         ...get().blocksToBeSynced.filter(
@@ -337,10 +363,7 @@ export const useNoteStore = create<Store>()(
                     "http://localhost:3000/api/notes/save",
                     {
                         method: "POST",
-                        body: JSON.stringify({
-                            noteId: get().currentNote?.id,
-                            data: get().blocksToBeSynced,
-                        }),
+                        body: JSON.stringify(get().blocksToBeSynced),
                     },
                 );
 
@@ -349,10 +372,36 @@ export const useNoteStore = create<Store>()(
                 const data = await res.json();
 
                 if (data?.success) alert("Saved successfully");
+
+                const addedData = data.addedData;
+
+                // Update ids of newly added blocks
+                if (
+                    addedData &&
+                    Array.isArray(addedData) &&
+                    addedData.length > 0
+                ) {
+                    const idMap = new Map(
+                        addedData.map((item) => [item.publicId, item.id]),
+                    );
+
+                    const tempBlocks = get().blocks;
+
+                    for (const block of tempBlocks) {
+                        const newId = idMap.get(block.publicId);
+                        if (newId) block.id = newId;
+                    }
+
+                    set({ blocks: tempBlocks });
+                }
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
 
-                console.log("Error while saving document");
+                alert(
+                    error instanceof Error
+                        ? error.message
+                        : "Error while saving document",
+                );
             }
         },
     })),

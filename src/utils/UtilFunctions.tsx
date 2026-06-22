@@ -78,24 +78,25 @@ export const mapTypeToElement = (type: blockTypeOptions) => {
     }
 };
 
-export const createNote = async (note: NoteType) => {
+
+export const getBlocksFromNoteId = async (id: string) => {
     try {
-        const response = await apiFetch("http://localhost:3000/api/notes", {
-            method: "POST",
-            body: JSON.stringify({
-                title: note.title,
-                description: note.description,
-                publicId: note.id,
-            }),
-        });
+        const res = await apiFetch(
+            `http://localhost:3000/api/blocks?noteId=${id}`,
+        );
 
-        const data = await response.json();
-        console.log(data)
+        const data = await res.json();
 
-        return data?.note;
+        if (!res.ok) throw new Error(data.message);
+
+        return data.blocks;
     } catch (error) {
         if (process.env.NODE_ENV === "development") console.log(error);
 
-        alert("Unable to create Note");
+        alert(
+            error instanceof Error
+                ? error.message
+                : "Error while fetching data",
+        );
     }
 };

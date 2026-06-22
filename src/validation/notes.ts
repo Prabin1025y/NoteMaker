@@ -9,7 +9,10 @@ const BlockTypeOptionsSchema = z.enum([
     "formula",
 ]);
 
-export const BlockWithoutIdSchema = z.object({
+export const AddBlockSchema = z.object({
+    publicId: z.string(),
+    createdAt: z.date(),
+    noteId: z.string(),
     designId: z.number(),
     colorOptionId: z.number(),
     type: BlockTypeOptionsSchema,
@@ -21,14 +24,14 @@ export const BlockWithoutIdSchema = z.object({
 export const createNoteSchema = z.object({
     title: z.string().min(1, "The title must be at least 1 character long"),
     description: z.string().optional(),
-    publicId: z.string(),
+    // publicId: z.string(),
 });
 
-const BlockSyncSchema = z.discriminatedUnion("action", [
+export const BlockSyncSchema = z.discriminatedUnion("action", [
     z.object({
         id: z.string(),
         action: z.literal("add"),
-        block: BlockWithoutIdSchema,
+        block: AddBlockSchema,
     }),
 
     z.object({
@@ -39,11 +42,12 @@ const BlockSyncSchema = z.discriminatedUnion("action", [
     z.object({
         id: z.string(),
         action: z.literal("edit"),
-        data: BlockWithoutIdSchema.partial(),
+        data: AddBlockSchema.omit({
+            publicId: true,
+            noteId: true,
+            createdAt: true,
+        }).partial(),
     }),
 ]);
 
-export const SaveNoteSchema = z.object({
-    noteId: z.string(),
-    data: z.array(BlockSyncSchema),
-});
+export const SaveNoteSchema = z.array(BlockSyncSchema);

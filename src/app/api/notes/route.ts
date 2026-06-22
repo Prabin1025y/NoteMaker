@@ -44,30 +44,28 @@ export async function POST(req: Request) {
         const user = await requireAuth();
         const body = await req.json();
         const parsed = createNoteSchema.parse(body);
-        const { title, description, publicId } = parsed;
+        const { title, description } = parsed;
 
         const note = await prisma.note.create({
             data: {
-                publicId,
                 title,
                 description: description || "",
                 authorId: user.id,
             },
-            select: {
-                _count: { select: { blocks: true } },
-                createdAt: true,
-                description: true,
-                publicId: true,
-                id: true,
-                title: true,
-                updatedAt: true,
+            include: {
+                _count: {
+                    select: {
+                        blocks: true,
+                    },
+                },
             },
         });
 
-        return NextResponse.json({ note });
+
+        return NextResponse.json({ note, authorName: user.name });
     } catch (error) {
         if (process.env.NODE_ENV === "development") console.log(error);
-        
+
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: error.message || "Unauthorized" },
@@ -84,7 +82,6 @@ export async function POST(req: Request) {
                 { status: 400 },
             );
         }
-
 
         return NextResponse.json({ message: "Server Error" }, { status: 500 });
     }
