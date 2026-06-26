@@ -13,6 +13,7 @@ export async function GET() {
             name: user.name,
         });
     } catch (error) {
+        if (process.env.NODE_ENV === "development") console.log(error);
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: error.message || "Unauthorized" },

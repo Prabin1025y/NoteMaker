@@ -26,7 +26,7 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit) {
     const refreshed = await refreshAccessToken();
 
     if (!refreshed) {
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
         throw new Error("Session Expired");
     }
 

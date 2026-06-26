@@ -11,7 +11,7 @@ const BlockTypeOptionsSchema = z.enum([
 
 export const AddBlockSchema = z.object({
     publicId: z.string(),
-    createdAt: z.date(),
+    createdAt: z.coerce.date(),
     noteId: z.string(),
     designId: z.number(),
     colorOptionId: z.number(),

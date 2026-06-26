@@ -11,18 +11,18 @@ export async function GET() {
 
         const notes = await prisma.note.findMany({
             where: { authorId: user.id },
-            select: {
-                _count: { select: { blocks: true } },
-                createdAt: true,
-                description: true,
-                id: true,
-                title: true,
-                updatedAt: true,
+            include: {
+                _count: {
+                    select: {
+                        blocks: true,
+                    },
+                },
             },
         });
 
-        return NextResponse.json({ count: notes.length, notes });
+        return NextResponse.json({ notes, authorName: user.name });
     } catch (error) {
+        if (process.env.NODE_ENV === "development") console.log(error);
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: error.message || "Unauthorized" },
@@ -60,7 +60,6 @@ export async function POST(req: Request) {
                 },
             },
         });
-
 
         return NextResponse.json({ note, authorName: user.name });
     } catch (error) {

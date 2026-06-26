@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LeftAside from "@/Pages/LeftAside";
 import MainPage from "@/Pages/MainPage";
@@ -8,12 +8,15 @@ import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, DownloadIcon, Save, UploadIcon } from "lucide-react";
+import { exportElementToPDF } from "@/utils/PDFCreator";
 
 export default function NotePage() {
     const params = useParams();
     const router = useRouter();
     const noteId = params?.id as string;
+
+    const noteRef = useRef<HTMLDivElement>(null);
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
@@ -26,29 +29,28 @@ export default function NotePage() {
         action: "add",
     });
 
-    const { addSaveBlock, loadNote, syncToDB, blocksToBeSynced } = useNoteStore();
+    const {
+        addSaveBlock,
+        loadNote,
+        syncToDB,
+        blocksToBeSynced,
+        title,
+        blocks,
+    } = useNoteStore();
 
-    // Load the note when component mounts
     useEffect(() => {
-        if (noteId) {
-            loadNote(noteId);
-        }
+        if (noteId) loadNote(noteId);
     }, [noteId, loadNote]);
 
     useEffect(() => {
-        if (isEditorOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "";
-        }
-
+        document.body.style.overflow = isEditorOpen ? "hidden" : "";
         return () => {
             document.body.style.overflow = "";
         };
     }, [isEditorOpen]);
 
-    const openBlockEditor = (editorData: EditorData) => {
-        setEditorData(editorData);
+    const openBlockEditor = (data: EditorData) => {
+        setEditorData(data);
         setIsEditorOpen(true);
     };
 
@@ -65,48 +67,70 @@ export default function NotePage() {
         });
     };
 
-    const handleSaveBlock = (editorData: EditorData) => {
-        addSaveBlock(editorData);
+    const handleSaveBlock = (data: EditorData) => {
+        addSaveBlock(data);
         closeBlockEditor();
     };
 
-    return (
-        <div className="min-h-screen min-w-screen bg-orange-50 px-10 py-5 flex flex-col">
-            {/* Back Button */}
-            <div className="mb-4 flex gap-3">
-                <button
-                    onClick={() => router.push("/")}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                    title="Go back to home"
-                >
-                    <ArrowLeft
-                        size={18}
-                        className="text-slate-600"
-                    />
-                    <span className="text-sm font-medium text-slate-600">
-                        Home
-                    </span>
-                </button>
-                <button
-                    onClick={() => syncToDB()}
-                    className="flex relative cursor-pointer items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 shadow-sm"
-                    title="Go back to home"
-                >
-                    <Save
-                        size={18}
-                        className="text-slate-600"
-                    />
-                    <span className="text-sm font-medium text-slate-600">
-                        Save
-                    </span>
-                    {blocksToBeSynced.length !== 0 && <p className="absolute right-2 top-1 text-red-500">*</p>}
-                </button>
-            </div>
+    const hasUnsaved = blocksToBeSynced.length > 0;
 
-            {/* Editor Layout */}
-            <div className="flex min-h-[calc(100vh-120px)] gap-6 flex-1">
+    return (
+        <div
+            className="h-screen w-screen flex flex-col overflow-hidden bg-[#faf9f7]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+            {/* Top bar */}
+            <header className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 bg-white border-b border-[#e8e5e0]">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => router.push("/")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f7] border border-[#e2e0dc] rounded-lg text-[12px] font-medium text-[#5a5550] hover:bg-[#f0ede8] transition-colors"
+                    >
+                        <ArrowLeft size={13} />
+                        Home
+                    </button>
+                    <span className="text-[#e2e0dc]">·</span>
+                    <span className="text-[14px] font-semibold text-[#1a1714] tracking-tight truncate max-w-[280px]">
+                        {title || "Untitled"}
+                    </span>
+                    <span className="text-[12px] text-[#b8b3ac]">
+                        — {blocks?.length ?? 0}{" "}
+                        {(blocks?.length ?? 0) === 1 ? "block" : "blocks"}
+                    </span>
+                </div>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => syncToDB()}
+                        className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
+                    >
+                        <Save size={13} />
+                        Save
+                        {hasUnsaved && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                        )}
+                    </button>
+                    <button
+                        onClick={() => {
+                            if (noteRef.current) {
+                                exportElementToPDF(noteRef.current);
+                            }
+                        }}
+                        className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
+                    >
+                        <UploadIcon size={13} />
+                        Export
+                    </button>
+                </div>
+            </header>
+
+            {/* Editor body */}
+            <div className="flex flex-1 overflow-hidden">
                 <LeftAside openBlockEditor={openBlockEditor} />
-                <MainPage openBlockEditor={openBlockEditor} />
+                <MainPage
+                    noteRef={noteRef}
+                    openBlockEditor={openBlockEditor}
+                />
                 <RightAside />
             </div>
 

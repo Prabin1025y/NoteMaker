@@ -211,3 +211,8 @@ div.tiptap.ProseMirror.simple-editor {
         100% 0
     );
 }
+
+.pdf-export pre,
+.pdf-export code {
+    white-space: pre !important;
+}

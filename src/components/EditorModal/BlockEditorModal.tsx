@@ -88,9 +88,13 @@ const BlockEditorModal = ({
     }, [editorData]);
 
     useEffect(() => {
-        if (currentBlock?.type !== "code") return;
-        setTitle(language);
-    }, [language, currentBlock]);
+        if (
+            currentBlock?.type !== "code" ||
+            !MONACO_LANGUAGES.includes(editorData.title.trim())
+        )
+            return;
+        setLanguage(editorData.title.trim());
+    }, [currentBlock]);
 
     useEffect(() => {
         if (currentBlock) {
@@ -288,9 +292,10 @@ const BlockEditorModal = ({
                                             {MONACO_LANGUAGES.map((lang) => (
                                                 <DropdownMenuItem
                                                     key={lang}
-                                                    onSelect={() =>
-                                                        setLanguage(lang)
-                                                    }
+                                                    onSelect={() => {
+                                                        setLanguage(lang);
+                                                        setTitle(lang);
+                                                    }}
                                                     className="cursor-pointer"
                                                 >
                                                     <div className="flex w-full items-center justify-between">

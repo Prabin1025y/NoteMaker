@@ -107,7 +107,7 @@ export default function CodeBlock({
         <div
             className={`
                 group relative  rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5 my-3"}
-                 ${!!title?.trim() ? "pt-5" : "pt-3"} pb-3 transition-all duration-300
+                 ${!!title?.trim() && !isDesignDisabled ? "pt-5" : "pt-3"} pb-3 transition-all duration-300
                 hover:shadow-lg
                 ${className}
             `}
@@ -122,8 +122,24 @@ export default function CodeBlock({
         >
             {/* Action buttons (Edit / Delete) */}
             <div
-                className={`hidden group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
             >
+                <BlockActionButton
+                    icon={
+                        copied ? (
+                            <CheckIcon
+                                className={`${iconClassName} hover:text-blue-500`}
+                            />
+                        ) : (
+                            <CopyIcon
+                                className={`${iconClassName} hover:text-blue-500`}
+                            />
+                        )
+                    }
+                    onClick={handleCopy}
+                >
+                    {copied ? "Copied" : "Copy"}
+                </BlockActionButton>
                 <BlockActionButton
                     icon={
                         <EditIcon
@@ -162,7 +178,7 @@ export default function CodeBlock({
             {/* Code area */}
             <div className={`relative ${!isDesignDisabled ? "pt-2" : ""}`}>
                 {/* Copy button — visible on hover of the whole block */}
-                <button
+                {/* <button
                     onClick={handleCopy}
                     aria-label="Copy code"
                     className="
@@ -189,7 +205,7 @@ export default function CodeBlock({
                             Copy
                         </>
                     )}
-                </button>
+                </button> */}
 
                 <SyntaxHighlighter
                     language={lang}

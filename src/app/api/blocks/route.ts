@@ -85,6 +85,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({ blocks });
     } catch (error) {
+        if (process.env.NODE_ENV === "development") console.log(error);
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: error.message || "Unauthorized" },

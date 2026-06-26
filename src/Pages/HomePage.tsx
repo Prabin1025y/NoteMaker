@@ -1,18 +1,68 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
 import Link from "next/link";
-import { Plus, Heart, Clock } from "lucide-react";
+import {
+    Plus,
+    Heart,
+    LayoutList,
+    Lightbulb,
+    Users,
+    Code2,
+    BarChart2,
+    BookOpen,
+    FileText,
+    Star,
+} from "lucide-react";
 import { useState } from "react";
 
 interface HomePageProps {
     onCreateNote: () => void;
 }
 
+const tagStyles = [
+    {
+        label: "Ideas",
+        bg: "bg-violet-100",
+        text: "text-violet-700",
+        Icon: Lightbulb,
+    },
+    { label: "Team", bg: "bg-blue-100", text: "text-blue-700", Icon: Users },
+    {
+        label: "Dev",
+        bg: "bg-emerald-100",
+        text: "text-emerald-700",
+        Icon: Code2,
+    },
+    {
+        label: "Planning",
+        bg: "bg-amber-100",
+        text: "text-amber-700",
+        Icon: BarChart2,
+    },
+    {
+        label: "Personal",
+        bg: "bg-pink-100",
+        text: "text-pink-700",
+        Icon: BookOpen,
+    },
+    { label: "Docs", bg: "bg-blue-100", text: "text-blue-700", Icon: FileText },
+    {
+        label: "Goals",
+        bg: "bg-violet-100",
+        text: "text-violet-700",
+        Icon: Star,
+    },
+];
+
 const HomePage = ({ onCreateNote }: HomePageProps) => {
     const { notes } = useNoteStore();
     const [favorites, setFavorites] = useState<string[]>([]);
+    const [activeTab, setActiveTab] = useState<"recent" | "favorites" | "all">(
+        "recent",
+    );
 
-    const toggleFavorite = (noteId: string) => {
+    const toggleFavorite = (e: React.MouseEvent, noteId: string) => {
+        e.preventDefault();
         setFavorites((prev) =>
             prev.includes(noteId)
                 ? prev.filter((id) => id !== noteId)
@@ -20,151 +70,222 @@ const HomePage = ({ onCreateNote }: HomePageProps) => {
         );
     };
 
-    const recentNotes = [...notes]
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        .slice(0, 10);
+    const sorted = [...notes].sort(
+        (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
+    const recentNotes = sorted.slice(0, 10);
+    const favoriteNotes = notes.filter((n) => favorites.includes(n.id));
+    const displayNotes =
+        activeTab === "recent"
+            ? recentNotes
+            : activeTab === "favorites"
+              ? favoriteNotes
+              : sorted;
 
-    const favoriteNotes = notes.filter((note) => favorites.includes(note.id));
+    const NoteCard = ({ note }: { note: (typeof notes)[0] }) => {
+        const isFav = favorites.includes(note.id);
 
-    const NoteCard = ({ note, isFavorite }: { note: typeof notes[0]; isFavorite: boolean }) => (
-        <div className="shrink-0 w-56 bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
-            <div className="h-32 bg-linear-to-br from-slate-50 to-slate-100 relative overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-6xl opacity-10">📝</span>
-                </div>
+        return (
+            <div className="group relative flex flex-col rounded-xl border border-[#e8e5e0] bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-md">
+                {/* Favorite */}
                 <button
-                    onClick={() => toggleFavorite(note.id)}
-                    className="absolute top-3 right-3 p-2 rounded-lg bg-white/80 hover:bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => toggleFavorite(e, note.id)}
+                    aria-label={isFav ? "Unfavorite" : "Favorite"}
+                    className={`absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-lg transition-all ${
+                        isFav
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-100"
+                    } hover:bg-red-50`}
                 >
                     <Heart
-                        size={18}
-                        className={`${
-                            isFavorite
+                        size={15}
+                        className={
+                            isFav
                                 ? "fill-red-500 text-red-500"
-                                : "text-slate-400"
-                        }`}
+                                : "text-gray-300"
+                        }
                     />
                 </button>
-            </div>
 
-            <div className="p-4">
+                {/* Title */}
                 <Link href={`/note/${note.id}`}>
-                    <h3 className="font-semibold text-slate-900 truncate hover:text-orange-600 transition-colors cursor-pointer">
-                        {note.title || "Untitled Note"}
+                    <h3 className="pr-8 text-[15px] font-semibold text-gray-900 transition-colors hover:text-indigo-600">
+                        {note.title || "Untitled"}
                     </h3>
                 </Link>
 
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                    {note.blocks?.length || 0} blocks
+                {/* Description */}
+                <p className="mt-2 line-clamp-2 text-[13px] leading-6 text-gray-500">
+                    {note.description ||
+                        "No description has been added for this note yet."}
                 </p>
 
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
-                        <Clock size={14} />
-                        {new Date(note.updatedAt).toLocaleDateString()}
-                    </span>
+                {/* Footer */}
+                <div className="mt-5 flex items-center justify-between">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                            <LayoutList size={12} />
+                            {note.blocksCount ?? 0} blocks
+                        </div>
+
+                        <div className="text-[11px] text-gray-400">
+                            Updated{" "}
+                            {new Date(note.updatedAt).toLocaleDateString()}
+                        </div>
+                    </div>
+
                     <Link
                         href={`/note/${note.id}`}
-                        className="text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors"
+                        className="rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100"
                     >
                         Open →
                     </Link>
                 </div>
+                {/* Author */}
+                <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
+                    {/* <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                        {note.authorName?.charAt(0) ?? "U"}
+                    </div> */}
+
+                    <div className="flex flex-col">
+                        <span className="text-xs font-medium text-gray-800">
+                            {note.authorName || "Unknown Author"}
+                        </span>
+
+                        <span className="text-[11px] text-gray-400">
+                            Created{" "}
+                            {new Date(note.createdAt).toLocaleDateString()}
+                        </span>
+                    </div>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
+
+    const greeting = () => {
+        const h = new Date().getHours();
+        if (h < 12) return "Good morning";
+        if (h < 18) return "Good afternoon";
+        return "Good evening";
+    };
 
     return (
-        <main className="flex-1 w-full h-full bg-linear-to-br from-slate-50 via-white to-slate-50 overflow-y-auto">
-            <div className="max-w-6xl mx-auto px-8 py-12">
-                {/* Header with Create Button */}
-                <div className="flex flex-col items-center justify-center mb-16">
-                    <h1 className="text-5xl font-bold text-slate-900 mb-3">
-                        Welcome to <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-red-500">NoteMaker</span>
+        <main
+            className="flex-1 h-full bg-white overflow-y-auto"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+            <div className="max-w-7xl mx-auto px-10 py-10">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-2xl font-semibold text-[#1a1714] tracking-tight mb-1">
+                        {greeting()} 👋
                     </h1>
-                    <p className="text-lg text-slate-600 mb-8">
-                        Create beautiful notes with structured blocks
+                    <p className="text-[13px] text-[#9e9a94]">
+                        {notes.length === 0
+                            ? "Create your first note to get started."
+                            : `You have ${notes.length} ${notes.length === 1 ? "note" : "notes"}.`}
                     </p>
-
-                    {/* Big Create Button */}
-                    <button
-                        onClick={onCreateNote}
-                        className="relative group"
-                    >
-                        <div className="absolute -inset-1 bg-linear-to-r from-orange-400 to-red-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                        <div className="relative bg-white rounded-full p-8 hover:bg-slate-50 transition-all duration-300 transform hover:scale-110 cursor-pointer shadow-lg">
-                            <Plus size={48} className="text-orange-600" strokeWidth={2} />
-                        </div>
-                    </button>
-                    <p className="text-slate-600 mt-4 font-medium">Create a new note</p>
                 </div>
 
-                {/* Recent Notes Section */}
-                {recentNotes.length > 0 && (
-                    <section className="mb-16">
-                        <div className="flex items-center gap-2 mb-6">
-                            <Clock size={24} className="text-slate-700" />
-                            <h2 className="text-2xl font-bold text-slate-900">
-                                Recent Notes
-                            </h2>
+                {/* Quick create */}
+                <button
+                    onClick={onCreateNote}
+                    className="w-full flex flex-col justify-center items-center gap-3 bg-[#faf9f7] border border-dashed border-[#d4d0c8] rounded-xl px-4 py-5 mb-8 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 transition-all text-left group"
+                >
+                    <div className="w-9 h-9 bg-indigo-100 rounded-[9px] flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
+                        <Plus
+                            size={18}
+                            className="text-indigo-700"
+                        />
+                    </div>
+                    <div>
+                        <p className="text-[13px] font-medium text-center text-indigo-700">
+                            Start a new note
+                        </p>
+                        <p className="text-[12px] text-[#9e9a94]">
+                            Click to create a new note
+                        </p>
+                    </div>
+                </button>
+
+                {/* Tabs */}
+                {notes.length > 0 && (
+                    <>
+                        <div className="flex gap-1 mb-5 border-b border-[#f0ede8]">
+                            {(["recent", "favorites", "all"] as const).map(
+                                (tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`px-3.5 py-2 text-[13px] font-medium capitalize rounded-t-lg transition-all border-b-2 -mb-px ${
+                                            activeTab === tab
+                                                ? "text-indigo-700 border-indigo-600 bg-indigo-50"
+                                                : "text-[#9e9a94] border-transparent hover:text-[#5a5550] hover:bg-[#faf9f7]"
+                                        }`}
+                                    >
+                                        {tab === "all"
+                                            ? "All notes"
+                                            : tab.charAt(0).toUpperCase() +
+                                              tab.slice(1)}
+                                        {tab === "favorites" &&
+                                            favorites.length > 0 && (
+                                                <span className="ml-1.5 px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-full">
+                                                    {favorites.length}
+                                                </span>
+                                            )}
+                                    </button>
+                                ),
+                            )}
                         </div>
-                        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                            {recentNotes.map((note) => (
-                                <NoteCard
-                                    key={note.id}
-                                    note={note}
-                                    isFavorite={favorites.includes(note.id)}
-                                />
-                            ))}
-                        </div>
-                    </section>
+
+                        {displayNotes.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                                {displayNotes.map((note, i) => (
+                                    <NoteCard
+                                        key={note.id}
+                                        note={note}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-14 border border-dashed border-[#e2e0dc] rounded-xl">
+                                <div className="w-12 h-12 bg-indigo-50 rounded-[14px] flex items-center justify-center mx-auto mb-3">
+                                    <Heart
+                                        size={22}
+                                        className="text-indigo-400"
+                                    />
+                                </div>
+                                <p className="text-[14px] font-medium text-[#1a1714] mb-1">
+                                    No favorites yet
+                                </p>
+                                <p className="text-[12px] text-[#9e9a94]">
+                                    Hover a card and click the heart to save it
+                                    here.
+                                </p>
+                            </div>
+                        )}
+                    </>
                 )}
 
-                {/* Favorites Section */}
-                {favoriteNotes.length > 0 && (
-                    <section className="mb-16">
-                        <div className="flex items-center gap-2 mb-6">
-                            <Heart size={24} className="text-red-500 fill-red-500" />
-                            <h2 className="text-2xl font-bold text-slate-900">
-                                Favorites
-                            </h2>
-                        </div>
-                        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                            {favoriteNotes.map((note) => (
-                                <NoteCard
-                                    key={note.id}
-                                    note={note}
-                                    isFavorite={true}
-                                />
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* Empty State */}
+                {/* Empty state */}
                 {notes.length === 0 && (
-                    <div className="text-center py-20">
-                        <div className="text-6xl mb-4">📚</div>
-                        <h3 className="text-2xl font-semibold text-slate-900 mb-2">
+                    <div className="text-center py-16 border border-dashed border-[#e2e0dc] rounded-xl mt-2">
+                        <div className="w-13 h-13 bg-indigo-50 rounded-[14px] flex items-center justify-center mx-auto mb-3 p-3">
+                            <FileText
+                                size={24}
+                                className="text-indigo-500"
+                            />
+                        </div>
+                        <h3 className="text-[15px] font-semibold text-[#1a1714] mb-1">
                             No notes yet
                         </h3>
-                        <p className="text-slate-600 mb-8">
-                            Create your first note by clicking the plus button above
+                        <p className="text-[13px] text-[#9e9a94]">
+                            Hit "New note" to write your first one.
                         </p>
                     </div>
                 )}
             </div>
-
-            {/* Custom Scrollbar */}
-            <style jsx>{`
-                .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                }
-                .scrollbar-hide {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-            `}</style>
         </main>
     );
 };

@@ -1,14 +1,34 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
 import HomeLayout from "@/Pages/HomeLayout";
-import { useEffect } from "react";
+import { fetchNotes } from "@/services/noteService";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-    const { LoadNotesFromLocalStorage } = useNoteStore();
+    const [fetching, setFetching] = useState(true);
+    const { setNotes } = useNoteStore();
 
     useEffect(() => {
-        LoadNotesFromLocalStorage();
+        (async () => {
+            const { notes, authorName } = await fetchNotes();
+
+            if (notes && Array.isArray(notes)) {
+                setNotes(notes.map((n) => ({ 
+                    id: n.id,
+                    title: n.title,
+                    blocksCount: n._count.blocks,
+                    createdAt: n.createdAt,
+                    updatedAt: n.updatedAt,
+                    description: n.description,
+                    authorName,
+                    authorId: n.authorId
+                 })));
+                setFetching(false);
+            }
+        })();
     }, []);
+
+    if (fetching) return <div>fetching data...</div>;
 
     return <HomeLayout />;
 }

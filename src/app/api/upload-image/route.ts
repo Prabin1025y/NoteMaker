@@ -31,7 +31,7 @@ export async function POST(req: Request) {
             url: `/uploads/${fileName}`,
         });
     } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV === "development") console.log(error);
 
         return Response.json({ error: "Upload failed" }, { status: 500 });
     }

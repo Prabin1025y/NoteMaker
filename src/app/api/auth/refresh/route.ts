@@ -67,6 +67,7 @@ export async function POST() {
 
         return NextResponse.json({ message: "Refreshed" });
     } catch (error) {
+        if (process.env.NODE_ENV === "development") console.log(error);
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 }

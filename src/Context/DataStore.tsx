@@ -73,6 +73,7 @@ type Store = {
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[]) => void;
     setDraggingBlockId: (id: string | null) => void;
+    setNotes: (notes: NoteType[]) => void;
 
     createNote: (title?: string, description?: string) => Promise<NoteType>;
     LoadNotesFromLocalStorage: () => Promise<void>;
@@ -101,6 +102,7 @@ export const useNoteStore = create<Store>()(
         setTitle: (title) => set({ title }),
         setBlocks: (blocks) => set({ blocks }),
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
+        setNotes: (notes) => set({ notes }),
 
         createNote: async (title = "Untitled Note", description = "") => {
             const { note, authorName } = await createNote(title, description);
@@ -318,9 +320,9 @@ export const useNoteStore = create<Store>()(
 
                 // Guaranteed that new action will is edit: add --> edit
                 const newAddData = { ...exists.block, ...data.data };
-                console.log(exists.block)
-                console.log(data.data)
-                console.log(newAddData)
+                console.log(exists.block);
+                console.log(data.data);
+                console.log(newAddData);
                 set({
                     blocksToBeSynced: [
                         ...get().blocksToBeSynced.filter(

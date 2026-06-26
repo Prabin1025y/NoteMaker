@@ -198,7 +198,7 @@ export default function TableBlock({
             `}
         >
             <div
-                className={`hidden group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
             >
                 <BlockActionButton
                     icon={
