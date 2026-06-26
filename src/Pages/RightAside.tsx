@@ -9,24 +9,29 @@ import { randomBetweenExclusive } from "@/utils/UtilFunctions";
 
 const colorDotMap: Record<string, string> = {
     paragraph: "bg-blue-400",
-    heading:   "bg-violet-500",
-    image:     "bg-emerald-400",
-    quote:     "bg-amber-400",
-    code:      "bg-pink-400",
-    table:     "bg-sky-400",
-    divider:   "bg-yellow-400",
+    heading: "bg-violet-500",
+    image: "bg-emerald-400",
+    quote: "bg-amber-400",
+    code: "bg-pink-400",
+    table: "bg-sky-400",
+    divider: "bg-yellow-400",
 };
 
 const RightAside = () => {
-    const { blocks, setBlocks, setDraggingBlockId, draggingBlockId, pushToBlocksToBeSynced } = useNoteStore();
+    const {
+        blocks,
+        setBlocks,
+        setDraggingBlockId,
+        draggingBlockId,
+        pushToBlocksToBeSynced,
+    } = useNoteStore();
 
-    const getBlockInfo = (type: blockTypeOptions) => {
-        const block = allBlocks.find((b) => b.type === type);
+    const getBlockInfo = (id: string) => {
+        const block = blocks.find((b) => b.id === id);
         return {
-            color: block?.color,
-            icon: block?.icon,
-            bgColor: block?.bgColor,
-            hoverColor: block?.hoverColor,
+            colorOptionId: block?.colorOptionId,
+            type: block?.type,
+            title: block?.title,
         };
     };
 
@@ -50,47 +55,70 @@ const RightAside = () => {
                     <DragDropProvider
                         onDragEnd={(event) => {
                             const newBlocks = move(blocks, event);
-                            const orderUpdatedBlocks = newBlocks.map((b, index) => {
-                                if (b.id === draggingBlockId) {
-                                    const prevOrder = newBlocks[index - 1]?.order;
-                                    const nextOrder = newBlocks[index + 1]?.order;
-                                    if (!prevOrder && !nextOrder) return b;
-                                    if (b.id === blocks[index].id) return b;
-                                    if (!nextOrder) {
-                                        const newOrder = (blocks.at(-1)?.order || 0) + 1;
-                                        pushToBlocksToBeSynced({ id: b.id, action: "edit", data: { order: newOrder } });
+                            const orderUpdatedBlocks = newBlocks.map(
+                                (b, index) => {
+                                    if (b.id === draggingBlockId) {
+                                        const prevOrder =
+                                            newBlocks[index - 1]?.order;
+                                        const nextOrder =
+                                            newBlocks[index + 1]?.order;
+                                        if (!prevOrder && !nextOrder) return b;
+                                        if (b.id === blocks[index].id) return b;
+                                        if (!nextOrder) {
+                                            const newOrder =
+                                                (blocks.at(-1)?.order || 0) + 1;
+                                            pushToBlocksToBeSynced({
+                                                id: b.id,
+                                                action: "edit",
+                                                data: { order: newOrder },
+                                            });
+                                            return { ...b, order: newOrder };
+                                        }
+                                        const newOrder = randomBetweenExclusive(
+                                            prevOrder ? prevOrder : 0,
+                                            nextOrder,
+                                        );
+                                        pushToBlocksToBeSynced({
+                                            id: b.id,
+                                            action: "edit",
+                                            data: { order: newOrder },
+                                        });
                                         return { ...b, order: newOrder };
                                     }
-                                    const newOrder = randomBetweenExclusive(prevOrder ? prevOrder : 0, nextOrder);
-                                    pushToBlocksToBeSynced({ id: b.id, action: "edit", data: { order: newOrder } });
-                                    return { ...b, order: newOrder };
-                                }
-                                return b;
-                            });
+                                    return b;
+                                },
+                            );
                             setBlocks(orderUpdatedBlocks);
                             setDraggingBlockId(null);
                         }}
                     >
                         <div className="flex flex-col">
                             {blocks.map((block, index) => {
-                                const info = getBlockInfo(block.type);
-                                const dot = colorDotMap[block.type] ?? "bg-slate-400";
+                                const info = getBlockInfo(block.id);
+                                const dot =
+                                    colorDotMap[block.type] ?? "bg-slate-400";
                                 return (
                                     <Sortable
                                         key={block.id}
                                         id={block.id}
                                         index={index}
-                                        blockTitle={
-                                            block.title ||
-                                            `${block.type.charAt(0).toUpperCase() + block.type.slice(1).toLowerCase()}`
-                                        }
+                                        // blockTitle={
+                                        //     block.title ||
+                                        //     `${block.type.charAt(0).toUpperCase() + block.type.slice(1).toLowerCase()}`
+                                        // }
                                         className={`border-b`}
                                         otherInfo={{
                                             type: block.type,
-                                            bgColor: info.bgColor,
-                                            color: info.color,
-                                            hoverColor: info.hoverColor,
-                                            icon: info.icon,
+                                            colorOptionId:
+                                                info.colorOptionId || 1,
+                                            title:
+                                                info.title ||
+                                                block.type
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    block.type
+                                                        .slice(1)
+                                                        .toLowerCase(),
                                         }}
                                     />
                                 );

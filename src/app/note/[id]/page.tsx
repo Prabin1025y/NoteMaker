@@ -10,6 +10,7 @@ import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
 import { ArrowLeft, DownloadIcon, Save, UploadIcon } from "lucide-react";
 import { exportElementToPDF } from "@/utils/PDFCreator";
+import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 
 export default function NotePage() {
     const params = useParams();
@@ -17,6 +18,7 @@ export default function NotePage() {
     const noteId = params?.id as string;
 
     const noteRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
@@ -39,7 +41,11 @@ export default function NotePage() {
     } = useNoteStore();
 
     useEffect(() => {
-        if (noteId) loadNote(noteId);
+        (async () => {
+            setIsLoading(true);
+            if (noteId) await loadNote(noteId);
+            setIsLoading(false);
+        })();
     }, [noteId, loadNote]);
 
     useEffect(() => {
@@ -127,10 +133,14 @@ export default function NotePage() {
             {/* Editor body */}
             <div className="flex flex-1 overflow-hidden">
                 <LeftAside openBlockEditor={openBlockEditor} />
-                <MainPage
-                    noteRef={noteRef}
-                    openBlockEditor={openBlockEditor}
-                />
+                {isLoading ? (
+                    <MainPageSkeleton />
+                ) : (
+                    <MainPage
+                        noteRef={noteRef}
+                        openBlockEditor={openBlockEditor}
+                    />
+                )}
                 <RightAside />
             </div>
 

@@ -28,7 +28,7 @@ export default function Home() {
         })();
     }, []);
 
-    if (fetching) return <div>fetching data...</div>;
+    // if (fetching) return <div>fetching data...</div>;
 
-    return <HomeLayout />;
+    return <HomeLayout fetching={fetching} />;
 }

@@ -4,7 +4,7 @@ import { devtools } from "zustand/middleware";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
 import { getBlocksFromNoteId, isValidJson } from "@/utils/UtilFunctions";
 import { apiFetch } from "@/lib/api-client";
-import { createNote } from "@/services/noteService";
+import { createNote, fetchNotes } from "@/services/noteService";
 
 // export interface BlockType {
 //     id: string;
@@ -78,7 +78,7 @@ type Store = {
     createNote: (title?: string, description?: string) => Promise<NoteType>;
     LoadNotesFromLocalStorage: () => Promise<void>;
     deleteNote: (id: string) => void;
-    loadNote: (id: string) => void;
+    loadNote: (id: string) => Promise<void>;
     updateNoteTitle: (title: string) => void;
 
     addSaveBlock: (editorData: EditorData) => void;
@@ -161,6 +161,25 @@ export const useNoteStore = create<Store>()(
         },
 
         loadNote: async (id) => {
+            if (get().notes.length === 0) {
+                const { notes, authorName } = await fetchNotes();
+
+                if (notes && Array.isArray(notes)) {
+                    get().setNotes(
+                        notes.map((n) => ({
+                            id: n.id,
+                            title: n.title,
+                            blocksCount: n._count.blocks,
+                            createdAt: n.createdAt,
+                            updatedAt: n.updatedAt,
+                            description: n.description,
+                            authorName,
+                            authorId: n.authorId,
+                        })),
+                    );
+                }
+            }
+
             const note = get().notes.find((note) => note.id === id);
             const blocks: BlockType[] = await getBlocksFromNoteId(id);
             set({

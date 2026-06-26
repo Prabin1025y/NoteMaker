@@ -2,24 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { GripVerticalIcon } from "lucide-react";
 import { useNoteStore } from "@/Context/DataStore";
+import { colorOptions } from "@/utils/ColorsInfo";
 
 function Sortable({
     id,
     index,
     otherInfo,
-    blockTitle,
     className
 }: {
     id: string;
     index: number;
     otherInfo: {
-        color?: string;
-        icon: React.ReactNode;
-        bgColor?: string;
-        hoverColor?: string;
+        colorOptionId: number;
+        title?: string;
         type: string;
     };
-    blockTitle?: string;
     className?: string
 }) {
     const [element, setElement] = useState<Element | null>(null);
@@ -31,6 +28,8 @@ function Sortable({
         element,
         handle: handleRef,
     });
+
+    const colorOption = colorOptions.find(co => co.id === otherInfo.colorOptionId)
 
     useEffect(() => {
         console.log("Ran hehe ", isDragging);
@@ -67,7 +66,8 @@ function Sortable({
         // </div>
         <div
             ref={setElement}
-            className={`${className} ${isDragging && `${otherInfo.bgColor} shadow-2xl border border-gray-100`} w-full text-left flex items-center gap-2.5 px-2.5 py-2  hover:bg-[#f0ede8] group`}
+            style={{backgroundColor: colorOption?.backgroundColorHex}}
+            className={`${className} ${isDragging && ` shadow-2xl border border-gray-100`} w-full text-left flex items-center gap-2.5 px-2.5 py-2  hover:bg-[#f0ede8] group`}
         >
             <div
                 ref={handleRef}
@@ -83,8 +83,8 @@ function Sortable({
                 </span>
             </div> */}
             <div className="flex-1 min-w-0">
-                <p className=" text-[#5a5550] group-hover:text-[#1a1714] transition-colors">
-                    {blockTitle}
+                <p style={{color: colorOption?.borderColorHex}} className={` group-hover:text-[#1a1714] transition-colors`}>
+                    {otherInfo.title}
                 </p>
                 <p className="text-[11px] text-[#b8b3ac] truncate">
                     {otherInfo.type}

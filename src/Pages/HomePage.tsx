@@ -14,9 +14,11 @@ import {
     Star,
 } from "lucide-react";
 import { useState } from "react";
+import { NoteCardSkeleton } from "@/skeletons/NoteCardSkeleton";
 
 interface HomePageProps {
     onCreateNote: () => void;
+    fetching: boolean;
 }
 
 const tagStyles = [
@@ -54,7 +56,7 @@ const tagStyles = [
     },
 ];
 
-const HomePage = ({ onCreateNote }: HomePageProps) => {
+const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
     const { notes } = useNoteStore();
     const [favorites, setFavorites] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState<"recent" | "favorites" | "all">(
@@ -210,7 +212,7 @@ const HomePage = ({ onCreateNote }: HomePageProps) => {
                 </button>
 
                 {/* Tabs */}
-                {notes.length > 0 && (
+                {fetching ? (
                     <>
                         <div className="flex gap-1 mb-5 border-b border-[#f0ede8]">
                             {(["recent", "favorites", "all"] as const).map(
@@ -239,37 +241,74 @@ const HomePage = ({ onCreateNote }: HomePageProps) => {
                             )}
                         </div>
 
-                        {displayNotes.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                                {displayNotes.map((note, i) => (
-                                    <NoteCard
-                                        key={note.id}
-                                        note={note}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-14 border border-dashed border-[#e2e0dc] rounded-xl">
-                                <div className="w-12 h-12 bg-indigo-50 rounded-[14px] flex items-center justify-center mx-auto mb-3">
-                                    <Heart
-                                        size={22}
-                                        className="text-indigo-400"
-                                    />
-                                </div>
-                                <p className="text-[14px] font-medium text-[#1a1714] mb-1">
-                                    No favorites yet
-                                </p>
-                                <p className="text-[12px] text-[#9e9a94]">
-                                    Hover a card and click the heart to save it
-                                    here.
-                                </p>
-                            </div>
-                        )}
+                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <NoteCardSkeleton key={i} />
+                            ))}
+                        </div>
                     </>
+                ) : (
+                    notes.length > 0 && (
+                        <>
+                            <div className="flex gap-1 mb-5 border-b border-[#f0ede8]">
+                                {(["recent", "favorites", "all"] as const).map(
+                                    (tab) => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={`px-3.5 py-2 text-[13px] font-medium capitalize rounded-t-lg transition-all border-b-2 -mb-px ${
+                                                activeTab === tab
+                                                    ? "text-indigo-700 border-indigo-600 bg-indigo-50"
+                                                    : "text-[#9e9a94] border-transparent hover:text-[#5a5550] hover:bg-[#faf9f7]"
+                                            }`}
+                                        >
+                                            {tab === "all"
+                                                ? "All notes"
+                                                : tab.charAt(0).toUpperCase() +
+                                                  tab.slice(1)}
+                                            {tab === "favorites" &&
+                                                favorites.length > 0 && (
+                                                    <span className="ml-1.5 px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-full">
+                                                        {favorites.length}
+                                                    </span>
+                                                )}
+                                        </button>
+                                    ),
+                                )}
+                            </div>
+
+                            {displayNotes.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                                    {displayNotes.map((note, i) => (
+                                        <NoteCard
+                                            key={note.id}
+                                            note={note}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-14 border border-dashed border-[#e2e0dc] rounded-xl">
+                                    <div className="w-12 h-12 bg-indigo-50 rounded-[14px] flex items-center justify-center mx-auto mb-3">
+                                        <Heart
+                                            size={22}
+                                            className="text-indigo-400"
+                                        />
+                                    </div>
+                                    <p className="text-[14px] font-medium text-[#1a1714] mb-1">
+                                        No favorites yet
+                                    </p>
+                                    <p className="text-[12px] text-[#9e9a94]">
+                                        Hover a card and click the heart to save
+                                        it here.
+                                    </p>
+                                </div>
+                            )}
+                        </>
+                    )
                 )}
 
                 {/* Empty state */}
-                {notes.length === 0 && (
+                {!fetching && notes.length === 0 && (
                     <div className="text-center py-16 border border-dashed border-[#e2e0dc] rounded-xl mt-2">
                         <div className="w-13 h-13 bg-indigo-50 rounded-[14px] flex items-center justify-center mx-auto mb-3 p-3">
                             <FileText
