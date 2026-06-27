@@ -12,9 +12,11 @@ import {
     BookOpen,
     FileText,
     Star,
+    Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
 import { NoteCardSkeleton } from "@/skeletons/NoteCardSkeleton";
+import { apiFetch } from "@/lib/api-client";
 
 interface HomePageProps {
     onCreateNote: () => void;
@@ -57,11 +59,12 @@ const tagStyles = [
 ];
 
 const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
-    const { notes } = useNoteStore();
+    const { notes, deleteNote } = useNoteStore();
     const [favorites, setFavorites] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState<"recent" | "favorites" | "all">(
         "recent",
     );
+    const [deleting, setDeleting] = useState<string | null>(null);
 
     const toggleFavorite = (e: React.MouseEvent, noteId: string) => {
         e.preventDefault();
@@ -88,11 +91,48 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
     const NoteCard = ({ note }: { note: (typeof notes)[0] }) => {
         const isFav = favorites.includes(note.id);
 
+        const handleDelete = async (id: string) => {
+            try {
+                const confirm = window.confirm(
+                    "Are you sure you want to delete this note?",
+                );
+
+                if (!confirm) return;
+
+                setDeleting(id);
+
+                const res = await apiFetch(
+                    `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/${id}`,
+                    { method: "DELETE" },
+                );
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    setDeleting(null);
+                    throw new Error(data.message);
+                }
+
+                deleteNote(id);
+                setDeleting(null);
+            } catch (error) {
+                if (process.env.NODE_ENV === "development")
+                    console.error(error);
+
+                alert(
+                    error instanceof Error
+                        ? error.message
+                        : "Error while deleting note",
+                );
+            }
+        };
+
         return (
             <div className="group relative flex flex-col rounded-xl border border-[#e8e5e0] bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-md">
                 {/* Favorite */}
                 <button
-                    onClick={(e) => toggleFavorite(e, note.id)}
+                    onClick={() => handleDelete(note.id)}
+                    disabled={deleting === note.id}
                     aria-label={isFav ? "Unfavorite" : "Favorite"}
                     className={`absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-lg transition-all ${
                         isFav
@@ -100,7 +140,7 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                             : "opacity-0 group-hover:opacity-100"
                     } hover:bg-red-50`}
                 >
-                    <Heart
+                    <Trash2Icon
                         size={15}
                         className={
                             isFav
@@ -140,13 +180,17 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                         </div>
                     </div>
 
-                    <Link
-                        prefetch={false}
-                        href={`/note/${note.id}`}
-                        className="rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100"
-                    >
-                        Open →
-                    </Link>
+                    {deleting === note.id ? (
+                        <p>Deleting...</p>
+                    ) : (
+                        <Link
+                            prefetch={false}
+                            href={`/note/${note.id}`}
+                            className="rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100"
+                        >
+                            Open →
+                        </Link>
+                    )}
                 </div>
                 {/* Author */}
                 <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
