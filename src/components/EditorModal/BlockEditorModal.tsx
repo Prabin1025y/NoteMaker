@@ -1,5 +1,5 @@
 "use client";
-import { Check, ChevronDown, Save, X } from "lucide-react";
+import { Check, ChevronDown, Loader, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
 import {
@@ -25,20 +25,19 @@ import EditableTable from "./TableSection";
 import DividerSelection from "./DividerSelection";
 
 interface BlockEditorModalProps {
-    isOpen: boolean;
     onClose: () => void;
     onSave: (editorData: EditorData) => void;
     editorData: EditorData;
 }
 
 const BlockEditorModal = ({
-    isOpen,
     onClose,
     onSave,
     editorData,
 }: BlockEditorModalProps) => {
     const [disabled, setDisabled] = useState(true);
-    const [designEnabled, setDesignEnabled] = useState<boolean>(true);
+    const [designEnabled, setDesignEnabled] = useState<boolean>(false);
+    const [isAdding, setIsAdding] = useState(false)
 
     const [title, setTitle] = useState(editorData.title);
     const [file, setFile] = useState<PreviewFile | null>(null);
@@ -47,7 +46,7 @@ const BlockEditorModal = ({
     );
     const [language, setLanguage] = useState<MonacoLanguage>("javascript");
     const [designId, setDesignId] = useState<number>(
-        editorData.action === "add" ? 1 : editorData.designId || 1,
+        editorData.action === "add" ? 0 : editorData.designId || 0,
     );
     const [colorOptionId, setColorOptionId] = useState<number>(
         editorData.action === "add" ? 1 : editorData.colorOptionId,
@@ -64,6 +63,10 @@ const BlockEditorModal = ({
             editorData.action === "add" ? 1 : editorData.colorOptionId,
         );
         setDesignId(editorData.action === "add" ? 1 : editorData.designId || 1);
+
+        if (editorData.action === "save" && editorData.designId === 0) {
+            setDesignEnabled(false);
+        }
 
         (async () => {
             if (editorData.action === "save" && editorData.type === "image") {
@@ -114,10 +117,11 @@ const BlockEditorModal = ({
         }
     }, [currentBlock, file, content, title]);
 
-    if (!isOpen) return null;
+    // if (!isOpen) return null;
 
     const handleSave = async () => {
         if (!currentBlock) return;
+        setIsAdding(true)
         let imageURL = "";
         if (currentBlock.type === "image" && !!file) {
             const formData = new FormData();
@@ -140,6 +144,7 @@ const BlockEditorModal = ({
             type: currentBlock.type,
             action: editorData.action,
         });
+        setIsAdding(false)
         setContent(initialJsonForEditor);
         setFile(null);
         setTitle("");
@@ -429,10 +434,10 @@ const BlockEditorModal = ({
                     </button>
                     <button
                         onClick={handleSave}
-                        disabled={disabled}
-                        className={`${disabled ? " bg-orange-500/50 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600 cursor-pointer"} px-6 py-2  rounded-lg  text-white font-medium  transition-colors`}
+                        disabled={disabled || isAdding}
+                        className={`${disabled || isAdding ? " bg-orange-500/50 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600 cursor-pointer"} px-6 py-2  rounded-lg  text-white font-medium  transition-colors flex items-center justify-center w-32`}
                     >
-                        {editorData.action === "add" ? (
+                        {isAdding ? <Loader className="animate-spin"/> : editorData.action === "add" ? (
                             "Add Block"
                         ) : (
                             <p className="flex gap-2 items-center">

@@ -2,7 +2,7 @@ import { apiFetch } from "@/lib/api-client";
 
 export const createNote = async (title: string, description: string) => {
     try {
-        const response = await apiFetch("http://localhost:3000/api/notes", {
+        const response = await apiFetch(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes`, {
             method: "POST",
             body: JSON.stringify({
                 title,
@@ -22,7 +22,7 @@ export const createNote = async (title: string, description: string) => {
 
 export const fetchNotes = async () => {
     try {
-        const response = await apiFetch("http://localhost:3000/api/notes", {
+        const response = await apiFetch(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes`, {
             method: "GET",
         });
 

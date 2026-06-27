@@ -26,8 +26,15 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit) {
     const refreshed = await refreshAccessToken();
 
     if (!refreshed) {
-        window.location.href = "/auth/login";
-        throw new Error("Session Expired");
+        if (
+            window.location.pathname !== "/login" &&
+            window.location.pathname !== "/register"
+        ) {
+            window.location.replace("/login");
+            throw new Error("Session Expired");
+        }else{
+            return response
+        }
     }
 
     response = await fetch(input, {

@@ -1,18 +1,39 @@
 "use client";
-import React from "react";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
 
 type Props = {
     roles?: string[] | string;
-    fallback?: React.ReactNode;
+    redirectTo?: string;
     children: React.ReactNode;
 };
 
-export default function AuthGate({ roles, fallback = null, children }: Props) {
+export default function AuthGate({
+    roles,
+    redirectTo = "/login",
+    children,
+}: Props) {
+    const router = useRouter();
     const { user, loading, hasRole } = useAuth();
 
+    useEffect(() => {
+        if (loading) return;
+
+        if (!user) {
+            router.replace(redirectTo);
+            return;
+        }
+
+        if (!hasRole(roles)) {
+            router.replace("/403");
+        }
+    }, [loading, user, roles]);
+
     if (loading) return null;
-    if (!user) return <>{fallback}</>;
-    if (!hasRole(roles)) return <>{fallback}</>;
+
+    if (!user || !hasRole(roles)) return null;
+
     return <>{children}</>;
 }

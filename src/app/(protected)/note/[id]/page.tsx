@@ -19,6 +19,7 @@ export default function NotePage() {
 
     const noteRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
@@ -107,11 +108,16 @@ export default function NotePage() {
 
                 <div className="flex gap-2">
                     <button
-                        onClick={() => syncToDB()}
-                        className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
+                        onClick={async () => {
+                            setIsSyncing(true);
+                            await syncToDB();
+                            setIsSyncing(false);
+                        }}
+                        disabled={isSyncing}
+                        className={`${isSyncing && "opacity-80 cursor-not-allowed"} relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors`}
                     >
                         <Save size={13} />
-                        Save
+                        {isSyncing ? "Saving..." : "Save"}
                         {hasUnsaved && (
                             <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
                         )}
@@ -144,12 +150,13 @@ export default function NotePage() {
                 <RightAside />
             </div>
 
-            <BlockEditorModal
-                isOpen={isEditorOpen}
-                onClose={closeBlockEditor}
-                onSave={handleSaveBlock}
-                editorData={editorData}
-            />
+            {isEditorOpen && (
+                <BlockEditorModal
+                    onClose={closeBlockEditor}
+                    onSave={handleSaveBlock}
+                    editorData={editorData}
+                />
+            )}
         </div>
     );
 }

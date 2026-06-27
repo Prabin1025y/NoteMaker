@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api-client";
 import { useCallback, useEffect, useState } from "react";
 
 type User = { id: string; email: string; role: "USER" | "ADMIN"; name?: string } | null;
@@ -13,7 +14,7 @@ export function useAuth() {
         setError(null);
 
         try {
-            const res = await fetch("/api/auth/me", { credentials: "include" });
+            const res = await apiFetch("/api/auth/me", { credentials: "include" });
 
             if (!res.ok) {
                 setUser(null);

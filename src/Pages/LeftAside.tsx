@@ -12,7 +12,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
         content: string = initialJsonForEditor,
     ) => {
         openBlockEditor({
-            id: "", designId: 1, colorOptionId: 1,
+            id: "", designId: 0, colorOptionId: 1,
             action: "add", content, title: "", type,
         });
     };

@@ -1,4 +1,5 @@
 "use client";
+import AuthGate from "@/components/AuthGate";
 import { useNoteStore } from "@/Context/DataStore";
 import HomeLayout from "@/Pages/HomeLayout";
 import { fetchNotes } from "@/services/noteService";
@@ -13,16 +14,18 @@ export default function Home() {
             const { notes, authorName } = await fetchNotes();
 
             if (notes && Array.isArray(notes)) {
-                setNotes(notes.map((n) => ({ 
-                    id: n.id,
-                    title: n.title,
-                    blocksCount: n._count.blocks,
-                    createdAt: n.createdAt,
-                    updatedAt: n.updatedAt,
-                    description: n.description,
-                    authorName,
-                    authorId: n.authorId
-                 })));
+                setNotes(
+                    notes.map((n) => ({
+                        id: n.id,
+                        title: n.title,
+                        blocksCount: n._count.blocks,
+                        createdAt: n.createdAt,
+                        updatedAt: n.updatedAt,
+                        description: n.description,
+                        authorName,
+                        authorId: n.authorId,
+                    })),
+                );
                 setFetching(false);
             }
         })();
@@ -30,5 +33,9 @@ export default function Home() {
 
     // if (fetching) return <div>fetching data...</div>;
 
-    return <HomeLayout fetching={fetching} />;
+    return (
+        <AuthGate>
+            <HomeLayout fetching={fetching} />
+        </AuthGate>
+    );
 }

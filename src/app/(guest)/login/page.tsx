@@ -1,5 +1,7 @@
 "use client";
 import { apiFetch } from "@/lib/api-client";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -19,6 +21,7 @@ export default function Login() {
     const router = useRouter();
 
     const [errors, setErrors] = useState<LoginErrors>({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateField = (name: keyof LoginForm, value: string) => {
         switch (name) {
@@ -56,6 +59,7 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
 
         const newErrors: LoginErrors = {
             email: validateField("email", form.email),
@@ -66,16 +70,20 @@ export default function Login() {
 
         if (Object.values(newErrors).some(Boolean)) return;
 
-        const res = await apiFetch("http://localhost:3000/api/auth/login", {
-            method: "POST",
-            body: JSON.stringify({
-                email: form.email,
-                password: form.password,
-            }),
-        });
+        const res = await apiFetch(
+            `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/auth/login`,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    email: form.email,
+                    password: form.password,
+                }),
+            },
+        );
 
         const data = await res.json();
         alert(data?.message);
+        setIsLoading(false);
         if (res.ok) router.push("/");
     };
 
@@ -131,10 +139,25 @@ export default function Login() {
 
                 <button
                     type="submit"
-                    className="w-full rounded-lg bg-blue-600 py-2 text-white font-medium hover:bg-blue-700"
+                    disabled={isLoading || !!!form.email || !!!form.password}
+                    className={`${(isLoading || !!!form.email || !!!form.password) && "opacity-70 cursor-not-allowed"} w-full flex items-center justify-center rounded-lg bg-blue-600 py-2 text-white font-medium hover:bg-blue-700`}
                 >
-                    Login
+                    {isLoading ? (
+                        <Loader2 className="animate-spin ease-initial" />
+                    ) : (
+                        "Login"
+                    )}
                 </button>
+                <p className="w-full text-sm text-gray-500 py-2 flex justify-center items-center">
+                    Don't have an account yet?
+                    <Link
+                        prefetch={false}
+                        className="text-blue-500"
+                        href={"/register"}
+                    >
+                        Register Here
+                    </Link>
+                </p>
             </form>
         </div>
     );

@@ -82,7 +82,7 @@ export const mapTypeToElement = (type: blockTypeOptions) => {
 export const getBlocksFromNoteId = async (id: string) => {
     try {
         const res = await apiFetch(
-            `http://localhost:3000/api/blocks?noteId=${id}`,
+            `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/blocks?noteId=${id}`,
         );
 
         const data = await res.json();

@@ -10,12 +10,14 @@ import { ZodError } from "zod";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
+        console.log(body)
         const parsed = loginSchema.safeParse(body);
 
         if (!parsed.success) {
+            console.log("Parsing error for zod")
             return NextResponse.json(
-                { message: parsed.error.message || "Invalid input" },
-                { status: 400 },
+                { message: "Invalid Credentials" },
+                { status: 401 },
             );
         }
 
@@ -65,8 +67,8 @@ export async function POST(req: Request) {
         if (process.env.NODE_ENV === "development") console.log(error);
         if (error instanceof ZodError) {
             return NextResponse.json(
-                { message: error.message || "Validation Error" },
-                { status: 400 },
+                { message: "Invalid Credentials" },
+                { status: 401 },
             );
         }
 

@@ -1,5 +1,7 @@
+import cloudinary from "@/lib/cloudinary";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { Readable } from "stream";
 
 export async function POST(req: Request) {
     try {
@@ -16,19 +18,31 @@ export async function POST(req: Request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        const result = await new Promise<any>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { folder: "uploads" },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                },
+            );
 
-        await mkdir(uploadDir, { recursive: true });
+            Readable.from(buffer).pipe(stream);
+        });
 
-        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-        const filePath = path.join(uploadDir, fileName);
+        // const uploadDir = path.join(process.cwd(), "public", "uploads");
 
-        await writeFile(filePath, buffer);
+        // await mkdir(uploadDir, { recursive: true });
 
-        return Response.json({
+        // const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+        // const filePath = path.join(uploadDir, fileName);
+
+        // await writeFile(filePath, buffer);
+
+       return Response.json({
             success: true,
-            filename: fileName,
-            url: `/uploads/${fileName}`,
+            url: result.secure_url,
+            publicId: result.public_id,
         });
     } catch (error) {
         if (process.env.NODE_ENV === "development") console.log(error);

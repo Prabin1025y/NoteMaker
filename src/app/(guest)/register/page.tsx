@@ -1,5 +1,7 @@
 "use client";
 import { apiFetch } from "@/lib/api-client";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,6 +23,7 @@ export default function Register() {
     const router = useRouter();
 
     const [errors, setErrors] = useState<RegisterErrors>({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateField = (name: keyof RegisterForm, value: string): string => {
         switch (name) {
@@ -78,17 +81,18 @@ export default function Register() {
         if (Object.values(newErrors).some(Boolean)) return;
 
         // console.log("REGISTER:", form);
-        const res = await apiFetch("http://localhost:3000/api/auth/register", {
+        const res = await apiFetch(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/auth/register`, {
             method: "POST",
             body: JSON.stringify({
                 email: form.email,
                 password: form.password,
+                fullName: form.fullName,
             }),
         });
 
         const data = await res.json();
-        alert("Registered")
-        router.push("/auth/login");
+        alert("Registered");
+        router.push("/login");
     };
 
     return (
@@ -165,10 +169,21 @@ export default function Register() {
 
                 <button
                     type="submit"
-                    className="w-full rounded-lg bg-blue-600 py-2 text-white font-medium hover:bg-blue-700"
+                    disabled={
+                        isLoading ||
+                        !!!form.email ||
+                        !!!form.password ||
+                        !!!form.fullName
+                    }
+                    className={`${(isLoading || !!!form.email || !!!form.password || !!!form.fullName) && "opacity-70 cursor-not-allowed"} w-full rounded-lg bg-blue-600 py-2 text-white font-medium hover:bg-blue-700`}
                 >
-                    Create Account
+                    {isLoading ? (
+                        <Loader2 className="animate-spin ease-initial" />
+                    ) : (
+                        "Create Account"
+                    )}
                 </button>
+                <p className="w-full text-sm text-gray-500 py-2 flex justify-center items-center">Already Have an account?<Link prefetch={false} className="text-blue-500" href={"/login"}>Login Here</Link></p>
             </form>
         </div>
     );

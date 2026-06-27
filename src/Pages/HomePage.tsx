@@ -111,7 +111,10 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                 </button>
 
                 {/* Title */}
-                <Link href={`/note/${note.id}`}>
+                <Link
+                    href={`/note/${note.id}`}
+                    prefetch={false}
+                >
                     <h3 className="pr-8 text-[15px] font-semibold text-gray-900 transition-colors hover:text-indigo-600">
                         {note.title || "Untitled"}
                     </h3>
@@ -138,6 +141,7 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                     </div>
 
                     <Link
+                        prefetch={false}
                         href={`/note/${note.id}`}
                         className="rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100"
                     >

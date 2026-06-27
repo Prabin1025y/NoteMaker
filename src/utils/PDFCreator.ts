@@ -44,7 +44,7 @@ export async function exportElementToPDF(element: HTMLElement) {
 
     try {
         const canvas = await toCanvas(clone, {
-            pixelRatio: 1,
+            pixelRatio: 2,
             cacheBust: true,
             backgroundColor: "#ffffff",
 
@@ -76,6 +76,7 @@ export async function exportElementToPDF(element: HTMLElement) {
         const pageHeightPx = (canvas.width * pageHeight) / pageWidth;
 
         let renderedHeight = 0;
+        const overlapPx = 20;
 
         while (renderedHeight < canvas.height) {
             const pageCanvas = document.createElement("canvas");
@@ -115,7 +116,7 @@ export async function exportElementToPDF(element: HTMLElement) {
                 pageHeightMM,
             );
 
-            renderedHeight += pageHeightPx;
+            renderedHeight += pageHeightPx - overlapPx;
         }
 
         pdf.save("note.pdf");

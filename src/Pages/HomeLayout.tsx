@@ -14,11 +14,13 @@ import {
     BookOpen,
     FileText,
     Star,
+    LogOutIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateNoteModal from "@/components/CreateNoteModal";
 import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
+import { apiFetch } from "@/lib/api-client";
 
 const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
 const colorMap = [
@@ -49,6 +51,28 @@ export default function HomeLayout({ fetching }: { fetching: boolean }) {
         (a, b) =>
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
+
+    const handleLogout = async () => {
+        try {
+            const res = await apiFetch(
+                `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/auth/logout`,
+                {
+                    method: "POST",
+                },
+            );
+
+            if (res.ok) {
+                alert("Logged Out");
+                router.replace("/login");
+            }
+        } catch (error) {
+            if (process.env.NODE_ENV === "development") console.error(error);
+
+            alert(
+                error instanceof Error ? error.message : "Could not logg out",
+            );
+        }
+    };
 
     return (
         <div
@@ -120,6 +144,7 @@ export default function HomeLayout({ fetching }: { fetching: boolean }) {
                                 return (
                                     <li key={note.id}>
                                         <Link
+                                        prefetch={false}
                                             href={`/note/${note.id}`}
                                             className="flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] hover:bg-[#f0ede8] transition-colors group"
                                         >
@@ -172,10 +197,17 @@ export default function HomeLayout({ fetching }: { fetching: boolean }) {
                                 My workspace
                             </span>
                         </div>
-                        <Settings
-                            size={15}
-                            className="text-[#b8b3ac] cursor-pointer hover:text-[#5a5550] transition-colors"
-                        />
+                        <div className="flex gap-3">
+                            <Settings
+                                size={15}
+                                className="text-[#b8b3ac] cursor-pointer hover:text-[#5a5550] transition-colors"
+                            />
+                            <LogOutIcon
+                                onClick={handleLogout}
+                                size={15}
+                                className="text-[#b8b3ac] cursor-pointer hover:text-[#5a5550] transition-colors"
+                            />
+                        </div>
                     </div>
                 </div>
             </aside>

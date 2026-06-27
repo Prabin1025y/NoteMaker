@@ -76,7 +76,6 @@ type Store = {
     setNotes: (notes: NoteType[]) => void;
 
     createNote: (title?: string, description?: string) => Promise<NoteType>;
-    LoadNotesFromLocalStorage: () => Promise<void>;
     deleteNote: (id: string) => void;
     loadNote: (id: string) => Promise<void>;
     updateNoteTitle: (title: string) => void;
@@ -124,38 +123,6 @@ export const useNoteStore = create<Store>()(
             return newNote;
         },
 
-        LoadNotesFromLocalStorage: async () => {
-            // try {
-            //     const res = await apiFetch("http://localhost:3000/api/notes", {
-            //         method: "GET",
-            //     });
-
-            //     const data = await res.json()
-
-            //     set({notes: data.notes.map(item=>({
-            //         id: item.id,
-            //         author: "Author",
-            //         description: item.description,
-            //         title: item.title,
-            //         blocks:
-            //     }))})
-            // } catch (error) {
-            //     if (process.env.NODE_ENV === "development") console.log(error);
-
-            //     alert("Error while fetching data");
-            // }
-
-            const notesString = localStorage.getItem("notes");
-            if (!notesString) return;
-            const notes = isValidJson(notesString)
-                ? JSON.parse(notesString)
-                : null;
-
-            if (!notes) return;
-
-            set({ notes: notes.notes });
-        },
-
         deleteNote: (id) => {
             set({ notes: get().notes.filter((note) => note.id !== id) });
         },
@@ -185,7 +152,8 @@ export const useNoteStore = create<Store>()(
             set({
                 title: note?.title,
                 currentNote: note,
-                blocks: blocks,
+                blocks: blocks.sort((a, b) => a.order - b.order),
+                blocksToBeSynced: []
             });
         },
 
@@ -381,7 +349,7 @@ export const useNoteStore = create<Store>()(
                 if (get().blocksToBeSynced.length === 0) return;
 
                 const res = await apiFetch(
-                    "http://localhost:3000/api/notes/save",
+                    `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
                     {
                         method: "POST",
                         body: JSON.stringify(get().blocksToBeSynced),
