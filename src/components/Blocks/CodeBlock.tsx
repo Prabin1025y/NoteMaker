@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
     oneDark,
-    oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import BlockActionButton from "../ui/BlockActionButton";
 import { allBlockDesigns } from "@/utils/DesignInfo";
@@ -65,15 +64,6 @@ function normalizeLang(raw?: string): string {
     return LANGUAGE_MAP[raw.trim().toLowerCase()] ?? raw.trim().toLowerCase();
 }
 
-/** Detect if the block's color scheme is "dark" to pick a matching highlighter theme */
-function isDarkBackground(hex: string): boolean {
-    const clean = hex.replace("#", "");
-    const r = parseInt(clean.slice(0, 2), 16);
-    const g = parseInt(clean.slice(2, 4), 16);
-    const b = parseInt(clean.slice(4, 6), 16);
-    // luminance approximation
-    return 0.299 * r + 0.587 * g + 0.114 * b < 128;
-}
 
 export default function CodeBlock({
     content,
@@ -92,8 +82,6 @@ export default function CodeBlock({
 
     const isDesignDisabled = designId === 0;
     const lang = normalizeLang(title);
-    const dark =
-        !isDesignDisabled && isDarkBackground(colorOption.backgroundColorHex);
     const highlighterTheme = oneDark;
 
     function handleCopy() {

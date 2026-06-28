@@ -1,6 +1,4 @@
 import cloudinary from "@/lib/cloudinary";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { Readable } from "stream";
 
 export async function POST(req: Request) {

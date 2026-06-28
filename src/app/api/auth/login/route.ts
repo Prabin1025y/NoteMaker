@@ -10,11 +10,9 @@ import { ZodError } from "zod";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        console.log(body)
         const parsed = loginSchema.safeParse(body);
 
         if (!parsed.success) {
-            console.log("Parsing error for zod")
             return NextResponse.json(
                 { message: "Invalid Credentials" },
                 { status: 401 },

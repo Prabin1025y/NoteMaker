@@ -32,13 +32,12 @@ function Sortable({
     const colorOption = colorOptions.find(co => co.id === otherInfo.colorOptionId)
 
     useEffect(() => {
-        console.log("Ran hehe ", isDragging);
         if (isDragging) {
             setDraggingBlockId(id);
         } else {
             setDraggingBlockId(null);
         }
-    }, [isDragging]);
+    }, [isDragging, id, setDraggingBlockId]);
 
     return (
         // <div

@@ -61,7 +61,6 @@ export async function exportElementToPDF(element: HTMLElement) {
             // },
         });
 
-        console.log(canvas.width, canvas.height);
 
         const pdf = new jsPDF({
             orientation: "portrait",

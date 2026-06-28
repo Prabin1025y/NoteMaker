@@ -197,7 +197,7 @@ const MobileToolbarContent = ({
 
 export function SimpleEditor({
     className = "",
-    onChange = (content) => {},
+    onChange = (_) => {},
     initialContent = "",
 }: {
     className?: string;

@@ -1,5 +1,6 @@
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import Image from "next/image";
 
 type ImageBlockProps = {
     title?: string;
@@ -68,9 +69,10 @@ export default function ImageBlock({
 
             {/* Image */}
             <div className="flex justify-center">
-                <img
+                <Image
                     src={content}
                     alt={title ?? "Document image"}
+                    fill
                     className="
                         max-h-[600px]
                         max-w-full

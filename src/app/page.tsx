@@ -29,7 +29,7 @@ export default function Home() {
                 setFetching(false);
             }
         })();
-    }, []);
+    }, [setNotes]);
 
     // if (fetching) return <div>fetching data...</div>;
 

@@ -8,7 +8,7 @@ import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ArrowLeft, DownloadIcon, Save, UploadIcon } from "lucide-react";
+import { ArrowLeft, Save, UploadIcon } from "lucide-react";
 import { exportElementToPDF } from "@/utils/PDFCreator";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 

@@ -149,7 +149,7 @@ export default function Login() {
                     )}
                 </button>
                 <p className="w-full text-sm text-gray-500 py-2 flex justify-center items-center">
-                    Don't have an account yet?
+                    Don`&apos;`t have an account yet?
                     <Link
                         prefetch={false}
                         className="text-blue-500"

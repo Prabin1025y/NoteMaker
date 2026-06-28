@@ -2,7 +2,12 @@
 import { apiFetch } from "@/lib/api-client";
 import { useCallback, useEffect, useState } from "react";
 
-type User = { id: string; email: string; role: "USER" | "ADMIN"; name?: string } | null;
+type User = {
+    id: string;
+    email: string;
+    role: "USER" | "ADMIN";
+    name?: string;
+} | null;
 
 export function useAuth() {
     const [user, setUser] = useState<User>(null);
@@ -14,7 +19,9 @@ export function useAuth() {
         setError(null);
 
         try {
-            const res = await apiFetch("/api/auth/me", { credentials: "include" });
+            const res = await apiFetch("/api/auth/me", {
+                credentials: "include",
+            });
 
             if (!res.ok) {
                 setUser(null);
@@ -24,7 +31,12 @@ export function useAuth() {
             }
 
             const data = await res.json();
-            setUser({ id: data.id, email: data.email, role: data.role, name: data.name });
+            setUser({
+                id: data.id,
+                email: data.email,
+                role: data.role,
+                name: data.name,
+            });
         } catch (err: any) {
             setUser(null);
             setError(err?.message ?? String(err));
@@ -34,7 +46,9 @@ export function useAuth() {
     }, []);
 
     useEffect(() => {
-        fetchMe();
+        (() => {
+            fetchMe();
+        })();
     }, [fetchMe]);
 
     const reload = fetchMe;

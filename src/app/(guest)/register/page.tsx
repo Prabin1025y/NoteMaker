@@ -69,6 +69,7 @@ export default function Register() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true)
 
         const newErrors: RegisterErrors = {
             fullName: validateField("fullName", form.fullName),
@@ -90,8 +91,9 @@ export default function Register() {
             }),
         });
 
-        const data = await res.json();
+        await res.json();
         alert("Registered");
+        setIsLoading(false)
         router.push("/login");
     };
 

@@ -5,13 +5,7 @@ import {
     Plus,
     Heart,
     LayoutList,
-    Lightbulb,
-    Users,
-    Code2,
-    BarChart2,
-    BookOpen,
     FileText,
-    Star,
     Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
@@ -23,57 +17,22 @@ interface HomePageProps {
     fetching: boolean;
 }
 
-const tagStyles = [
-    {
-        label: "Ideas",
-        bg: "bg-violet-100",
-        text: "text-violet-700",
-        Icon: Lightbulb,
-    },
-    { label: "Team", bg: "bg-blue-100", text: "text-blue-700", Icon: Users },
-    {
-        label: "Dev",
-        bg: "bg-emerald-100",
-        text: "text-emerald-700",
-        Icon: Code2,
-    },
-    {
-        label: "Planning",
-        bg: "bg-amber-100",
-        text: "text-amber-700",
-        Icon: BarChart2,
-    },
-    {
-        label: "Personal",
-        bg: "bg-pink-100",
-        text: "text-pink-700",
-        Icon: BookOpen,
-    },
-    { label: "Docs", bg: "bg-blue-100", text: "text-blue-700", Icon: FileText },
-    {
-        label: "Goals",
-        bg: "bg-violet-100",
-        text: "text-violet-700",
-        Icon: Star,
-    },
-];
-
 const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
     const { notes, deleteNote } = useNoteStore();
-    const [favorites, setFavorites] = useState<string[]>([]);
+    const [favorites, _setFavorites] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState<"recent" | "favorites" | "all">(
         "recent",
     );
     const [deleting, setDeleting] = useState<string | null>(null);
 
-    const toggleFavorite = (e: React.MouseEvent, noteId: string) => {
-        e.preventDefault();
-        setFavorites((prev) =>
-            prev.includes(noteId)
-                ? prev.filter((id) => id !== noteId)
-                : [...prev, noteId],
-        );
-    };
+    // const toggleFavorite = (e: React.MouseEvent, noteId: string) => {
+    //     e.preventDefault();
+    //     setFavorites((prev) =>
+    //         prev.includes(noteId)
+    //             ? prev.filter((id) => id !== noteId)
+    //             : [...prev, noteId],
+    //     );
+    // };
 
     const sorted = [...notes].sort(
         (a, b) =>
@@ -327,7 +286,7 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
 
                             {displayNotes.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                                    {displayNotes.map((note, i) => (
+                                    {displayNotes.map((note) => (
                                         <NoteCard
                                             key={note.id}
                                             note={note}
@@ -368,7 +327,8 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                             No notes yet
                         </h3>
                         <p className="text-[13px] text-[#9e9a94]">
-                            Hit "New note" to write your first one.
+                            Hit `&quot;`New note`&quot;` to write your first
+                            one.
                         </p>
                     </div>
                 )}

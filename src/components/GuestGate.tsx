@@ -14,7 +14,7 @@ export default function GuestGate({ children }: { children: React.ReactNode }) {
         if (user) {
             router.replace("/");
         }
-    }, [loading, user]);
+    }, [loading, user, router]);
 
     if (loading) return null;
 

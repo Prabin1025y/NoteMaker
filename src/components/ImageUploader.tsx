@@ -1,6 +1,7 @@
 import { EditorData } from "@/types/Editor";
-import { ImagePlus, Trash2 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { ImagePlus } from "lucide-react";
+import Image from "next/image";
+import React, { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 
 export type PreviewFile = File & {
@@ -30,7 +31,7 @@ export function ImageDropZone({
             if (prev) URL.revokeObjectURL(prev.preview);
             return withPreview;
         });
-    }, []);
+    }, [setFile]);
 
     useEffect(() => {
         return () => {
@@ -77,8 +78,9 @@ export function ImageDropZone({
                     {file ? (
                         <div className="aspect-[16/10] relative">
                             <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-                                <img
+                                <Image
                                     className="object-contain h-full py-2"
+                                    fill
                                     src={file.preview}
                                     alt=""
                                 />

@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { verifyToken } from "./auth-jwt";
 import prisma from "./prisma";
-import { NextResponse } from "next/server";
 import { ForbiddenError, UnauthorizedError } from "./custom-errors";
 
 type Role = "USER" | "ADMIN";
@@ -18,7 +17,7 @@ export async function requireAuth(requiredRoles?: Role[]) {
     let payload: any;
     try {
         payload = await verifyToken(token);
-    } catch (err) {
+    } catch (_) {
         throw new UnauthorizedError("Unauthorized");
     }
 

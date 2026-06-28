@@ -29,7 +29,7 @@ export default function AuthGate({
         if (!hasRole(roles)) {
             router.replace("/403");
         }
-    }, [loading, user, roles]);
+    }, [loading, user, roles, hasRole, redirectTo, router]);
 
     if (loading) return null;
 

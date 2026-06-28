@@ -1,7 +1,7 @@
 import { ColorOptionSelect } from "../ColorOptionSelect";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { allBlockDesigns } from "@/utils/DesignInfo";
-import React, { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -9,7 +9,6 @@ import {
     DropdownMenuItem,
 } from "../ui/dropdown-menu";
 import { BlockItem } from "@/utils/BlocksInfo";
-import { ALL_DIVIDERS } from "@/utils/Dividers";
 
 interface DesignSelectiontype {
     designId: number;
@@ -24,9 +23,9 @@ const DesignSelection = ({
     colorOptionId,
     setDesignId,
     setColorOptionId,
-    currentBlock,
+    // currentBlock,
 }: DesignSelectiontype) => {
-    const colorOption = colorOptions.find((co) => co.id === colorOptionId);
+    // const colorOption = colorOptions.find((co) => co.id === colorOptionId);
     return (
         <div className="flex gap-5">
             <div className="flex-1">

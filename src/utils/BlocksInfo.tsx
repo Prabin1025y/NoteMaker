@@ -1,13 +1,10 @@
 import {
-    Type,
     BookOpen,
-    Lightbulb,
-    AlertCircle,
     Code,
     FlaskConical,
-    Image,
     Divide,
     Table2,
+    ImageIcon,
 } from "lucide-react";
 import { initialJsonForEditor } from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
@@ -125,7 +122,7 @@ export const allBlocks: BlockItem[] = [
         title: "Image",
         defaultContent: "",
         description: "Insert an image",
-        icon: <Image size={20} />,
+        icon: <ImageIcon size={20} />,
         color: "text-pink-600",
         bgColor: "bg-pink-50",
         hoverColor: "hover:bg-pink-100",

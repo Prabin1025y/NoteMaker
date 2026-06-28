@@ -2,9 +2,7 @@
 import { useNoteStore } from "@/Context/DataStore";
 import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
-import { allBlocks } from "@/utils/BlocksInfo";
 import Sortable from "@/components/dnd-Kit/Sortable";
-import { blockTypeOptions } from "@/types/Editor";
 import { randomBetweenExclusive } from "@/utils/UtilFunctions";
 
 const colorDotMap: Record<string, string> = {
@@ -95,8 +93,6 @@ const RightAside = () => {
                         <div className="flex flex-col">
                             {blocks.map((block, index) => {
                                 const info = getBlockInfo(block.id);
-                                const dot =
-                                    colorDotMap[block.type] ?? "bg-slate-400";
                                 return (
                                     <Sortable
                                         key={block.id}

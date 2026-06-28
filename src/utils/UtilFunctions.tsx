@@ -4,7 +4,6 @@ import FormulaBlock from "@/components/Blocks/FormulaBlock";
 import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import TableBlock from "@/components/Blocks/TableBlock";
-import { NoteType } from "@/Context/DataStore";
 import { apiFetch } from "@/lib/api-client";
 import { blockTypeOptions } from "@/types/Editor";
 

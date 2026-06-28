@@ -1,4 +1,4 @@
-import { colorOptions, ColorOptionType } from "@/utils/ColorsInfo";
+import { colorOptions } from "@/utils/ColorsInfo";
 
 export function ColorOptionSelect({ colorOptionId }: { colorOptionId: number }) {
     const colorOption = colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];

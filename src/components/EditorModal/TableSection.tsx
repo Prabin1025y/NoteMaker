@@ -298,7 +298,7 @@ export default function EditableTable({
 
     useEffect(() => {
         onChangeHandler(JSON.stringify(state));
-    }, [state]);
+    }, [state, onChangeHandler]);
 
     return (
         <div className="p-4 font-sans">

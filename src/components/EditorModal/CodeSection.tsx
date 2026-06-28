@@ -27,7 +27,7 @@ const CodeSection = ({
                         : editorData.content
                 }
                 theme="vs-dark"
-                onChange={(v, e) => onChangeHandler(v || "Invalid Content")}
+                onChange={(v, _e) => onChangeHandler(v || "Invalid Content")}
             />
         </>
     );

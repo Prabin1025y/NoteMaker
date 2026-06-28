@@ -36,7 +36,7 @@ const BlockEditorModal = ({
     editorData,
 }: BlockEditorModalProps) => {
     const [disabled, setDisabled] = useState(true);
-    const [designEnabled, setDesignEnabled] = useState<boolean>(false);
+    const [designEnabled, setDesignEnabled] = useState<boolean>(editorData.designId === 0 ? false : true);
     const [isAdding, setIsAdding] = useState(false)
 
     const [title, setTitle] = useState(editorData.title);
@@ -62,7 +62,7 @@ const BlockEditorModal = ({
         setColorOptionId(
             editorData.action === "add" ? 1 : editorData.colorOptionId,
         );
-        setDesignId(editorData.action === "add" ? 1 : editorData.designId || 1);
+        setDesignId(editorData.action === "add" ? 0 : editorData.designId || 0,);
 
         if (editorData.action === "save" && editorData.designId === 0) {
             setDesignEnabled(false);
@@ -97,7 +97,7 @@ const BlockEditorModal = ({
         )
             return;
         setLanguage(editorData.title.trim());
-    }, [currentBlock]);
+    }, [currentBlock, editorData.title]);
 
     useEffect(() => {
         if (currentBlock) {

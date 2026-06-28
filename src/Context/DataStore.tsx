@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
-import { getBlocksFromNoteId, isValidJson } from "@/utils/UtilFunctions";
+import { getBlocksFromNoteId } from "@/utils/UtilFunctions";
 import { apiFetch } from "@/lib/api-client";
 import { createNote, fetchNotes } from "@/services/noteService";
 
@@ -173,7 +173,6 @@ export const useNoteStore = create<Store>()(
         addSaveBlock: (editorData) => {
             if (editorData.action === "add") {
                 const lastBlockOrder = get().blocks.at(-1)?.order;
-                console.log(lastBlockOrder);
                 const publicId = uuidv4();
                 const currentNote = get().currentNote;
                 if (!currentNote)
@@ -307,9 +306,6 @@ export const useNoteStore = create<Store>()(
 
                 // Guaranteed that new action will is edit: add --> edit
                 const newAddData = { ...exists.block, ...data.data };
-                console.log(exists.block);
-                console.log(data.data);
-                console.log(newAddData);
                 set({
                     blocksToBeSynced: [
                         ...get().blocksToBeSynced.filter(

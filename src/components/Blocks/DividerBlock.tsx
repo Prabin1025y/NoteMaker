@@ -1,7 +1,5 @@
 import { EditIcon, Trash2Icon } from "lucide-react";
-import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
-import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 
@@ -18,9 +16,7 @@ type DividerBlockProps = {
 
 export default function DividerBlock({
     content,
-    designId,
     colorOptionId,
-    title,
     className = "",
     onEdit,
     onDelete,

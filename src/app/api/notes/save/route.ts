@@ -17,7 +17,7 @@ type EditBlockType = Extract<
 
 export async function POST(req: Request) {
     try {
-        const user = await requireAuth();
+        await requireAuth();
 
         const body = await req.json();
         const parsed = SaveNoteSchema.safeParse(body);
@@ -74,7 +74,6 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true, addedData });
     } catch (error) {
-     console.log(error);
      if (process.env.NODE_ENV === "development") console.log(error);
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
