@@ -36,8 +36,10 @@ const BlockEditorModal = ({
     editorData,
 }: BlockEditorModalProps) => {
     const [disabled, setDisabled] = useState(true);
-    const [designEnabled, setDesignEnabled] = useState<boolean>(editorData.designId === 0 ? false : true);
-    const [isAdding, setIsAdding] = useState(false)
+    const [designEnabled, setDesignEnabled] = useState<boolean>(
+        editorData.designId === 0 ? false : true,
+    );
+    const [isAdding, setIsAdding] = useState(false);
 
     const [title, setTitle] = useState(editorData.title);
     const [file, setFile] = useState<PreviewFile | null>(null);
@@ -53,6 +55,36 @@ const BlockEditorModal = ({
     );
     const [content, setContent] = useState(editorData.content);
 
+    const hasValidBlockContent = (value: string) => {
+        if (!isValidJson(value)) return false;
+
+        try {
+            const parsed = JSON.parse(value);
+            const firstLevelContent = parsed?.content;
+
+            if (!Array.isArray(firstLevelContent)) return false;
+
+            const hasTextContent = firstLevelContent.some((item: unknown) => {
+                if (typeof item !== "object" || item === null) return false;
+
+                const itemContent = (item as { content?: Array<{ text?: string }> })
+                    .content;
+
+                if (!Array.isArray(itemContent)) return false;
+
+                return itemContent.some(
+                    (nestedItem) =>
+                        typeof nestedItem?.text === "string" &&
+                        nestedItem.text.trim() !== "",
+                );
+            });
+
+            return hasTextContent || firstLevelContent.length > 1;
+        } catch {
+            return false;
+        }
+    };
+
     useEffect(() => {
         setTitle(editorData.title);
         setCurrentBlock(
@@ -62,7 +94,7 @@ const BlockEditorModal = ({
         setColorOptionId(
             editorData.action === "add" ? 1 : editorData.colorOptionId,
         );
-        setDesignId(editorData.action === "add" ? 0 : editorData.designId || 0,);
+        setDesignId(editorData.action === "add" ? 0 : editorData.designId || 0);
 
         if (editorData.action === "save" && editorData.designId === 0) {
             setDesignEnabled(false);
@@ -104,11 +136,7 @@ const BlockEditorModal = ({
             setDisabled(
                 (currentBlock.type === "image" &&
                     (file === null || !!!title)) ||
-                    (["block"].includes(currentBlock.type) &&
-                        isValidJson(content) &&
-                        !!!JSON.parse(
-                            content,
-                        )?.content?.[0].content?.[0].text?.trim()),
+                (currentBlock.type === "block" && !hasValidBlockContent(content)),
             );
 
             if (currentBlock.type !== "image") {
@@ -121,7 +149,7 @@ const BlockEditorModal = ({
 
     const handleSave = async () => {
         if (!currentBlock) return;
-        setIsAdding(true)
+        setIsAdding(true);
         let imageURL = "";
         if (currentBlock.type === "image" && !!file) {
             const formData = new FormData();
@@ -144,7 +172,7 @@ const BlockEditorModal = ({
             type: currentBlock.type,
             action: editorData.action,
         });
-        setIsAdding(false)
+        setIsAdding(false);
         setContent(initialJsonForEditor);
         setFile(null);
         setTitle("");
@@ -437,7 +465,9 @@ const BlockEditorModal = ({
                         disabled={disabled || isAdding}
                         className={`${disabled || isAdding ? " bg-orange-500/50 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600 cursor-pointer"} px-6 py-2  rounded-lg  text-white font-medium  transition-colors flex items-center justify-center w-32`}
                     >
-                        {isAdding ? <Loader className="animate-spin"/> : editorData.action === "add" ? (
+                        {isAdding ? (
+                            <Loader className="animate-spin" />
+                        ) : editorData.action === "add" ? (
                             "Add Block"
                         ) : (
                             <p className="flex gap-2 items-center">

@@ -10,7 +10,6 @@ import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
-import { ImageUploadNode } from "./tiptap/tiptap-node/image-upload-node";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import Mathematics from "@tiptap/extension-mathematics";
 import "katex/dist/katex.min.css";
@@ -50,13 +49,6 @@ export default function ReadOnlyEditor({
             Superscript,
             Subscript,
             Selection,
-            ImageUploadNode.configure({
-                accept: "image/*",
-                maxSize: MAX_FILE_SIZE,
-                limit: 3,
-                upload: handleImageUpload,
-                onError: (error) => console.error("Upload failed:", error),
-            }),
         ],
         content: JSON.parse(content),
         editable: false,

@@ -26,7 +26,6 @@ import {
 } from "@/components/tiptap/tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
-import { ImageUploadNode } from "@/components/tiptap/tiptap-node/image-upload-node/image-upload-node-extension";
 import { HorizontalRule } from "@/components/tiptap/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
 import "@/components/tiptap/tiptap-node/blockquote-node/blockquote-node.scss";
 import "@/components/tiptap/tiptap-node/code-block-node/code-block-node.scss";
@@ -247,14 +246,14 @@ export function SimpleEditor({
             Superscript,
             Subscript,
             Selection,
-            ImageUploadNode.configure({
-                accept: "image/*",
-                maxSize: MAX_FILE_SIZE,
-                limit: 3,
-                upload: handleImageUpload,
-                onError: (error) => console.error("Upload failed:", error),
-            }),
-            CustomHardBreak,
+            // ImageUploadNode.configure({
+            //     accept: "image/*",
+            //     maxSize: MAX_FILE_SIZE,
+            //     limit: 3,
+            //     upload: handleImageUpload,
+            //     onError: (error) => console.error("Upload failed:", error),
+            // }),
+            // CustomHardBreak,
             CustomMathDelimiters,
         ],
         content: JSON.parse(initialContent),
