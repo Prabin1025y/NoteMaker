@@ -16,11 +16,12 @@ import {
     Star,
     LogOutIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateNoteModal from "@/components/CreateNoteModal";
 import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
 import { apiFetch } from "@/lib/api-client";
+import { fetchNotes } from "@/services/noteService";
 
 const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
 const colorMap = [
@@ -31,11 +32,34 @@ const colorMap = [
     { bg: "bg-pink-100", text: "text-pink-600" },
 ];
 
-export default function HomeLayout({ fetching }: { fetching: boolean }) {
-    const { notes, createNote: createNoteInStore } = useNoteStore();
+export default function HomeLayout() {
+    const { notes, createNote: createNoteInStore, setNotes } = useNoteStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const router = useRouter();
+    const [fetching, setFetching] = useState(true);
+
+    useEffect(() => {
+        (async () => {
+            const { notes, authorName } = await fetchNotes();
+
+            if (notes && Array.isArray(notes)) {
+                setNotes(
+                    notes.map((n) => ({
+                        id: n.id,
+                        title: n.title,
+                        blocksCount: n._count.blocks,
+                        createdAt: n.createdAt,
+                        updatedAt: n.updatedAt,
+                        description: n.description,
+                        authorName,
+                        authorId: n.authorId,
+                    })),
+                );
+                setFetching(false);
+            }
+        })();
+    }, [setNotes]);
 
     const handleCreateNote = async (title: string, description: string) => {
         const newNote = await createNoteInStore(title, description);
@@ -144,7 +168,7 @@ export default function HomeLayout({ fetching }: { fetching: boolean }) {
                                 return (
                                     <li key={note.id}>
                                         <Link
-                                        prefetch={false}
+                                            prefetch={false}
                                             href={`/note/${note.id}`}
                                             className="flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] hover:bg-[#f0ede8] transition-colors group"
                                         >

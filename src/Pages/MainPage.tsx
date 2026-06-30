@@ -14,17 +14,8 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
     const { blocks, deleteBlock, draggingBlockId } = useNoteStore();
 
     return (
-        <main
-            className="flex-1 overflow-y-auto bg-white"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-        >
-            <div
-                ref={noteRef}
-                className="max-w-5xl mx-auto px-10 py-10"
-            >
-                {/* Note title */}
-
-                {/* Blocks */}
+        <main className="flex-1 overflow-y-auto bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div ref={noteRef} className="mx-auto max-w-5xl px-10 py-10">
                 <div className="flex flex-col gap-3">
                     {blocks &&
                         blocks.length > 0 &&
@@ -38,11 +29,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                     content={block.content}
                                     designId={block.designId}
                                     colorOptionId={block.colorOptionId}
-                                    className={` ${
-                                        draggingBlockId === block.id
-                                            ? "ring-2 ring-indigo-400 ring-offset-2 -translate-y-1 shadow-lg"
-                                            : ""
-                                    }`}
+                                    className={`${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-indigo-400 ring-offset-2" : ""}`}
                                     onEdit={() =>
                                         openBlockEditor({
                                             id: block.id,
@@ -60,8 +47,6 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                         })}
                 </div>
 
-                {/* Add block hint */}
-                {/* {blocks && blocks.length > 0 && ( */}
                 <button
                     onClick={() =>
                         openBlockEditor({
@@ -74,24 +59,15 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                             type: "block",
                         })
                     }
-                    className="w-full flex flex-col justify-center items-center gap-3 bg-[#faf9f7] border border-dashed border-[#d4d0c8] rounded-xl px-4 py-5 mb-8 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 transition-all text-left group"
+                    className="mb-8 flex w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#d4d0c8] bg-[#faf9f7] px-4 py-5 text-left transition-all hover:border-indigo-400 hover:bg-indigo-50/40"
                 >
-                    <div className="w-9 h-9 bg-indigo-100 rounded-[9px] flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
-                        <Plus
-                            size={18}
-                            className="text-indigo-700"
-                        />
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[9px] bg-indigo-100 transition-colors group-hover:bg-indigo-200">
+                        <Plus size={18} className="text-indigo-700" />
                     </div>
                     <div>
-                        <p className="text-[13px] font-medium text-center text-indigo-700">
-                            Add Block
-                        </p>
-                        {/* <p className="text-[12px] text-[#9e9a94]">
-                                Click to create a new note
-                            </p> */}
+                        <p className="text-center text-[13px] font-medium text-indigo-700">Add Block</p>
                     </div>
                 </button>
-                {/* )} */}
             </div>
         </main>
     );

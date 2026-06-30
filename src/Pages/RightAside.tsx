@@ -1,9 +1,16 @@
 "use client";
+import { useState } from "react";
 import { useNoteStore } from "@/Context/DataStore";
 import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 import Sortable from "@/components/dnd-Kit/Sortable";
 import { randomBetweenExclusive } from "@/utils/UtilFunctions";
+import {
+    ChevronLeft,
+    ChevronRight,
+    PanelLeftCloseIcon,
+    PanelLeftOpenIcon,
+} from "lucide-react";
 
 const colorDotMap: Record<string, string> = {
     paragraph: "bg-blue-400",
@@ -16,6 +23,7 @@ const colorDotMap: Record<string, string> = {
 };
 
 const RightAside = () => {
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const {
         blocks,
         setBlocks,
@@ -33,20 +41,59 @@ const RightAside = () => {
         };
     };
 
+    if (isCollapsed)
+        return (
+            <div className="absolute right-0 p-3 top-15 z-10 flex items-center justify-center bg-gray-100 border rounded-l-lg">
+                <button
+                    type="button"
+                    onClick={() => setIsCollapsed((prev) => !prev)}
+                    className=" flex h-6 w-6 items-center justify-center text-[#5a5550]"
+                    aria-label={
+                        isCollapsed
+                            ? "Expand add block drawer"
+                            : "Collapse add block drawer"
+                    }
+                >
+                    {isCollapsed ? (
+                        <PanelLeftCloseIcon size={20} />
+                    ) : (
+                        <PanelLeftOpenIcon size={20} />
+                    )}
+                </button>
+            </div>
+        );
+
     return (
         <aside
-            className="w-80 flex-shrink-0 border-l border-[#e8e5e0] bg-[#faf9f7] flex flex-col overflow-hidden"
+            className={`relative flex h-full shrink-0 flex-col overflow-hidden border-l border-[#e8e5e0] bg-[#faf9f7] transition-all duration-300 ease-out w-72`}
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            <div className="px-4 py-3 border-b border-[#f0ede8]">
-                <p className="text-[10px] font-semibold text-[#b8b3ac] uppercase tracking-[0.08em]">
+            <button
+                type="button"
+                onClick={() => setIsCollapsed((prev) => !prev)}
+                className="absolute left-5 top-2 z-10 flex h-6 w-6 items-center justify-center text-[#5a5550]"
+                aria-label={
+                    isCollapsed
+                        ? "Expand add block drawer"
+                        : "Collapse add block drawer"
+                }
+            >
+                {isCollapsed ? (
+                    <PanelLeftCloseIcon size={20} />
+                ) : (
+                    <PanelLeftOpenIcon size={20} />
+                )}
+            </button>
+
+            <div className="border-b border-[#f0ede8] px-4 py-3">
+                <p className="text-[10px] font-semibold text-right uppercase tracking-[0.08em] text-[#b8b3ac]">
                     Page outline
                 </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-2">
+            <div className="flex-1 overflow-y-auto px-2 py-2">
                 {blocks.length === 0 ? (
-                    <p className="text-[11px] text-[#b8b3ac] px-3 pt-2">
+                    <p className="px-3 pt-2 text-[11px] text-[#b8b3ac]">
                         Blocks you add will appear here.
                     </p>
                 ) : (
@@ -68,9 +115,14 @@ const RightAside = () => {
                                             pushToBlocksToBeSynced({
                                                 id: b.id,
                                                 action: "edit",
-                                                data: { order: newOrder },
+                                                data: {
+                                                    order: newOrder,
+                                                },
                                             });
-                                            return { ...b, order: newOrder };
+                                            return {
+                                                ...b,
+                                                order: newOrder,
+                                            };
                                         }
                                         const newOrder = randomBetweenExclusive(
                                             prevOrder ? prevOrder : 0,
@@ -81,7 +133,10 @@ const RightAside = () => {
                                             action: "edit",
                                             data: { order: newOrder },
                                         });
-                                        return { ...b, order: newOrder };
+                                        return {
+                                            ...b,
+                                            order: newOrder,
+                                        };
                                     }
                                     return b;
                                 },
@@ -98,11 +153,7 @@ const RightAside = () => {
                                         key={block.id}
                                         id={block.id}
                                         index={index}
-                                        // blockTitle={
-                                        //     block.title ||
-                                        //     `${block.type.charAt(0).toUpperCase() + block.type.slice(1).toLowerCase()}`
-                                        // }
-                                        className={`border-b`}
+                                        className="border-b"
                                         otherInfo={{
                                             type: block.type,
                                             colorOptionId:
