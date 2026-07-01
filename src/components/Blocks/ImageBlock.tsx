@@ -32,7 +32,7 @@ export default function ImageBlock({
     return (
         <figure
             className={`
-                group relative my-8
+                group relative
                 ${className}
             `}
         >
@@ -69,10 +69,9 @@ export default function ImageBlock({
 
             {/* Image */}
             <div className="flex justify-center">
-                <Image
+                <img
                     src={content}
                     alt={title ?? "Document image"}
-                    fill
                     className="
                         max-h-[600px]
                         max-w-full

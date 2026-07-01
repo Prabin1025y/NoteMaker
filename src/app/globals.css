@@ -216,3 +216,8 @@ div.tiptap.ProseMirror.simple-editor {
 .pdf-export code {
     white-space: pre !important;
 }
+
+
+.ProseMirror[contenteditable="false"] .ProseMirror-trailingBreak {
+  display: none;
+}

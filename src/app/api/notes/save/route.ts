@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
         await prisma.$transaction([
             prisma.block.deleteMany({
-                where: { publicId: { in: deleteData } },
+                where: { id: { in: deleteData } },
             }),
 
             ...updates,
