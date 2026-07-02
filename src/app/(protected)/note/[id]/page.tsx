@@ -8,7 +8,7 @@ import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ArrowLeft, Save, UploadIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Save, UploadIcon } from "lucide-react";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
 import Link from "next/link";
@@ -21,6 +21,7 @@ export default function NotePage() {
     const noteRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [exporting, setExporting] = useState(false);
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
@@ -82,6 +83,9 @@ export default function NotePage() {
 
     const handleExport = async () => {
         try {
+            setExporting(true);
+            await syncToDB();
+
             const res = await apiFetch(
                 `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/pdf`,
                 {
@@ -125,6 +129,8 @@ export default function NotePage() {
                     ? error.message
                     : "Error while exporting!",
             );
+        } finally {
+            setExporting(false);
         }
     };
 
@@ -135,6 +141,12 @@ export default function NotePage() {
             className="h-screen w-screen flex flex-col overflow-hidden bg-[#faf9f7]"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
+            {exporting && (
+                <div className="bg-white opacity-80 absolute inset-0 flex gap-3 items-center justify-center z-100 backdrop-blur-2xl">
+                    <Loader2 className="animate-spin" />
+                    <p>Exporting...</p>
+                </div>
+            )}
             {/* Top bar */}
             <header className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 bg-white border-b border-[#e8e5e0]">
                 <div className="flex items-center gap-3">
@@ -162,7 +174,7 @@ export default function NotePage() {
                             await syncToDB();
                             setIsSyncing(false);
                         }}
-                        disabled={isSyncing}
+                        disabled={isSyncing || exporting}
                         className={`${isSyncing && "opacity-80 cursor-not-allowed"} relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors`}
                     >
                         <Save size={13} />
@@ -173,18 +185,12 @@ export default function NotePage() {
                     </button>
                     <button
                         onClick={handleExport}
-                        className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
+                        disabled={exporting}
+                        className={` ${exporting && "opacity-80 cursor-not-allowed"} relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors`}
                     >
                         <UploadIcon size={13} />
-                        Export
+                        {exporting ? "Exporting..." : "Export"}
                     </button>
-                    <Link
-                        href={"/try"}
-                        className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
-                    >
-                        <UploadIcon size={13} />
-                        Try
-                    </Link>
                 </div>
             </header>
 
