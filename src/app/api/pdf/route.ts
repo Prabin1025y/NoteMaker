@@ -1,4 +1,4 @@
-import { UnauthorizedError } from "@/lib/custom-errors";
+import { ForbiddenError, UnauthorizedError } from "@/lib/custom-errors";
 import { authorizeNoteAccess } from "@/lib/pdf/authorizeNoteAccess";
 import { PdfService } from "@/lib/pdf/PdfService";
 import requireAuth from "@/lib/requireAuth";
@@ -37,6 +37,11 @@ export async function POST(req: NextRequest) {
         if (err instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: err.message || "Unauthorized" },
+                { status: 401 },
+            );
+        } else if (err instanceof ForbiddenError) {
+            return NextResponse.json(
+                { message: err.message || "Forbidden" },
                 { status: 403 },
             );
         }

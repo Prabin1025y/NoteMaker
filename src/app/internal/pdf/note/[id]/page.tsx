@@ -1,5 +1,7 @@
 import { authenticatePdfRequest } from "@/lib/pdf/authenticatePdfRequest";
 import PdfReady from "./PdfReady";
+import { getBlocksFromNoteId } from "@/lib/pdf/getBlocks";
+import MainContent from "./MainContent";
 
 export default async function NotePdfPage({
     params,
@@ -9,18 +11,15 @@ export default async function NotePdfPage({
     const { id } = await params;
 
     // authentication comes next
-    const payload = await authenticatePdfRequest(id);
+    await authenticatePdfRequest(id);
     // fetch invoice comes next
+    const blocks = await getBlocksFromNoteId(id);
 
     return (
         <>
             <PdfReady />
 
-            <main>
-                <h1>Note #{id}</h1>
-
-                {/* Invoice component */}
-            </main>
+            <MainContent blocks={blocks} />
         </>
     );
 }

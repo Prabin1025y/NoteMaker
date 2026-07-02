@@ -13,6 +13,7 @@ import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import Mathematics from "@tiptap/extension-mathematics";
 import "katex/dist/katex.min.css";
+import "@/components/tiptap/tiptap-node/heading-node/heading-node.scss";
 
 export default function ReadOnlyEditor({
     content,
@@ -24,6 +25,11 @@ export default function ReadOnlyEditor({
     hasTitle?: boolean;
 }) {
     const editor = useEditor({
+        editorProps: {
+            attributes: {
+                class: "tiptap",
+            },
+        },
         immediatelyRender: true,
         extensions: [
             StarterKit.configure({

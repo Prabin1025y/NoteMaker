@@ -9,8 +9,9 @@ import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
 import { ArrowLeft, Save, UploadIcon } from "lucide-react";
-import { exportElementToPDF } from "@/utils/PDFCreator";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
+import { apiFetch } from "@/lib/api-client";
+import Link from "next/link";
 
 export default function NotePage() {
     const params = useParams();
@@ -79,6 +80,54 @@ export default function NotePage() {
         closeBlockEditor();
     };
 
+    const handleExport = async () => {
+        try {
+            const res = await apiFetch(
+                `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/pdf`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({ noteId }),
+                },
+            );
+
+            if (!res.ok) {
+                throw new Error("Error occurred while exporting.");
+            }
+
+            const disposition = res.headers.get("Content-Disposition");
+            const filename =
+                disposition?.match(/filename="?(.+?)"?$/)?.[1] ??
+                `note-${noteId}.pdf`;
+
+            const blob = await res.blob();
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+
+            a.href = url;
+            a.download = filename;
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            a.remove();
+
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            if (process.env.NODE_ENV === "development") {
+                console.error(error);
+            }
+
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Error while exporting!",
+            );
+        }
+    };
+
     const hasUnsaved = blocksToBeSynced.length > 0;
 
     return (
@@ -123,16 +172,19 @@ export default function NotePage() {
                         )}
                     </button>
                     <button
-                        onClick={() => {
-                            if (noteRef.current) {
-                                exportElementToPDF(noteRef.current);
-                            }
-                        }}
+                        onClick={handleExport}
                         className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
                     >
                         <UploadIcon size={13} />
                         Export
                     </button>
+                    <Link
+                        href={"/try"}
+                        className="relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors"
+                    >
+                        <UploadIcon size={13} />
+                        Try
+                    </Link>
                 </div>
             </header>
 

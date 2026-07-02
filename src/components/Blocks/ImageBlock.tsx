@@ -1,6 +1,6 @@
+
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
-import Image from "next/image";
 
 type ImageBlockProps = {
     title?: string;

@@ -1,4 +1,4 @@
-import { UnauthorizedError } from "../custom-errors";
+import { ForbiddenError } from "../custom-errors";
 import prisma from "../prisma";
 
 export async function authorizeNoteAccess(userId: string, noteId: string) {
@@ -8,5 +8,5 @@ export async function authorizeNoteAccess(userId: string, noteId: string) {
 
     const authorized = !!note;
 
-    if (!authorized) throw new UnauthorizedError("Unauthorized");
+    if (!authorized) throw new ForbiddenError("Forbidden");
 }
