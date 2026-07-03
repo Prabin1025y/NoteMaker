@@ -31,6 +31,7 @@ export default function DividerBlock({
     return (
         <div
             className={`
+                break-after-page
                 group relative  rounded-lg
                 hover:shadow-lg
                 ${className}

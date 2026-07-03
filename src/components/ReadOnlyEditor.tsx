@@ -10,10 +10,14 @@ import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import Mathematics from "@tiptap/extension-mathematics";
 import "katex/dist/katex.min.css";
+import "@/components/tiptap/tiptap-node/blockquote-node/blockquote-node.scss";
+import "@/components/tiptap/tiptap-node/code-block-node/code-block-node.scss";
+import "@/components/tiptap/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss";
 import "@/components/tiptap/tiptap-node/heading-node/heading-node.scss";
+import "@/components/tiptap/tiptap-node/list-node/list-node.scss";
+import "@/components/tiptap/tiptap-node/paragraph-node/paragraph-node.scss";
 
 export default function ReadOnlyEditor({
     content,

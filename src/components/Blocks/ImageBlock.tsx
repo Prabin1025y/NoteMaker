@@ -32,7 +32,7 @@ export default function ImageBlock({
     return (
         <figure
             className={`
-                group relative
+                break-inside-avoid group relative
                 ${className}
             `}
         >

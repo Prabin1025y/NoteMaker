@@ -1,9 +1,7 @@
 import { EditIcon, Trash2Icon, CopyIcon, CheckIcon } from "lucide-react";
 import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-    oneDark,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import BlockActionButton from "../ui/BlockActionButton";
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
@@ -64,7 +62,6 @@ function normalizeLang(raw?: string): string {
     return LANGUAGE_MAP[raw.trim().toLowerCase()] ?? raw.trim().toLowerCase();
 }
 
-
 export default function CodeBlock({
     content,
     designId,
@@ -92,81 +89,82 @@ export default function CodeBlock({
     }
 
     return (
-        <div
-            className={`
+        <div className={`pt-2 ${!isDesignDisabled && "break-inside-avoid"}`}>
+            <div
+                className={`
                 group relative  rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5 my-3"}
                  ${!!title?.trim() && !isDesignDisabled ? "pt-5" : "pt-3"} pb-3 transition-all duration-300
                 hover:shadow-lg
                 ${className}
             `}
-            style={
-                !isDesignDisabled
-                    ? {
-                          backgroundColor: colorOption.backgroundColorHex,
-                          borderColor: colorOption.borderColorHex,
-                      }
-                    : {}
-            }
-        >
-            {/* Action buttons (Edit / Delete) */}
-            <div
-                className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                style={
+                    !isDesignDisabled
+                        ? {
+                              backgroundColor: colorOption.backgroundColorHex,
+                              borderColor: colorOption.borderColorHex,
+                          }
+                        : {}
+                }
             >
-                <BlockActionButton
-                    icon={
-                        copied ? (
-                            <CheckIcon
+                {/* Action buttons (Edit / Delete) */}
+                <div
+                    className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                >
+                    <BlockActionButton
+                        icon={
+                            copied ? (
+                                <CheckIcon
+                                    className={`${iconClassName} hover:text-blue-500`}
+                                />
+                            ) : (
+                                <CopyIcon
+                                    className={`${iconClassName} hover:text-blue-500`}
+                                />
+                            )
+                        }
+                        onClick={handleCopy}
+                    >
+                        {copied ? "Copied" : "Copy"}
+                    </BlockActionButton>
+                    <BlockActionButton
+                        icon={
+                            <EditIcon
                                 className={`${iconClassName} hover:text-blue-500`}
                             />
-                        ) : (
-                            <CopyIcon
-                                className={`${iconClassName} hover:text-blue-500`}
+                        }
+                        onClick={() => onEdit()}
+                    >
+                        Edit
+                    </BlockActionButton>
+                    <BlockActionButton
+                        icon={
+                            <Trash2Icon
+                                className={`${iconClassName} hover:text-red-500`}
                             />
-                        )
-                    }
-                    onClick={handleCopy}
-                >
-                    {copied ? "Copied" : "Copy"}
-                </BlockActionButton>
-                <BlockActionButton
-                    icon={
-                        <EditIcon
-                            className={`${iconClassName} hover:text-blue-500`}
-                        />
-                    }
-                    onClick={() => onEdit()}
-                >
-                    Edit
-                </BlockActionButton>
-                <BlockActionButton
-                    icon={
-                        <Trash2Icon
-                            className={`${iconClassName} hover:text-red-500`}
-                        />
-                    }
-                    onClick={() => onDelete()}
-                >
-                    Delete
-                </BlockActionButton>
-            </div>
+                        }
+                        onClick={() => onDelete()}
+                    >
+                        Delete
+                    </BlockActionButton>
+                </div>
 
-            {/* Language label / Ribbon */}
-            {title &&
-                title.trim() !== "" &&
-                !isDesignDisabled &&
-                allBlockDesigns
-                    .find((b) => b.id === designId)
-                    ?.applyDesign(
-                        title,
-                        colorOption.primaryColorHex,
-                        colorOption.secondaryColorHex,
-                        colorOption.titleColorHex,
-                    )}
+                {/* Language label / Ribbon */}
+                {title &&
+                    title.trim() !== "" &&
+                    !isDesignDisabled &&
+                    allBlockDesigns
+                        .find((b) => b.id === designId)
+                        ?.applyDesign(
+                            title,
+                            colorOption.primaryColorHex,
+                            colorOption.secondaryColorHex,
+                            colorOption.titleColorHex,
+                        )}
 
-            {/* Code area */}
-            <div className={`relative ${!isDesignDisabled ? "pt-2" : ""}`}>
-                {/* Copy button — visible on hover of the whole block */}
-                {/* <button
+                {/* Code area */}
+                <div className={`relative ${!isDesignDisabled ? "pt-2" : ""}`}>
+                    {/* Copy button — visible on hover of the whole block */}
+                    {/* <button
                     onClick={handleCopy}
                     aria-label="Copy code"
                     className="
@@ -195,34 +193,35 @@ export default function CodeBlock({
                     )}
                 </button> */}
 
-                <SyntaxHighlighter
-                    language={lang}
-                    style={highlighterTheme}
-                    showLineNumbers
-                    wrapLongLines
-                    customStyle={{
-                        margin: 0,
-                        borderRadius: "0.5rem",
-                        fontSize: "0.85rem",
-                        lineHeight: "1.6",
-                        // Keep the highlighter's own background so it always
-                        // looks correct regardless of the block's color scheme.
-                    }}
-                    lineNumberStyle={{
-                        minWidth: "2.5em",
-                        paddingRight: "1em",
-                        opacity: 0.4,
-                        userSelect: "none",
-                    }}
-                    codeTagProps={{
-                        style: {
-                            fontFamily:
-                                "'Fira Code', 'Cascadia Code', monospace",
-                        },
-                    }}
-                >
-                    {content}
-                </SyntaxHighlighter>
+                    <SyntaxHighlighter
+                        language={lang}
+                        style={highlighterTheme}
+                        showLineNumbers
+                        wrapLongLines
+                        customStyle={{
+                            margin: 0,
+                            borderRadius: "0.5rem",
+                            fontSize: "0.85rem",
+                            lineHeight: "1.6",
+                            // Keep the highlighter's own background so it always
+                            // looks correct regardless of the block's color scheme.
+                        }}
+                        lineNumberStyle={{
+                            minWidth: "2.5em",
+                            paddingRight: "1em",
+                            opacity: 0.4,
+                            userSelect: "none",
+                        }}
+                        codeTagProps={{
+                            style: {
+                                fontFamily:
+                                    "'Fira Code', 'Cascadia Code', monospace",
+                            },
+                        }}
+                    >
+                        {content}
+                    </SyntaxHighlighter>
+                </div>
             </div>
         </div>
     );

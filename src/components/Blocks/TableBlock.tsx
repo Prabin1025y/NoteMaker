@@ -102,7 +102,7 @@ function ReadOnlyTable({
                 {/* Body */}
                 <tbody>
                     {rows.map((rowId, ri) => (
-                        <tr key={rowId}>
+                        <tr key={rowId} className="break-inside-avoid">
                             {/* Row number */}
                             <td
                                 className="border-t text-center font-bold text-xs"

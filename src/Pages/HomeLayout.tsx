@@ -1,6 +1,6 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
-import HomePage from "@/Pages/HomePage";
+import HomePage from "@/pages/HomePage";
 import Link from "next/link";
 import {
     Plus,

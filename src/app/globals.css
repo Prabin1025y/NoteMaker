@@ -217,7 +217,16 @@ div.tiptap.ProseMirror.simple-editor {
     white-space: pre !important;
 }
 
-
 .ProseMirror[contenteditable="false"] .ProseMirror-trailingBreak {
-  display: none;
+    display: none;
+}
+
+@media print {
+    thead {
+        display: table-header-group;
+    }
+}
+
+h1, h2, h3 {
+    break-after: avoid;
 }

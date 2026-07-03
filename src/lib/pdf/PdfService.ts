@@ -52,6 +52,46 @@ export class PdfService {
                     printBackground: true,
                     format: "A4",
                     preferCSSPageSize: true,
+                    margin: {
+                        top: "40px",
+                        right: "0mm",
+                        bottom: "40px",
+                        left: "0mm",
+                    },
+                    
+                    displayHeaderFooter: true,
+                    headerTemplate: `
+                        <div style="
+                        width: 100%;
+                        padding: 0 40px;
+                        font-size: 15px;
+                        color: #1b1b1b;
+                        text-align: end;
+                        ">
+                        <span>Monthly Report</span>
+                        </div>
+                    `,
+
+                    footerTemplate: `
+                        <div style="
+                        width:100%;
+                        font-size:15px;
+                        padding:0 40px;
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        color:#666;
+                        ">
+                        <span>Created using NoteMaker</span>
+
+                        <span>
+                            Page
+                            <span class="pageNumber"></span>
+                            of
+                            <span class="totalPages"></span>
+                        </span>
+                        </div>
+                    `,
                 });
             }),
             20_000,
@@ -62,7 +102,7 @@ export class PdfService {
     private static async navigate(page: Page, url: string) {
         const response = await page.goto(url, {
             waitUntil: "networkidle0",
-            timeout: 10000,
+            timeout: 20000,
         });
 
         if (!response) {
