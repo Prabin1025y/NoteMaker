@@ -202,7 +202,7 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                     onClick={onCreateNote}
                     className="w-full flex flex-col justify-center items-center gap-3 bg-[#faf9f7] border border-dashed border-[#d4d0c8] rounded-xl px-4 py-5 mb-8 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 transition-all text-left group"
                 >
-                    <div className="w-9 h-9 bg-indigo-100 rounded-[9px] flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
+                    <div className="w-9 h-9 bg-indigo-100 rounded-[9px] flex items-center justify-center shrink-0 group-hover:bg-indigo-200 transition-colors">
                         <Plus
                             size={18}
                             className="text-indigo-700"

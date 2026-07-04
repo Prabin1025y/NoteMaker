@@ -61,7 +61,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                     }
                     className="mb-8 flex w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#d4d0c8] bg-[#faf9f7] px-4 py-5 text-left transition-all hover:border-indigo-400 hover:bg-indigo-50/40"
                 >
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[9px] bg-indigo-100 transition-colors group-hover:bg-indigo-200">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-indigo-100 transition-colors group-hover:bg-indigo-200">
                         <Plus size={18} className="text-indigo-700" />
                     </div>
                     <div>

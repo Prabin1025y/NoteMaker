@@ -75,7 +75,7 @@ function Sortable({
                 <GripVerticalIcon size={20} />
             </div>
             {/* <div
-                className={`w-5 h-7 rounded-[7px] flex items-center justify-center flex-shrink-0`}
+                className={`w-5 h-7 rounded-[7px] flex items-center justify-center shrink-0`}
             >
                 <span className={`${otherInfo.color} `}>
                     {otherInfo.icon}

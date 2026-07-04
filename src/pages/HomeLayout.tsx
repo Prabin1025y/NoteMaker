@@ -103,11 +103,11 @@ export default function HomeLayout() {
             className="flex h-screen w-screen bg-[#faf9f7] overflow-hidden"
             style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            <aside className="w-80 border-r border-[#e8e5e0] bg-[#faf9f7] flex flex-col flex-shrink-0">
+            <aside className="w-80 border-r border-[#e8e5e0] bg-[#faf9f7] flex flex-col shrink-0">
                 {/* Brand */}
                 <div className="px-4 py-5 border-b border-[#e8e5e0]">
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="w-7 h-7 bg-indigo-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-7 h-7 bg-indigo-700 rounded-lg flex items-center justify-center shrink-0">
                             <Notebook
                                 size={14}
                                 className="text-white"
@@ -134,7 +134,7 @@ export default function HomeLayout() {
                     <div className="flex items-center gap-2 bg-white border border-[#e2e0dc] rounded-[9px] px-3 py-2">
                         <Search
                             size={14}
-                            className="text-[#9e9a94] flex-shrink-0"
+                            className="text-[#9e9a94] shrink-0"
                         />
                         <input
                             type="text"
@@ -173,7 +173,7 @@ export default function HomeLayout() {
                                             className="flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] hover:bg-[#f0ede8] transition-colors group"
                                         >
                                             <div
-                                                className={`w-7 h-7 rounded-[7px] flex items-center justify-center flex-shrink-0 ${color.bg}`}
+                                                className={`w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0 ${color.bg}`}
                                             >
                                                 <Icon
                                                     size={13}

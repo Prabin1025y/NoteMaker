@@ -148,7 +148,7 @@ export default function NotePage() {
                 </div>
             )}
             {/* Top bar */}
-            <header className="flex-shrink-0 flex items-center justify-between px-5 py-2.5 bg-white border-b border-[#e8e5e0]">
+            <header className="shrink-0 flex items-center justify-between px-5 py-2.5 bg-white border-b border-[#e8e5e0]">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.push("/")}
