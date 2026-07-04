@@ -158,7 +158,7 @@ export default function NotePage() {
                         Home
                     </button>
                     <span className="text-[#e2e0dc]">·</span>
-                    <span className="text-[14px] font-semibold text-[#1a1714] tracking-tight truncate max-w-[280px]">
+                    <span className="text-[14px] font-semibold text-[#1a1714] tracking-tight truncate max-w-70">
                         {title || "Untitled"}
                     </span>
                     <span className="text-[12px] text-[#b8b3ac]">
