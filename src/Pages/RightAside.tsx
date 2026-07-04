@@ -6,21 +6,10 @@ import { move } from "@dnd-kit/helpers";
 import Sortable from "@/components/dnd-Kit/Sortable";
 import { randomBetweenExclusive } from "@/utils/UtilFunctions";
 import {
-    ChevronLeft,
-    ChevronRight,
     PanelLeftCloseIcon,
     PanelLeftOpenIcon,
 } from "lucide-react";
 
-const colorDotMap: Record<string, string> = {
-    paragraph: "bg-blue-400",
-    heading: "bg-violet-500",
-    image: "bg-emerald-400",
-    quote: "bg-amber-400",
-    code: "bg-pink-400",
-    table: "bg-sky-400",
-    divider: "bg-yellow-400",
-};
 
 const RightAside = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);

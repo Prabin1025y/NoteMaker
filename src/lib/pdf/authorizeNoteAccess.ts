@@ -9,4 +9,6 @@ export async function authorizeNoteAccess(userId: string, noteId: string) {
     const authorized = !!note;
 
     if (!authorized) throw new ForbiddenError("Forbidden");
+
+    return note;
 }

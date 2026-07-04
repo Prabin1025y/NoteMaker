@@ -3,10 +3,13 @@ import { BrowserManager } from "./BrowserManager";
 import { PdfToken } from "./PdfToken";
 import { PdfRoutes } from "./PdfRoutes";
 import { withTimeout } from "../withTimeout";
+import { logger } from "../logger";
 
 type GenerateNotePdfInput = {
     noteId: string;
     userId: string;
+    userName: string | null;
+    noteTitle?: string;
     signal?: AbortSignal;
 };
 
@@ -20,8 +23,6 @@ export class PdfService {
 
         // For Logging
         const requestId = crypto.randomUUID();
-        const log = (...args: unknown[]) =>
-            console.log(`[PDF ${requestId}]`, ...args);
         const started = performance.now();
 
         const token = await PdfToken.create({
@@ -46,7 +47,14 @@ export class PdfService {
                     throw new Error("Request aborted.");
                 }
 
-                log(`Finished in ${Math.round(performance.now() - started)}ms`);
+                await page.evaluate((title) => {
+                    document.title = title || "Your Note";
+                }, input.noteTitle);
+
+                logger.info(
+                    { requestId },
+                    `Finished in ${Math.round(performance.now() - started)}ms`,
+                );
 
                 return page.pdf({
                     printBackground: true,
@@ -58,7 +66,7 @@ export class PdfService {
                         bottom: "40px",
                         left: "0mm",
                     },
-                    
+
                     displayHeaderFooter: true,
                     headerTemplate: `
                         <div style="
@@ -68,7 +76,7 @@ export class PdfService {
                         color: #1b1b1b;
                         text-align: end;
                         ">
-                        <span>Monthly Report</span>
+                        <span>${input.userName || ""}</span>
                         </div>
                     `,
 
@@ -94,7 +102,7 @@ export class PdfService {
                     `,
                 });
             }),
-            20_000,
+            30_000,
             "PDF generation timed out.",
         );
     }

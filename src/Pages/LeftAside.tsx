@@ -3,7 +3,7 @@ import { useState } from "react";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ChevronLeft, ChevronRight, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
+import {  PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 
 interface LeftAsideProps {
     openBlockEditor: (editorData: EditorData) => void;

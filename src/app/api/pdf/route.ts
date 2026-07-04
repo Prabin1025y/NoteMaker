@@ -17,10 +17,12 @@ export async function POST(req: NextRequest) {
 
         const user = await requireAuth();
 
-        await authorizeNoteAccess(user.id, noteId);
+        const note = await authorizeNoteAccess(user.id, noteId);
 
         const pdf = await PdfService.generateNote({
             noteId,
+            userName: user.name,
+            noteTitle: note.title,
             userId: user.id,
             signal: req.signal,
         });
