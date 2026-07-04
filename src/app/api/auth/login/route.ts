@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ message: `Logged in as ${user.name}` });
     } catch (error) {
-        if (process.env.NODE_ENV === "development") console.log(error);
+        console.log(error);
         if (error instanceof ZodError) {
             return NextResponse.json(
                 { message: "Invalid Credentials" },

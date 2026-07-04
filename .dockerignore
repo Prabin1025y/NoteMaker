@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.gitignore
+Dockerfile
+todo.txt
+CLAUDE.md
+AGENTS.md
+README.md
+.env.local
+.env
+.env.development
+npm-debug.log

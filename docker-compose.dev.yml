@@ -1,0 +1,21 @@
+services:
+  app:
+    container_name: notemaker-dev
+
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    env_file:
+      - .env
+
+    environment:
+      NODE_ENV: development
+
+    ports:
+      - "3000:3000"
+
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    #   - /app/.next

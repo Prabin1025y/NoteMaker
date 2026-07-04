@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -11,6 +5,50 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  password              String
+  name                  String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  refreshToken          String?
+  refreshTokenCreatedAt DateTime?
+  role                  Role      @default(USER)
+  notes                 Note[]
+}
+
+model Block {
+  id            String    @id @default(uuid())
+  type          BlockType
+  content       String
+  designId      Int
+  colorOptionId Int
+  title         String?
+  order         Float
+  noteId        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  publicId      String    @unique
+  note          Note?     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([noteId, order])
+  @@index([noteId])
+}
+
+model Note {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  blocks      Block[]
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
 }
 
 enum BlockType {
@@ -22,79 +60,7 @@ enum BlockType {
   formula
 }
 
-//
-// USER MODEL
-//
-
 enum Role {
   USER
   ADMIN
-}
-
-model User {
-  id       String  @id @default(uuid())
-  email    String  @unique
-  password String
-  name     String?
-  role     Role    @default(USER)
-
-  refreshToken          String?
-  refreshTokenCreatedAt DateTime?
-
-  notes Note[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-//
-// BLOCK MODEL
-//
-
-model Block {
-  id      String @id @default(uuid())
-  publicId String @unique
-
-  type    BlockType
-  content String
-
-  designId      Int
-  colorOptionId Int
-
-  title String?
-
-  order Float
-
-  // relation to Note (many-to-one)
-  noteId String?
-  note   Note?   @relation(fields: [noteId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([noteId, order])
-  @@index([noteId])
-}
-
-//
-// NOTE MODEL
-//
-
-model Note {
-  id      String @id @default(uuid())
-
-  title       String
-  description String?
-
-  // author relation
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  // blocks relation (one-to-many)
-  blocks Block[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([authorId])
 }

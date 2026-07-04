@@ -70,6 +70,9 @@ export default function Login() {
 
         if (Object.values(newErrors).some(Boolean)) return;
 
+        console.log(process.env.NEXT_PUBLIC_WEBSITE_URL);
+        console.log(`${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/auth/login`)
+
         const res = await apiFetch(
             `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/auth/login`,
             {
