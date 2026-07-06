@@ -64,8 +64,9 @@ export class PdfService {
                         top: "40px",
                         right: "0mm",
                         bottom: "40px",
-                        left: "0mm",
+                        left: "10px",
                     },
+                    scale:0.8,
 
                     displayHeaderFooter: true,
                     headerTemplate: `

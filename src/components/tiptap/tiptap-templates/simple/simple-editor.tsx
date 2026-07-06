@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
-import 'katex/dist/katex.min.css'
+import "katex/dist/katex.min.css";
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit";
@@ -14,7 +14,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
-import Mathematics from '@tiptap/extension-mathematics'
+import Mathematics from "@tiptap/extension-mathematics";
 
 // --- UI Primitives ---
 import { Button } from "@/components/tiptap/tiptap-ui-primitive/button";
@@ -68,12 +68,45 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 // import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle";
 
 // --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 
 // --- Styles ---
 import "@/components/tiptap/tiptap-templates/simple/simple-editor.scss";
-import { CustomHardBreak } from "@/components/tiptap/tiptap-extension/hardbreak";
 import { CustomMathDelimiters } from "../../tiptap-extension/CustomMathDelimeters";
+
+export const tiptap_extensions_list = [
+    StarterKit.configure({
+        horizontalRule: false,
+        link: {
+            openOnClick: false,
+            enableClickSelection: true,
+        },
+    }),
+    Mathematics.configure({
+        // You can pass any custom KaTeX options here
+        katexOptions: {
+            macros: { "\\R": "\\mathbb{R}" },
+        },
+    }),
+    HorizontalRule,
+    TextAlign.configure({ types: ["heading", "paragraph"] }),
+    TaskList,
+    TaskItem.configure({ nested: true }),
+    Highlight.configure({ multicolor: true }),
+    Image,
+    Typography,
+    Superscript,
+    Subscript,
+    Selection,
+    // ImageUploadNode.configure({
+    //     accept: "image/*",
+    //     maxSize: MAX_FILE_SIZE,
+    //     limit: 3,
+    //     upload: handleImageUpload,
+    //     onError: (error) => console.error("Upload failed:", error),
+    // }),
+    // CustomHardBreak,
+    CustomMathDelimiters,
+];
 
 const MainToolbarContent = ({
     onHighlighterClick,
@@ -145,7 +178,6 @@ const MainToolbarContent = ({
             </ToolbarGroup>
 
             <ToolbarSeparator />
-
 
             <Spacer />
 

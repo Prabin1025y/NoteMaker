@@ -217,16 +217,50 @@ div.tiptap.ProseMirror.simple-editor {
     white-space: pre !important;
 }
 
+.pdf-export {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+}
+
 .ProseMirror[contenteditable="false"] .ProseMirror-trailingBreak {
     display: none;
 }
 
 @media print {
+    html,
+    body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    body {
+        display: block !important;
+        flex-direction: unset !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+
+    [data-pdf-root] {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .break-inside-avoid {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
     thead {
         display: table-header-group;
     }
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     break-after: avoid;
 }

@@ -11,7 +11,6 @@ import { initialJsonForEditor } from "@/utils/UtilFunctions";
 import { ArrowLeft, Loader2, Save, UploadIcon } from "lucide-react";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
-import Link from "next/link";
 
 export default function NotePage() {
     const params = useParams();

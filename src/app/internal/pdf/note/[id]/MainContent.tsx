@@ -20,8 +20,8 @@ const MainContent = ({ blocks }: { blocks: BlockType[] }) => {
         <main
             id="pdf-root"
             data-pdf-root
-            className="flex-1 overflow-y-auto bg-white"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            className="pdf-export w-full bg-white"
+            style={{ fontFamily: "'Inter', sans-serif", display: "block" }}
         >
             <div className="mx-auto max-w-5xl px-10 py-10">
                 <div className="flex flex-col gap-3">
