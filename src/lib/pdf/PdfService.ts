@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import path from "path";
 import { Page } from "puppeteer";
 import { BrowserManager } from "./BrowserManager";
 import { PdfToken } from "./PdfToken";
@@ -51,6 +53,10 @@ export class PdfService {
                     document.title = title || "Your Note";
                 }, input.noteTitle);
 
+                const logoPath = path.join(process.cwd(), "public", "logo.png");
+                const logoBuffer = readFileSync(logoPath);
+                const logoDataUrl = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+
                 logger.info(
                     { requestId },
                     `Finished in ${Math.round(performance.now() - started)}ms`,
@@ -66,7 +72,7 @@ export class PdfService {
                         bottom: "40px",
                         left: "10px",
                     },
-                    scale:0.8,
+                    scale: 0.8,
 
                     displayHeaderFooter: true,
                     headerTemplate: `
@@ -91,7 +97,10 @@ export class PdfService {
                         align-items:center;
                         color:#666;
                         ">
-                        <span>Created using NoteMaker</span>
+                        <div style="display: flex; gap: 5px; align-items:center;">
+                        <img src="${logoDataUrl}" alt="logo" style="width: 20px; height: 20px;">
+                        <span style="color: #663dc0;"><span style="font-weight: bold;">Enote</span> Note</span>
+                        </div>
 
                         <span>
                             Page

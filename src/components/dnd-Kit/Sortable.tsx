@@ -8,16 +8,17 @@ function Sortable({
     id,
     index,
     otherInfo,
-    className
+    className,
 }: {
     id: string;
     index: number;
     otherInfo: {
         colorOptionId: number;
+        designId: number;
         title?: string;
         type: string;
     };
-    className?: string
+    className?: string;
 }) {
     const [element, setElement] = useState<Element | null>(null);
     const handleRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +30,10 @@ function Sortable({
         handle: handleRef,
     });
 
-    const colorOption = colorOptions.find(co => co.id === otherInfo.colorOptionId)
+    const colorOption = colorOptions.find(
+        (co) => co.id === otherInfo.colorOptionId,
+    );
+    const isDesignEnabled = otherInfo.designId !== 0;
 
     useEffect(() => {
         if (isDragging) {
@@ -65,7 +69,11 @@ function Sortable({
         // </div>
         <div
             ref={setElement}
-            style={{backgroundColor: colorOption?.backgroundColorHex}}
+            style={
+                isDesignEnabled
+                    ? { backgroundColor: colorOption?.backgroundColorHex }
+                    : {}
+            }
             className={`${className} ${isDragging && ` shadow-2xl border border-gray-100`} w-full text-left flex items-center gap-2.5 px-2.5 py-2  hover:bg-[#f0ede8] group`}
         >
             <div
@@ -82,7 +90,14 @@ function Sortable({
                 </span>
             </div> */}
             <div className="flex-1 min-w-0">
-                <p style={{color: colorOption?.borderColorHex}} className={` group-hover:text-[#1a1714] transition-colors`}>
+                <p
+                    style={
+                        isDesignEnabled
+                            ? { color: colorOption?.borderColorHex }
+                            : {}
+                    }
+                    className={` group-hover:text-[#1a1714] transition-colors`}
+                >
                     {otherInfo.title}
                 </p>
                 <p className="text-[11px] text-[#b8b3ac] truncate">

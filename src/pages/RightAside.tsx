@@ -5,11 +5,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 import Sortable from "@/components/dnd-Kit/Sortable";
 import { randomBetweenExclusive } from "@/utils/UtilFunctions";
-import {
-    PanelLeftCloseIcon,
-    PanelLeftOpenIcon,
-} from "lucide-react";
-
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 
 const RightAside = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -27,6 +23,7 @@ const RightAside = () => {
             colorOptionId: block?.colorOptionId,
             type: block?.type,
             title: block?.title,
+            designId: block?.designId,
         };
     };
 
@@ -145,6 +142,7 @@ const RightAside = () => {
                                         className="border-b"
                                         otherInfo={{
                                             type: block.type,
+                                            designId: info.designId || 0,
                                             colorOptionId:
                                                 info.colorOptionId || 1,
                                             title:

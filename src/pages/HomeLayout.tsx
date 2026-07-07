@@ -22,6 +22,7 @@ import CreateNoteModal from "@/components/CreateNoteModal";
 import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
 import { apiFetch } from "@/lib/api-client";
 import { fetchNotes } from "@/services/noteService";
+import Image from "next/image";
 
 const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
 const colorMap = [
@@ -107,14 +108,20 @@ export default function HomeLayout() {
                 {/* Brand */}
                 <div className="px-4 py-5 border-b border-[#e8e5e0]">
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="w-7 h-7 bg-indigo-700 rounded-lg flex items-center justify-center shrink-0">
-                            <Notebook
+                        <div className="w-7 h-7  flex items-center justify-center shrink-0">
+                            {/* <Notebook
                                 size={14}
                                 className="text-white"
+                            /> */}
+                            <Image
+                                src={"/logo.png"}
+                                alt="Logo"
+                                width={100}
+                                height={100}
                             />
                         </div>
-                        <span className="text-[15px] font-semibold text-[#1a1714] tracking-tight">
-                            Notemaker
+                        <span className="text-[15px] text-indigo-700 tracking-tight">
+                            <span className="font-bold">Eton</span> Note
                         </span>
                     </div>
                     <button

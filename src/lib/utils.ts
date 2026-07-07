@@ -18,3 +18,18 @@ export async function markdownToTiptap(markdown: string): Promise<string> {
 
     return JSON.stringify(json);
 }
+
+type TiptapNode = {
+    text?: string;
+    content?: TiptapNode[];
+};
+
+export function extractText(node?: TiptapNode): string {
+    if (!node) return "";
+    if (node.text) return node.text;
+
+    if (!node.content || node.content.length === 0) return "";
+
+    // Concatenate text from all child nodes
+    return extractText(node.content[0]);
+}
