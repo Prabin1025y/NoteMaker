@@ -19,6 +19,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
         openBlockEditor({
             id: "", designId: 0, colorOptionId: 1,
             action: "add", content, title: "", type,
+            order: "auto"
         });
     };
 
