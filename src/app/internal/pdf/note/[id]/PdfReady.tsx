@@ -88,17 +88,23 @@ export default function PdfReady() {
             try {
                 const root = document.querySelector('[data-pdf-root]');
 
+                console.log("root", root)
+                
                 // 1) wait for fonts (short)
                 await waitForFonts(2000);
-
+                console.log("Fonts loaded")
+                
                 // 2) wait for images under the pdf root
                 await waitForImages(root, 10000);
-
+                console.log("Images loaded")
+                
                 // 3) wait for DOM stability (no mutations for a short window)
                 await waitForStability(root, 250, 5000);
-
+                console.log("Stability loaded")
+                
                 if (!cancelled) {
                     (window as any).__PDF_READY__ = true;
+                    console.log("Setttttttttttttttt")
                 }
             } catch (err) {
                 (window as any).__PDF_READY_ERROR__ = (err as any)?.message || String(err);

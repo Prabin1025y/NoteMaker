@@ -8,7 +8,7 @@ import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ArrowLeft, Loader2, Save, UploadIcon } from "lucide-react";
+import { ArrowLeft, Save, UploadIcon } from "lucide-react";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
@@ -114,7 +114,7 @@ export default function NotePage() {
                     await syncToDB();
 
                     const res = await apiFetch(
-                        `${process.env.NEXT_PUBLIC_PDF_API_URL}`,
+                        `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/pdf`,
                         {
                             method: "POST",
                             headers: {
@@ -165,7 +165,7 @@ export default function NotePage() {
             },
             {
                 loading: `Exporting ${currentNote.title}...`,
-                success: (data) =>
+                success: () =>
                     `${currentNote.title} Pdf has been exported.`,
                 error: "Error",
                 toasterId: "promise",

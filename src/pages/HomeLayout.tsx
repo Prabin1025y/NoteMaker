@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
     Plus,
     Search,
-    Notebook,
     Settings,
     Lightbulb,
     Users,

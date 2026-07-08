@@ -1,6 +1,6 @@
 import FormulaViewer from "../FormulaViewer";
-import FormulaEditor from "../FormulaViewer";
-import ReadOnlyEditor from "../ReadOnlyEditor";
+// import FormulaEditor from "../FormulaViewer";
+// import ReadOnlyEditor from "../ReadOnlyEditor";
 
 interface FormulaSectionProps {
     content: string;

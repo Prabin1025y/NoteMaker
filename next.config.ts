@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
             },
         ],
     },
-    output: "standalone"
+    output: "standalone",
+    allowedDevOrigins: [
+        "host.docker.internal",
+        "webpage-pdf-exporter.onrender.com",
+    ],
 };
 
 export default nextConfig;
