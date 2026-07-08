@@ -16,7 +16,7 @@ import { createNote, fetchNotes } from "@/services/noteService";
 //     order: number;
 // }
 
-interface BlockType {
+export interface BlockType {
     id: string;
     publicId: string;
     noteId: string;
@@ -153,7 +153,7 @@ export const useNoteStore = create<Store>()(
                 title: note?.title,
                 currentNote: note,
                 blocks: blocks.sort((a, b) => a.order - b.order),
-                blocksToBeSynced: []
+                blocksToBeSynced: [],
             });
         },
 
@@ -177,10 +177,17 @@ export const useNoteStore = create<Store>()(
                 const currentNote = get().currentNote;
                 if (!currentNote)
                     return alert("No note is currently in session");
+
+                const order =
+                    editorData.order === "auto"
+                        ? lastBlockOrder
+                            ? lastBlockOrder + 1
+                            : 1
+                        : editorData.order;
                 const block: BlockType = {
                     id: publicId,
                     publicId,
-                    order: lastBlockOrder ? lastBlockOrder + 1 : 1,
+                    order,
                     designId: editorData.designId,
                     colorOptionId: editorData.colorOptionId,
                     content: editorData.content,
@@ -190,7 +197,11 @@ export const useNoteStore = create<Store>()(
                     updatedAt: new Date(),
                     noteId: currentNote.id,
                 };
-                set({ blocks: [...get().blocks, block] });
+                set({
+                    blocks: [...get().blocks, block].sort(
+                        (a, b) => a.order - b.order,
+                    ),
+                });
 
                 const { id, updatedAt, ...blockToSync } = block;
                 get().pushToBlocksToBeSynced({

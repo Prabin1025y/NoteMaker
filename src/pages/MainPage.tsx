@@ -1,9 +1,13 @@
 "use client";
-import { useNoteStore } from "@/Context/DataStore";
+import { BlockType, useNoteStore } from "@/Context/DataStore";
 import { markdownToTiptap } from "@/lib/utils";
 import { EditorData } from "@/types/Editor";
-import { initialJsonForEditor, mapTypeToElement } from "@/utils/UtilFunctions";
-import { Loader2, Plus, Sparkles, X } from "lucide-react";
+import {
+    initialJsonForEditor,
+    mapTypeToElement,
+    randomBetweenExclusive,
+} from "@/utils/UtilFunctions";
+import { Loader2, Plus, PlusIcon, Sparkles, X } from "lucide-react";
 import { RefObject, useState } from "react";
 
 interface MainPageProps {
@@ -26,6 +30,32 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleAddBlockInBetween = async (block: BlockType, index: number) => {
+        const prevOrder = blocks[index - 1]?.order || 0;
+        const nextOrder = blocks[index]?.order;
+
+        if (!nextOrder) {
+            alert("Something is not right.");
+            return;
+        }
+
+        const newOrder = randomBetweenExclusive(
+            prevOrder ? prevOrder : 0,
+            nextOrder,
+        );
+
+        openBlockEditor({
+            id: "",
+            designId: 0,
+            colorOptionId: 1,
+            action: "add",
+            order: newOrder,
+            content: initialJsonForEditor,
+            title: "",
+            type: "block",
+        });
+    };
 
     const handleGenerateBlocks = async () => {
         const trimmedPrompt = prompt.trim();
@@ -77,6 +107,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                     id: "",
                     title: generatedBlock.title || "",
                     type: generatedBlock.type || "block",
+                    order: "auto", //Automatically order as last one
                     content: content || "",
                     designId: generatedBlock.designId ?? 0,
                     colorOptionId: generatedBlock.colorOptionId ?? 1,
@@ -109,30 +140,50 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                 <div className="flex flex-col gap-3">
                     {blocks &&
                         blocks.length > 0 &&
-                        blocks.map((block) => {
+                        blocks.map((block, i) => {
                             const Component = mapTypeToElement(block.type);
                             if (!Component) return null;
                             return (
-                                <Component
+                                <div
+                                    className="relative group/add"
                                     key={block.id}
-                                    title={block.title || ""}
-                                    content={block.content}
-                                    designId={block.designId}
-                                    colorOptionId={block.colorOptionId}
-                                    className={`${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-indigo-400 ring-offset-2" : ""}`}
-                                    onEdit={() =>
-                                        openBlockEditor({
-                                            id: block.id,
-                                            designId: block.designId,
-                                            colorOptionId: block.colorOptionId,
-                                            title: block.title || "",
-                                            content: block.content,
-                                            type: block.type,
-                                            action: "save",
-                                        })
-                                    }
-                                    onDelete={() => deleteBlock(block.id)}
-                                />
+                                >
+                                    <div className="absolute w-full hidden group-hover/add:flex items-center justify-center h-0 border-t border-dashed border-indigo-500 opacity-70 hover:opacity-100">
+                                        <button
+                                            onClick={() =>
+                                                handleAddBlockInBetween(
+                                                    block,
+                                                    i,
+                                                )
+                                            }
+                                            className="bg-white border hover:bg-indigo-100 border-indigo-500 px-4 py-1 rounded-full cursor-pointer flex items-center justify-center gap-1"
+                                        >
+                                            <PlusIcon size={20} />
+                                            <p>Add Block</p>
+                                        </button>
+                                    </div>
+                                    <Component
+                                        title={block.title || ""}
+                                        content={block.content}
+                                        designId={block.designId}
+                                        colorOptionId={block.colorOptionId}
+                                        className={`peer ${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-indigo-400 ring-offset-2" : ""}`}
+                                        onEdit={() =>
+                                            openBlockEditor({
+                                                id: block.id,
+                                                designId: block.designId,
+                                                colorOptionId:
+                                                    block.colorOptionId,
+                                                title: block.title || "",
+                                                order: "auto",
+                                                content: block.content,
+                                                type: block.type,
+                                                action: "save",
+                                            })
+                                        }
+                                        onDelete={() => deleteBlock(block.id)}
+                                    />
+                                </div>
                             );
                         })}
                 </div>
@@ -146,6 +197,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                 designId: 0,
                                 colorOptionId: 1,
                                 action: "add",
+                                order: "auto",
                                 content: initialJsonForEditor,
                                 title: "",
                                 type: "block",

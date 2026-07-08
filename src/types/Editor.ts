@@ -12,6 +12,7 @@ export interface EditorData {
     type: blockTypeOptions;
     content: string;
     designId: number;
+    order: number | 'auto';
     colorOptionId: number;
     action: "save" | "add";
 }

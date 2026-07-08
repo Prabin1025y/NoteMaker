@@ -167,6 +167,7 @@ const BlockEditorModal = ({
             designId: designEnabled ? designId : 0,
             colorOptionId: colorOptionId || 1,
             title,
+            order: editorData.order,
             content:
                 currentBlock.type === "image" && !!file ? imageURL : content,
             type: currentBlock.type,

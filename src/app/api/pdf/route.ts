@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         return new NextResponse(Buffer.from(pdf), {
             headers: {
                 "Content-Type": "application/pdf",
-                "Content-Disposition": `attachment; filename="note-${noteId}.pdf"`,
+                "Content-Disposition": `attachment; filename="${note.title}.pdf"`,
             },
         });
     } catch (err) {

@@ -79,11 +79,11 @@ export class PdfService {
                         <div style="
                         width: 100%;
                         padding: 0 40px;
-                        font-size: 15px;
+                        font-size: 10px;
                         color: #1b1b1b;
                         text-align: end;
                         ">
-                        <span>${input.userName || ""}</span>
+                        <span>Author: ${input.userName || ""}</span>
                         </div>
                     `,
 
@@ -99,7 +99,7 @@ export class PdfService {
                         ">
                         <div style="display: flex; gap: 5px; align-items:center;">
                         <img src="${logoDataUrl}" alt="logo" style="width: 20px; height: 20px;">
-                        <span style="color: #663dc0;"><span style="font-weight: bold;">Enote</span> Note</span>
+                        <span style="color: #663dc0;"><span style="font-weight: bold;">Eton</span> Note</span>
                         </div>
 
                         <span>
