@@ -1,4 +1,4 @@
-import { ForbiddenError, UnauthorizedError } from "@/lib/custom-errors";
+import { ForbiddenError, UnauthorizedError } from "@/lib/Error/custom-errors";
 import { authorizeNoteAccess } from "@/lib/pdf/authorizeNoteAccess";
 import requireAuth from "@/lib/requireAuth";
 import { cookies } from "next/headers";

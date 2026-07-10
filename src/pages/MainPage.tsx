@@ -82,7 +82,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ command: trimmedPrompt }),
+                body: JSON.stringify({ command: trimmedPrompt, depth: "elaborated" }),
             });
 
             if (!response.ok) {

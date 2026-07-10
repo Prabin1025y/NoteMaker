@@ -1,4 +1,4 @@
-import { ForbiddenError, UnauthorizedError } from "@/lib/custom-errors";
+import { ForbiddenError, UnauthorizedError } from "@/lib/Error/custom-errors";
 import prisma from "@/lib/prisma";
 import requireAuth from "@/lib/requireAuth";
 import {
@@ -46,6 +46,14 @@ export async function POST(req: Request) {
             });
         });
 
+        await prisma.$transaction([
+            prisma.block.deleteMany({
+                where: { id: { in: deleteData } },
+            }),
+
+            ...updates,
+        ]);
+
         const addedData = await prisma.block.createManyAndReturn({
             data: addData.map((item) => ({
                 publicId: item.publicId,
@@ -64,17 +72,9 @@ export async function POST(req: Request) {
             },
         });
 
-        await prisma.$transaction([
-            prisma.block.deleteMany({
-                where: { id: { in: deleteData } },
-            }),
-
-            ...updates,
-        ]);
-
         return NextResponse.json({ success: true, addedData });
     } catch (error) {
-     if (process.env.NODE_ENV === "development") console.log(error);
+        if (process.env.NODE_ENV === "development") console.log(error);
         if (error instanceof UnauthorizedError) {
             return NextResponse.json(
                 { message: error.message || "Unauthorized" },

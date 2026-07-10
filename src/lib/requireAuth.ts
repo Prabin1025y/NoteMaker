@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyToken } from "./auth-jwt";
 import prisma from "./prisma";
-import { ForbiddenError, UnauthorizedError } from "./custom-errors";
+import { ForbiddenError, UnauthorizedError } from "./Error/custom-errors";
 
 type Role = "USER" | "ADMIN";
 

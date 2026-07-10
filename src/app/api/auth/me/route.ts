@@ -1,4 +1,4 @@
-import { ForbiddenError, UnauthorizedError } from "@/lib/custom-errors";
+import { ForbiddenError, UnauthorizedError } from "@/lib/Error/custom-errors";
 import { requireAuth } from "@/lib/requireAuth";
 import { NextResponse } from "next/server";
 

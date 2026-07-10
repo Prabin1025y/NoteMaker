@@ -1,4 +1,4 @@
-import { ForbiddenError } from "../custom-errors";
+import { ForbiddenError } from "../Error/custom-errors";
 import prisma from "../prisma";
 
 export async function authorizeNoteAccess(userId: string, noteId: string) {
