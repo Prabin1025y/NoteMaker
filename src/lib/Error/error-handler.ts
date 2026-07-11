@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ForbiddenError, GeneralBadRequestError, UnauthorizedError } from "./custom-errors";
 import { ZodError } from "zod";
 
-export async function withErrorHandling<TContext = unknown>(
+export function withErrorHandling<TContext = unknown>(
     handler: (req: NextRequest, context: TContext) => Promise<Response>,
 ) {
     return async (req: NextRequest, context: TContext): Promise<Response> => {
