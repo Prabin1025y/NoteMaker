@@ -90,7 +90,6 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
             }
 
             const payload = await response.json();
-            console.log(payload);
             const generatedBlocks = Array.isArray(payload?.blocks)
                 ? (payload.blocks as AiGeneratedBlock[])
                 : [];

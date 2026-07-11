@@ -1,47 +1,19 @@
-import { cookies } from "next/headers";
-import { verifyToken } from "./auth-jwt";
-import prisma from "./prisma";
 import { ForbiddenError, UnauthorizedError } from "./Error/custom-errors";
+import { auth } from "@/auth";
 
 type Role = "USER" | "ADMIN";
 
 export async function requireAuth(requiredRoles?: Role[]) {
-    const cookieStore = await cookies();
+    const session = await auth();
 
-    const token = cookieStore.get("access_token")?.value;
-
-    if (!token) {
+    if (!session?.user) {
         throw new UnauthorizedError("Unauthorized");
     }
 
-    let payload: any;
-    try {
-        payload = await verifyToken(token);
-    } catch (_) {
-        throw new UnauthorizedError("Unauthorized");
-    }
-
-    const userId = payload?.sub as string | undefined;
-    const role = payload?.role as Role | undefined;
-
-    if (!userId || !role) {
-        throw new UnauthorizedError("Unauthorized");
-    }
-
-    if (requiredRoles && !requiredRoles.includes(role)) {
-        throw new ForbiddenError("Unauthorized");
-    }
-
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true, email: true, role: true, name: true },
-    });
-
-    if (!user) {
+    if (requiredRoles && !requiredRoles.includes(session.user.role)) {
         throw new ForbiddenError("Forbidden");
     }
-
-    return user;
+    return session.user;
 }
 
 export default requireAuth;

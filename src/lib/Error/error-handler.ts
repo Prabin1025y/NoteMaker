@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { ForbiddenError, UnauthorizedError } from "./custom-errors";
+import { NextRequest, NextResponse } from "next/server";
+import { ForbiddenError, GeneralBadRequestError, UnauthorizedError } from "./custom-errors";
 import { ZodError } from "zod";
 
-export async function withErrorHandling(
-    handler: (req: Request) => Promise<Response>,
+export async function withErrorHandling<TContext = unknown>(
+    handler: (req: NextRequest, context: TContext) => Promise<Response>,
 ) {
-    return async (req: Request) => {
+    return async (req: NextRequest, context: TContext): Promise<Response> => {
         try {
-            return handler(req);
+            return await handler(req, context);
         } catch (error) {
             if (error instanceof UnauthorizedError) {
                 return NextResponse.json(
@@ -22,6 +22,11 @@ export async function withErrorHandling(
             } else if (error instanceof ZodError) {
                 return NextResponse.json(
                     { message: error.message || "Validation Error" },
+                    { status: 400 },
+                );
+            } else if (error instanceof GeneralBadRequestError) {
+                return NextResponse.json(
+                    { message: error.message || "Bad Request" },
                     { status: 400 },
                 );
             }

@@ -2,23 +2,23 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import useAuth from "@/hooks/useAuth";
+import { useSession } from "next-auth/react";
 
 export default function GuestGate({ children }: { children: React.ReactNode }) {
-    const { user, loading } = useAuth();
+    const { data, status } = useSession();
     const router = useRouter();
 
     useEffect(() => {
-        if (loading) return;
+        if (status === "loading") return;
 
-        if (user) {
-            router.replace("/");
+        if (data?.user) {
+            router.replace("/dashboard");
         }
-    }, [loading, user, router]);
+    }, [status, data, router]);
 
-    if (loading) return null;
+    if (status === "loading") return null;
 
-    if (user) return null;
+    if (data?.user) return null;
 
     return <>{children}</>;
 }

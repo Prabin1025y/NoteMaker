@@ -24,6 +24,7 @@ export function GuardedLink({ children, href, ...props }: GuardedLinkProps) {
 
     return (
         <Link
+            prefetch={false}
             href={href}
             onClick={handleClick}
             {...props}

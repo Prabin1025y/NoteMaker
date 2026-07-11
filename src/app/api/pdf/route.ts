@@ -1,7 +1,7 @@
+import { signInternalToken } from "@/lib/auth-jwt";
 import { ForbiddenError, UnauthorizedError } from "@/lib/Error/custom-errors";
 import { authorizeNoteAccess } from "@/lib/pdf/authorizeNoteAccess";
 import requireAuth from "@/lib/requireAuth";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -17,9 +17,11 @@ export async function POST(req: NextRequest) {
 
         const user = await requireAuth();
 
-        const cookieStore = await cookies();
-
-        const token = cookieStore.get("access_token")?.value;
+        const token = await signInternalToken({
+            userId: user.id,
+            role: user.role,
+            userName: user.name,
+        });
 
         const note = await authorizeNoteAccess(user.id, noteId);
 

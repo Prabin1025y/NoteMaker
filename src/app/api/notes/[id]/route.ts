@@ -1,13 +1,10 @@
-import { ForbiddenError, UnauthorizedError } from "@/lib/Error/custom-errors";
+import { withErrorHandling } from "@/lib/Error/error-handler";
 import prisma from "@/lib/prisma";
 import requireAuth from "@/lib/requireAuth";
-import { NextRequest, NextResponse } from "next/server";
+import {  NextResponse } from "next/server";
 
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> },
-) {
-    try {
+export const DELETE = withErrorHandling(
+    async (req, { params }: { params: Promise<{ id: string }> }) => {
         const user = await requireAuth();
         const { id } = await params;
 
@@ -28,21 +25,5 @@ export async function DELETE(
             );
 
         return NextResponse.json({ note });
-    } catch (error) {
-        if (process.env.NODE_ENV === "development") console.log(error);
-
-        if (error instanceof UnauthorizedError) {
-            return NextResponse.json(
-                { message: error.message || "Unauthorized" },
-                { status: 401 },
-            );
-        } else if (error instanceof ForbiddenError) {
-            return NextResponse.json(
-                { message: error.message || "Forbidden" },
-                { status: 403 },
-            );
-        }
-
-        return NextResponse.json({ message: "Server Error" }, { status: 500 });
-    }
-}
+    },
+);

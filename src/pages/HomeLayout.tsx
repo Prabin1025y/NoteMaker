@@ -19,9 +19,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateNoteModal from "@/components/CreateNoteModal";
 import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
-import { apiFetch } from "@/lib/api-client";
 import { fetchNotes } from "@/services/noteService";
 import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
 
 const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
 const colorMap = [
@@ -33,6 +33,7 @@ const colorMap = [
 ];
 
 export default function HomeLayout() {
+    const { data } = useSession();
     const { notes, createNote: createNoteInStore, setNotes } = useNoteStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -77,25 +78,7 @@ export default function HomeLayout() {
     );
 
     const handleLogout = async () => {
-        try {
-            const res = await apiFetch(
-                `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/auth/logout`,
-                {
-                    method: "POST",
-                },
-            );
-
-            if (res.ok) {
-                alert("Logged Out");
-                router.replace("/login");
-            }
-        } catch (error) {
-            if (process.env.NODE_ENV === "development") console.error(error);
-
-            alert(
-                error instanceof Error ? error.message : "Could not logg out",
-            );
-        }
+        signOut({ redirectTo: "/" });
     };
 
     return (
@@ -220,11 +203,19 @@ export default function HomeLayout() {
                 <div className="px-4 py-3 border-t border-[#e8e5e0]">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-indigo-700 rounded-full flex items-center justify-center text-[11px] font-semibold text-white">
-                                U
+                            <div className="w-7 h-7 bg-indigo-700 overflow-hidden rounded-full flex items-center justify-center text-[11px] font-semibold text-white">
+                                {data?.user.image && (
+                                    <Image
+                                        alt="User Avatar"
+                                        src={data?.user.image}
+                                        height={28}
+                                        width={28}
+                                        className="h-7 w-7"
+                                    />
+                                )}
                             </div>
                             <span className="text-[12px] font-medium text-[#5a5550]">
-                                My workspace
+                                {data?.user.name}
                             </span>
                         </div>
                         <div className="flex gap-3">

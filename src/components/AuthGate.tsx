@@ -2,38 +2,46 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import useAuth from "@/hooks/useAuth";
+import { useSession } from "next-auth/react";
 
 type Props = {
     roles?: string[] | string;
     redirectTo?: string;
     children: React.ReactNode;
 };
-
 export default function AuthGate({
     roles,
     redirectTo = "/login",
     children,
 }: Props) {
     const router = useRouter();
-    const { user, loading, hasRole } = useAuth();
+    // const { user, loading, hasRole } = useAuth();
+    const { status, data } = useSession();
 
     useEffect(() => {
-        if (loading) return;
+        if (status === "loading") return;
 
-        if (!user) {
+        if (!data?.user) {
             router.replace(redirectTo);
             return;
         }
 
-        if (!hasRole(roles)) {
+        if (
+            roles &&
+            !(Array.isArray(roles) ? roles : [roles]).includes(data.user.role)
+        ) {
             router.replace("/403");
         }
-    }, [loading, user, roles, hasRole, redirectTo, router]);
+    }, [status, data, roles, redirectTo, router]);
 
-    if (loading) return null;
+    if (status === "loading") return null;
 
-    if (!user || !hasRole(roles)) return null;
+    if (
+        !data?.user ||
+        (roles &&
+            !(Array.isArray(roles) ? roles : [roles]).includes(data.user.role))
+    )
+        return null;
 
     return <>{children}</>;
 }

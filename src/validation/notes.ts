@@ -51,3 +51,5 @@ export const BlockSyncSchema = z.discriminatedUnion("action", [
 ]);
 
 export const SaveNoteSchema = z.array(BlockSyncSchema);
+
+export type SaveNoteSchemaType = z.infer<typeof SaveNoteSchema>;

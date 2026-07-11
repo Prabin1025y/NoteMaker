@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/sonner"
+import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,7 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: "Eton Note: Create notes that click.",
-    description: "An interactive note creation app for your clean note taking block by block.",
+    description:
+        "An interactive note creation app for your clean note taking block by block.",
 };
 
 export default function RootLayout({
@@ -30,9 +32,21 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} h-full antialiased overflow-x-hidden`}
         >
             <body className="min-h-full flex flex-col overflow-y-auto">
-                <TooltipProvider>{children}</TooltipProvider>
-                <Toaster theme="light" richColors id="normal" position="top-right" />
-                <Toaster theme="light" richColors id="promise" position="bottom-right" />
+                <SessionProvider>
+                    <TooltipProvider>{children}</TooltipProvider>
+                    <Toaster
+                        theme="light"
+                        richColors
+                        id="normal"
+                        position="top-right"
+                    />
+                    <Toaster
+                        theme="light"
+                        richColors
+                        id="promise"
+                        position="bottom-right"
+                    />
+                </SessionProvider>
             </body>
         </html>
     );
