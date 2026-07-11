@@ -1,6 +1,6 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
-import HomePage from "@/pages/HomePage";
+import HomePage from "@/components/HomePage";
 import Link from "next/link";
 import {
     Plus,
@@ -33,7 +33,7 @@ const colorMap = [
 ];
 
 export default function HomeLayout() {
-    const { data } = useSession();
+    const {data} = useSession();
     const { notes, createNote: createNoteInStore, setNotes } = useNoteStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

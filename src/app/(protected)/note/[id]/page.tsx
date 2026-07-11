@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import LeftAside from "@/pages/LeftAside";
-import MainPage from "@/pages/MainPage";
-import RightAside from "@/pages/RightAside";
+import LeftAside from "@/components/LeftAside";
+import MainPage from "@/components/MainPage";
+import RightAside from "@/components/RightAside";
 import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
