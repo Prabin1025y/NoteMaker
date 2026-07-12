@@ -47,6 +47,81 @@ type EditBlockType = Partial<
     Omit<BlockType, "id" | "publicId" | "createdAt" | "updatedAt" | "noteId">
 >;
 
+const BLOCK_SYNC_COMPARE_KEYS = [
+    "order",
+    "designId",
+    "colorOptionId",
+    "content",
+    "title",
+    "type",
+] as const;
+
+const getBlockSyncDiffData = (
+    previousBlock: BlockType,
+    nextBlock: BlockType,
+): EditBlockType => {
+    const diff: EditBlockType = {};
+
+    for (const key of BLOCK_SYNC_COMPARE_KEYS) {
+        if (!isEqual(previousBlock[key], nextBlock[key])) {
+            (diff as Record<string, unknown>)[key] = nextBlock[key];
+        }
+    }
+
+    return diff;
+};
+
+const createAddSyncBlock = (block: BlockType): AddBlockType => ({
+    publicId: block.publicId,
+    noteId: block.noteId,
+    createdAt: block.createdAt,
+    designId: block.designId,
+    colorOptionId: block.colorOptionId,
+    type: block.type,
+    content: block.content,
+    order: block.order,
+    title: block.title,
+});
+
+const buildBlockSyncDiff = (
+    previousBlocks: BlockType[],
+    nextBlocks: BlockType[],
+): BlockSyncType[] => {
+    const previousMap = new Map(previousBlocks.map((block) => [block.id, block]));
+    const nextMap = new Map(nextBlocks.map((block) => [block.id, block]));
+    const syncDiffs: BlockSyncType[] = [];
+
+    for (const previousBlock of previousBlocks) {
+        const nextBlock = nextMap.get(previousBlock.id);
+
+        if (!nextBlock) {
+            syncDiffs.push({ id: previousBlock.id, action: "delete" });
+            continue;
+        }
+
+        const data = getBlockSyncDiffData(previousBlock, nextBlock);
+        if (Object.keys(data).length > 0) {
+            syncDiffs.push({
+                id: previousBlock.id,
+                action: "edit",
+                data,
+            });
+        }
+    }
+
+    for (const nextBlock of nextBlocks) {
+        if (!previousMap.has(nextBlock.id)) {
+            syncDiffs.push({
+                id: nextBlock.id,
+                action: "add",
+                block: createAddSyncBlock(nextBlock),
+            });
+        }
+    }
+
+    return syncDiffs;
+};
+
 export type BlockSyncType = {
     id: string;
 } & (
@@ -140,30 +215,40 @@ export const useNoteStore = create<Store>()(
         undo: () => {
             const past = get().historyPast;
             if (past.length === 0) return;
+
             const previous = past[past.length - 1];
+            const currentBlocks = structuredClone(get().blocks);
+
             set({
                 blocks: previous,
                 historyPast: past.slice(0, -1),
-                historyFuture: [
-                    structuredClone(get().blocks),
-                    ...get().historyFuture,
-                ],
+                historyFuture: [currentBlocks, ...get().historyFuture],
             });
+
+            for (const syncDiff of buildBlockSyncDiff(currentBlocks, previous)) {
+                get().pushToBlocksToBeSynced(syncDiff);
+            }
+
             get().syncLocally();
         },
 
         redo: () => {
             const future = get().historyFuture;
             if (future.length === 0) return;
+
             const next = future[0];
+            const currentBlocks = structuredClone(get().blocks);
+
             set({
                 blocks: next,
                 historyFuture: future.slice(1),
-                historyPast: [
-                    ...get().historyPast,
-                    structuredClone(get().blocks),
-                ],
+                historyPast: [...get().historyPast, currentBlocks],
             });
+
+            for (const syncDiff of buildBlockSyncDiff(currentBlocks, next)) {
+                get().pushToBlocksToBeSynced(syncDiff);
+            }
+
             get().syncLocally();
         },
 
@@ -272,9 +357,20 @@ export const useNoteStore = create<Store>()(
                     ),
                 });
 
-                const { id, updatedAt, ...blockToSync } = block;
+                const blockToSync: AddBlockType = {
+                    publicId: block.publicId,
+                    noteId: block.noteId,
+                    createdAt: block.createdAt,
+                    designId: block.designId,
+                    colorOptionId: block.colorOptionId,
+                    type: block.type,
+                    content: block.content,
+                    order: block.order,
+                    title: block.title,
+                };
+
                 get().pushToBlocksToBeSynced({
-                    id,
+                    id: block.id,
                     action: "add",
                     block: blockToSync,
                 });
@@ -285,7 +381,12 @@ export const useNoteStore = create<Store>()(
                 if (!blockToBeChanged) return;
 
                 const changedBlock: EditBlockType = {};
-                const keysToCompare: Array<keyof Omit<BlockType, "id">> = [
+                const keysToCompare: Array<
+                    keyof Pick<
+                        BlockType,
+                        "designId" | "colorOptionId" | "content" | "title" | "type"
+                    >
+                > = [
                     "designId",
                     "colorOptionId",
                     "content",
@@ -296,7 +397,8 @@ export const useNoteStore = create<Store>()(
                 for (const key of keysToCompare) {
                     const editorValue = editorData[key as keyof EditorData];
                     if (editorValue !== blockToBeChanged[key]) {
-                        (changedBlock as any)[key] = editorValue;
+                        (changedBlock as Record<string, unknown>)[key] =
+                            editorValue;
                     }
                 }
 
@@ -369,68 +471,65 @@ export const useNoteStore = create<Store>()(
                 return;
             }
 
-            const exists = get().blocksToBeSynced.find(
+            const blocksToBeSynced = [...get().blocksToBeSynced];
+            const existsIndex = blocksToBeSynced.findIndex(
                 (item) => item.id === data.id,
             );
-            if (!exists) {
-                set({ blocksToBeSynced: [...get().blocksToBeSynced, data] });
+
+            if (existsIndex === -1) {
+                set({ blocksToBeSynced: [...blocksToBeSynced, data] });
                 return;
             }
 
-            // Invalid cases
-            if (exists.action === "delete" || data.action === "add") return;
+            const exists = blocksToBeSynced[existsIndex];
 
-            if (exists.action === "add") {
-                // add --> delete
-                if (data.action === "delete") {
-                    set({
-                        blocksToBeSynced: get().blocksToBeSynced.filter(
-                            (b) => b.id !== exists.id,
-                        ),
-                    });
+            if (exists.action === "delete") {
+                if (data.action === "add") {
+                    blocksToBeSynced.splice(existsIndex, 1, data);
+                    set({ blocksToBeSynced });
                     return;
                 }
 
-                // Guaranteed that new action will is edit: add --> edit
+                return;
+            }
+
+            if (exists.action === "add") {
+                if (data.action === "delete") {
+                    blocksToBeSynced.splice(existsIndex, 1);
+                    set({ blocksToBeSynced });
+                    return;
+                }
+
+                if (data.action !== "edit") return;
+
                 const newAddData = { ...exists.block, ...data.data };
-                set({
-                    blocksToBeSynced: [
-                        ...get().blocksToBeSynced.filter(
-                            (b) => b.id !== exists.id,
-                        ),
-                        { ...exists, block: newAddData },
-                    ],
+                blocksToBeSynced.splice(existsIndex, 1, {
+                    ...exists,
+                    block: newAddData,
                 });
+                set({ blocksToBeSynced });
                 return;
             }
 
-            // Guaranteed that existing action is edit: edit --> delete
             if (data.action === "delete") {
-                set({
-                    blocksToBeSynced: [
-                        ...get().blocksToBeSynced.filter(
-                            (b) => b.id !== exists.id,
-                        ),
-                        data,
-                    ],
-                });
+                blocksToBeSynced.splice(existsIndex, 1, data);
+                set({ blocksToBeSynced });
                 return;
             }
 
-            //Guaranteed that new action will be edit: edit --> edit
-            const newAddData = { ...exists.data, ...data.data };
-            set({
-                blocksToBeSynced: [
-                    ...get().blocksToBeSynced.filter((b) => b.id !== exists.id),
-                    { ...exists, data: newAddData },
-                ],
+            if (data.action !== "edit") return;
+
+            const newEditData = { ...exists.data, ...data.data };
+            blocksToBeSynced.splice(existsIndex, 1, {
+                ...exists,
+                data: newEditData,
             });
+            set({ blocksToBeSynced });
         },
 
         syncToDB: async () => {
             try {
                 if (get().blocksToBeSynced.length === 0) return;
-                const currentBlocks = get().blocks;
 
                 const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
@@ -442,14 +541,12 @@ export const useNoteStore = create<Store>()(
 
                 const data = await res.json();
 
-                if (res.ok) {
-                    set({ blocksToBeSynced: [], syncedBlocks: currentBlocks });
-                    alert("Saved successfully");
-                } else {
+                if (!res.ok) {
                     alert("Couldn't save!");
                     return;
                 }
 
+                const savedBlocks = structuredClone(get().blocks);
                 const addedData = data.addedData;
 
                 // Update ids of newly added blocks
@@ -462,15 +559,18 @@ export const useNoteStore = create<Store>()(
                         addedData.map((item) => [item.publicId, item.id]),
                     );
 
-                    const tempBlocks = get().blocks;
-
-                    for (const block of tempBlocks) {
+                    for (const block of savedBlocks) {
                         const newId = idMap.get(block.publicId);
                         if (newId) block.id = newId;
                     }
-
-                    set({ blocks: tempBlocks });
                 }
+
+                set({
+                    blocks: savedBlocks,
+                    blocksToBeSynced: [],
+                    syncedBlocks: savedBlocks,
+                });
+                alert("Saved successfully");
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
 

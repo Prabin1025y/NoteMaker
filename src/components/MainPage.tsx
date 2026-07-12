@@ -82,7 +82,10 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ command: trimmedPrompt, depth: "elaborated" }),
+                body: JSON.stringify({
+                    command: trimmedPrompt,
+                    depth: "elaborated",
+                }),
             });
 
             if (!response.ok) {
@@ -148,7 +151,8 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                     key={block.id}
                                     id={`block-${block.id}`}
                                 >
-                                    <div className="absolute w-full hidden group-hover/add:flex items-center justify-center h-0 border-t border-dashed border-indigo-500 opacity-70 hover:opacity-100">
+                                    <div className="pointer-events-none absolute inset-x-0 -top-4 z-10  flex justify-center opacity-0 -translate-y-2 scale-95 transition-all duration-200 ease-out group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100">
+                                        <div className="h-px w-full absolute top-1/2 border-t border-dashed border-indigo-300" />
                                         <button
                                             onClick={() =>
                                                 handleAddBlockInBetween(
@@ -156,10 +160,10 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                     i,
                                                 )
                                             }
-                                            className="bg-white border hover:bg-indigo-100 border-indigo-500 px-4 py-1 rounded-full cursor-pointer flex items-center justify-center gap-1"
+                                            className="flex items-center justify-center z-10 gap-1 rounded-full border border-indigo-500 bg-white px-4 py-1 text-[12px] font-medium text-indigo-600 shadow-sm transition-all duration-200 ease-out hover:bg-indigo-100"
                                         >
-                                            <PlusIcon size={20} />
-                                            <p>Add Block</p>
+                                            <PlusIcon size={18} />
+                                            <span>Add Block</span>
                                         </button>
                                     </div>
                                     <Component
@@ -221,7 +225,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                     <button
                         type="button"
                         onClick={() => setIsAiModalOpen(true)}
-                        className="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-5 text-left text-white shadow-sm transition-all hover:from-indigo-700 hover:to-violet-700"
+                        className="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-indigo-200 bg-linear-to-br from-indigo-600 to-violet-600 px-4 py-5 text-left text-white shadow-sm transition-all hover:from-indigo-700 hover:to-violet-700"
                     >
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-white/20">
                             <Sparkles
@@ -242,7 +246,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
             </div>
 
             {isAiModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
                     <div className="w-full max-w-xl rounded-[20px] border border-[#e8e5e0] bg-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-[#f0ede8] px-5 py-4">
                             <div>

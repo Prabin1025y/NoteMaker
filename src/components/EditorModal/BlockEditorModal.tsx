@@ -40,6 +40,7 @@ const BlockEditorModal = ({
         editorData.designId === 0 ? false : true,
     );
     const [isAdding, setIsAdding] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
 
     const [title, setTitle] = useState(editorData.title);
     const [file, setFile] = useState<PreviewFile | null>(null);
@@ -84,6 +85,12 @@ const BlockEditorModal = ({
             return false;
         }
     };
+
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => setIsVisible(true));
+
+        return () => cancelAnimationFrame(frame);
+    }, []);
 
     useEffect(() => {
         setTitle(editorData.title);
@@ -188,9 +195,11 @@ const BlockEditorModal = ({
     if (!currentBlock) return <div>Loading...</div>;
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+        >
             <div
-                className={`bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-full overflow-hidden flex flex-col`}
+                className={`flex h-full max-w-5xl w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-200 ease-out ${isVisible ? "translate-y-0 scale-100 opacity-100" : "translate-y-3 scale-95 opacity-0"}`}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-8 py-6">

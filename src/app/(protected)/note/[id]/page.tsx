@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Inter } from "next/font/google";
 import LeftAside from "@/components/LeftAside";
@@ -50,6 +50,10 @@ export default function NotePage() {
         syncToDB,
         blocksToBeSynced,
         currentNote,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
     } = useNoteStore();
 
     useEffect(() => {
@@ -105,11 +109,42 @@ export default function NotePage() {
         router.push("/");
     };
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         setIsSyncing(true);
         await syncToDB();
         setIsSyncing(false);
-    };
+    }, [syncToDB]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const isModifierPressed = event.metaKey || event.ctrlKey;
+            if (!isModifierPressed || isEditorOpen) return;
+
+            const key = event.key.toLowerCase();
+
+            if (key === "s") {
+                event.preventDefault();
+                if (!isSyncing) {
+                    void handleSave();
+                }
+                return;
+            }
+
+            if (key === "z" && !event.shiftKey) {
+                event.preventDefault();
+                if (canUndo()) undo();
+                return;
+            }
+
+            if (key === "y" || (key === "z" && event.shiftKey)) {
+                event.preventDefault();
+                if (canRedo()) redo();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [canRedo, canUndo, handleSave, isEditorOpen, isSyncing, redo, undo]);
 
     const handlePreview = () => {
         setIsPreviewMode((prev) => !prev);
