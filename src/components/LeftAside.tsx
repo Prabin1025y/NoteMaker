@@ -1,89 +1,148 @@
 "use client";
+
 import { useState } from "react";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
-import { allBlocks } from "@/utils/BlocksInfo";
+import {
+    allBlocks,
+    blockCategories,
+} from "@/utils/BlocksInfo";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import {  PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import AiBlockGenerator from "@/components/note/AiBlockGenerator";
 
 interface LeftAsideProps {
     openBlockEditor: (editorData: EditorData) => void;
 }
 
+const COLLAPSED_WIDTH = "w-[52px]";
+const EXPANDED_WIDTH = "w-60";
+
 const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isAiOpen, setIsAiOpen] = useState(false);
+    const [selectedType, setSelectedType] = useState<blockTypeOptions | null>(
+        null,
+    );
+
+    const isExpanded = isHovered;
 
     const handleBlockClick = (
         type: blockTypeOptions,
         content: string = initialJsonForEditor,
     ) => {
+        setSelectedType(type);
         openBlockEditor({
-            id: "", designId: 0, colorOptionId: 1,
-            action: "add", content, title: "", type,
-            order: "auto"
+            id: "",
+            designId: 0,
+            colorOptionId: 1,
+            action: "add",
+            content,
+            title: "",
+            type,
+            order: "auto",
         });
     };
 
-    return (
-        <aside
-            className={`relative flex h-full shrink-0 flex-col overflow-hidden border-r border-[#e8e5e0] bg-[#faf9f7] transition-all duration-300 ease-out ${isCollapsed ? "w-16" : "w-72"}`}
-            style={{ fontFamily: "'Inter', sans-serif" }}
-        >
-            <button
-                type="button"
-                onClick={() => setIsCollapsed((prev) => !prev)}
-                className="absolute right-5 top-2 z-10 flex h-6 w-6 items-center justify-center text-[#5a5550]"
-                aria-label={isCollapsed ? "Expand add block drawer" : "Collapse add block drawer"}
-            >
-                {isCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
-            </button>
+    const blocksByCategory = blockCategories.map((category) => ({
+        ...category,
+        blocks: allBlocks.filter((b) => b.category === category.id),
+    }));
 
-            {isCollapsed ? (
-                <div className="flex flex-1 flex-col items-center gap-2 overflow-y-auto px-2 pb-3 pt-14">
-                    {allBlocks.map((block) => (
-                        <button
-                            key={block.type}
-                            type="button"
-                            onClick={() => handleBlockClick(block.type, block.defaultContent)}
-                            className="group flex h-10 w-10 items-center justify-center rounded-lg border border-[#ece8e2] bg-white/90 text-[14px] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#f0ede8]"
-                            title={block.title}
-                        >
-                            <span className={`${block.color} text-[14px]`}>{block.icon}</span>
-                        </button>
+    return (
+        <>
+            <aside
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`relative flex h-full shrink-0 flex-col overflow-hidden border-r border-[#E8E8E8] bg-[#FAFAFA] transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH}`}
+            >
+                <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-3">
+                    {/* AI Generator button */}
+                    <div className={`px-2 mb-2 ${isExpanded ? "" : "flex justify-center"}`}>
+                        {isExpanded ? (
+                            <Button
+                                size="sm"
+                                onClick={() => setIsAiOpen(true)}
+                                className="w-full bg-[#6D5EF6] text-white hover:bg-[#5B4DE0] transition-colors"
+                            >
+                                <Sparkles size={14} />
+                                AI Block Generator
+                            </Button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setIsAiOpen(true)}
+                                title="AI Block Generator"
+                                className="flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                            >
+                                <Sparkles size={18} />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className={`mx-2 mb-2 h-px bg-[#E8E8E8] ${isExpanded ? "" : "mx-3"}`} />
+
+                    {/* Block categories */}
+                    {blocksByCategory.map((category) => (
+                        <div key={category.id} className="mb-1">
+                            {isExpanded && (
+                                <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#9A9A9A]">
+                                    {category.label}
+                                </p>
+                            )}
+                            <div className="flex flex-col gap-0.5 px-1.5">
+                                {category.blocks.map((block) => {
+                                    const isSelected = selectedType === block.type;
+                                    return (
+                                        <button
+                                            key={block.type}
+                                            type="button"
+                                            onClick={() =>
+                                                handleBlockClick(
+                                                    block.type,
+                                                    block.defaultContent,
+                                                )
+                                            }
+                                            title={block.title}
+                                            className={`group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-all duration-150 ${
+                                                isSelected
+                                                    ? "bg-[#F5F3FF] text-[#6D5EF6]"
+                                                    : "text-[#4A4A4A] hover:bg-[#F5F3FF]/60"
+                                            } ${!isExpanded ? "justify-center px-0" : ""}`}
+                                        >
+                                            <span
+                                                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                                    isSelected
+                                                        ? "bg-[#EDE9FD] text-[#6D5EF6]"
+                                                        : "text-[#6B6B6B] group-hover:text-[#6D5EF6] group-hover:bg-[#F5F3FF]"
+                                                }`}
+                                            >
+                                                {block.icon}
+                                            </span>
+                                            {isExpanded && (
+                                                <div className="min-w-0 flex-1 overflow-hidden">
+                                                    <p className="text-[12px] font-medium truncate">
+                                                        {block.title}
+                                                    </p>
+                                                    <p className="text-[10px] text-[#9A9A9A] truncate">
+                                                        {block.description}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     ))}
                 </div>
-            ) : (
-                <>
-                    <div className="border-b border-[#f0ede8] px-4 py-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#b8b3ac]">
-                            Add block
-                        </p>
-                    </div>
+            </aside>
 
-                    <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
-                        {allBlocks.map((block) => (
-                            <button
-                                key={block.type}
-                                type="button"
-                                onClick={() => handleBlockClick(block.type, block.defaultContent)}
-                                className="group flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left transition-colors hover:bg-[#f0ede8] focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-1"
-                            >
-                                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] ${block.bgColor}`}>
-                                    <span className={`${block.color} text-[14px]`}>{block.icon}</span>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[12px] font-medium text-[#5a5550] transition-colors group-hover:text-[#1a1714]">
-                                        {block.title}
-                                    </p>
-                                    <p className="truncate text-[11px] text-[#b8b3ac]">
-                                        {block.description}
-                                    </p>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
-        </aside>
+            <AiBlockGenerator
+                isOpen={isAiOpen}
+                onClose={() => setIsAiOpen(false)}
+            />
+        </>
     );
 };
 

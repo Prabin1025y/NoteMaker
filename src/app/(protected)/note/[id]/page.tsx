@@ -1,18 +1,24 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Inter } from "next/font/google";
 import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
 import RightAside from "@/components/RightAside";
+import NoteChromeHeader from "@/components/note/NoteChromeHeader";
 import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { ArrowLeft, Save, UploadIcon } from "lucide-react";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { toast } from "sonner";
+
+const inter = Inter({
+    subsets: ["latin"],
+    display: "swap",
+});
 
 export default function NotePage() {
     const params = useParams();
@@ -23,6 +29,8 @@ export default function NotePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
@@ -42,7 +50,6 @@ export default function NotePage() {
         syncToDB,
         blocksToBeSynced,
         currentNote,
-        blocks,
     } = useNoteStore();
 
     useEffect(() => {
@@ -96,6 +103,19 @@ export default function NotePage() {
         }
 
         router.push("/");
+    };
+
+    const handleSave = async () => {
+        setIsSyncing(true);
+        await syncToDB();
+        setIsSyncing(false);
+    };
+
+    const handlePreview = () => {
+        setIsPreviewMode((prev) => !prev);
+        if (!isPreviewMode) {
+            toast.info("Preview mode — sidebars hidden", { duration: 2000 });
+        }
     };
 
     const handleExport = async () => {
@@ -177,65 +197,25 @@ export default function NotePage() {
 
     return (
         <div
-            className="h-screen w-screen flex flex-col overflow-hidden bg-[#faf9f7]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            className={`${inter.className} h-screen w-screen flex flex-col overflow-hidden bg-white`}
         >
-            {/* {exporting && (
-                <div className="bg-white opacity-80 absolute inset-0 flex gap-3 items-center justify-center z-100 backdrop-blur-2xl">
-                    <Loader2 className="animate-spin" />
-                    <p>Exporting...</p>
-                </div>
-            )} */}
-            {/* Top bar */}
-            <header className="shrink-0 flex items-center justify-between px-5 py-2.5 bg-white border-b border-[#e8e5e0]">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={handleHomeClick}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#faf9f7] border border-[#e2e0dc] rounded-lg text-[12px] font-medium text-[#5a5550] hover:bg-[#f0ede8] transition-colors"
-                    >
-                        <ArrowLeft size={13} />
-                        Home
-                    </button>
-                    <span className="text-[#e2e0dc]">·</span>
-                    <span className="text-[14px] font-semibold text-[#1a1714] tracking-tight truncate max-w-70">
-                        {currentNote?.title || "Untitled"}
-                    </span>
-                    <span className="text-[12px] text-[#b8b3ac]">
-                        — {blocks?.length ?? 0}{" "}
-                        {(blocks?.length ?? 0) === 1 ? "block" : "blocks"}
-                    </span>
-                </div>
+            <NoteChromeHeader
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onHomeClick={handleHomeClick}
+                onSave={() => void handleSave()}
+                onExport={() => void handleExport()}
+                onPreview={handlePreview}
+                isSyncing={isSyncing}
+                isExporting={isExporting}
+                hasUnsaved={hasUnsaved}
+                isPreviewMode={isPreviewMode}
+            />
 
-                <div className="flex gap-2">
-                    <button
-                        onClick={async () => {
-                            setIsSyncing(true);
-                            await syncToDB();
-                            setIsSyncing(false);
-                        }}
-                        disabled={isSyncing || isExporting}
-                        className={`${isSyncing && "opacity-80 cursor-not-allowed"} relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors`}
-                    >
-                        <Save size={13} />
-                        {isSyncing ? "Saving..." : "Save"}
-                        {hasUnsaved && (
-                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-                        )}
-                    </button>
-                    <button
-                        onClick={handleExport}
-                        disabled={isExporting}
-                        className={` ${isExporting && "opacity-80 cursor-not-allowed"} relative flex items-center gap-1.5 px-4 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-[12px] font-medium transition-colors`}
-                    >
-                        <UploadIcon size={13} />
-                        {isExporting ? "Exporting..." : "Export"}
-                    </button>
-                </div>
-            </header>
-
-            {/* Editor body */}
             <div className="flex flex-1 overflow-hidden">
-                <LeftAside openBlockEditor={openBlockEditor} />
+                {!isPreviewMode && (
+                    <LeftAside openBlockEditor={openBlockEditor} />
+                )}
                 {isLoading ? (
                     <MainPageSkeleton />
                 ) : (
@@ -244,7 +224,9 @@ export default function NotePage() {
                         openBlockEditor={openBlockEditor}
                     />
                 )}
-                <RightAside />
+                {!isPreviewMode && (
+                    <RightAside searchQuery={searchQuery} />
+                )}
             </div>
 
             {isEditorOpen && (

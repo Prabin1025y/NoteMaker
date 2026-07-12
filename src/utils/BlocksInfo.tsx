@@ -11,6 +11,8 @@ import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { ALL_DIVIDERS } from "./Dividers";
 import { blockTypeOptions } from "@/types/Editor";
 
+export type BlockCategory = "basic" | "content" | "developer";
+
 export interface BlockItem {
     defaultDesignId: number;
     type: blockTypeOptions;
@@ -21,7 +23,14 @@ export interface BlockItem {
     color: string;
     bgColor: string;
     hoverColor: string;
+    category: BlockCategory;
 }
+
+export const blockCategories: { id: BlockCategory; label: string }[] = [
+    { id: "basic", label: "Basic" },
+    { id: "content", label: "Content" },
+    { id: "developer", label: "Developer" },
+];
 
 export const allBlocks: BlockItem[] = [
     // {
@@ -50,9 +59,10 @@ export const allBlocks: BlockItem[] = [
         description: "Definition, Example, Notes, Tips etc.",
         defaultContent: initialJsonForEditor,
         icon: <BookOpen size={20} />,
-        color: "text-purple-600",
-        bgColor: "bg-purple-50",
-        hoverColor: "hover:bg-purple-100",
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "basic",
     },
     // {
     //     defaultDesignId: 2,
@@ -101,9 +111,10 @@ export const allBlocks: BlockItem[] = [
         defaultContent: "// Do Something",
         description: "Insert code snippet",
         icon: <Code size={20} />,
-        color: "text-indigo-600",
-        bgColor: "bg-indigo-50",
-        hoverColor: "hover:bg-indigo-100",
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "developer",
     },
     {
         defaultDesignId: 1,
@@ -112,9 +123,10 @@ export const allBlocks: BlockItem[] = [
         description: "Add a math formula",
         defaultContent: "E=mc^2",
         icon: <FlaskConical size={20} />,
-        color: "text-cyan-600",
-        bgColor: "bg-cyan-50",
-        hoverColor: "hover:bg-cyan-100",
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "content",
     },
     {
         defaultDesignId: 1,
@@ -123,9 +135,10 @@ export const allBlocks: BlockItem[] = [
         defaultContent: "",
         description: "Insert an image",
         icon: <ImageIcon size={20} />,
-        color: "text-pink-600",
-        bgColor: "bg-pink-50",
-        hoverColor: "hover:bg-pink-100",
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "content",
     },
     {
         defaultDesignId: 1,
@@ -134,9 +147,10 @@ export const allBlocks: BlockItem[] = [
         defaultContent: JSON.stringify(makeInitialState()),
         description: "Create a data table",
         icon: <Table2 size={20} />,
-        color: "text-teal-600",
-        bgColor: "bg-teal-50",
-        hoverColor: "hover:bg-teal-100",
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "content",
     },
     // {
     // defaultDesignId: 1,
@@ -165,8 +179,9 @@ export const allBlocks: BlockItem[] = [
         defaultContent: ALL_DIVIDERS[0].name,
         description: "Add a section divider",
         icon: <Divide size={20} />,
-        color: "text-neutral-600",
-        bgColor: "bg-neutral-50",
-        hoverColor: "hover:bg-neutral-100",
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "basic",
     },
 ];

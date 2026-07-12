@@ -8,17 +8,19 @@ function Sortable({
     id,
     index,
     otherInfo,
-    className,
+    isActive,
+    onClick,
 }: {
     id: string;
     index: number;
+    isActive?: boolean;
+    onClick?: () => void;
     otherInfo: {
         colorOptionId: number;
         designId: number;
         title?: string;
         type: string;
     };
-    className?: string;
 }) {
     const [element, setElement] = useState<Element | null>(null);
     const handleRef = useRef<HTMLDivElement | null>(null);
@@ -44,63 +46,43 @@ function Sortable({
     }, [isDragging, id, setDraggingBlockId]);
 
     return (
-        // <div
-        //     ref={setElement}
-        //     className={`w-full text-left p-3 rounded-lg  transition-colors  ${isDragging && `shadow-2xl`}`}
-        // >
-        //     <div className="flex items-start gap-3">
-        //         <div className={`shrink-0 mt-0.5 ${otherInfo.color}`}>
-        //             {otherInfo.icon}
-        //         </div>
-        //         <div className="flex-1 min-w-0">
-        //             <h3
-        //                 className={`text-sm font-semibold ${otherInfo.color} truncate`}
-        //             >
-        //                 {blockTitle}
-        //             </h3>
-        //         </div>
-        //         <div
-        //             ref={handleRef}
-        //             className={`${otherInfo.color} cursor-grab`}
-        //         >
-        //             <GripVerticalIcon />
-        //         </div>
-        //     </div>
-        // </div>
         <div
             ref={setElement}
+            onClick={onClick}
             style={
-                isDesignEnabled
+                isDesignEnabled && !isActive
                     ? { backgroundColor: colorOption?.backgroundColorHex }
                     : {}
             }
-            className={`${className} ${isDragging && ` shadow-2xl border border-gray-100`} w-full text-left flex items-center gap-2.5 px-2.5 py-2  hover:bg-[#f0ede8] group`}
+            className={`w-full text-left flex items-center gap-2 rounded-lg px-2 py-2 transition-all duration-150 cursor-pointer group ${
+                isActive
+                    ? "bg-[#F5F3FF] ring-1 ring-[#6D5EF6]/20"
+                    : "hover:bg-[#F5F3FF]/50"
+            } ${isDragging ? "shadow-md ring-1 ring-[#6D5EF6]/30 bg-white scale-[1.02]" : ""}`}
         >
             <div
                 ref={handleRef}
-                className={`text-gray-400 cursor-grab`}
+                onClick={(e) => e.stopPropagation()}
+                className="text-[#C8C8C8] cursor-grab active:cursor-grabbing transition-colors group-hover:text-[#9A9A9A] shrink-0"
             >
-                <GripVerticalIcon size={20} />
+                <GripVerticalIcon size={16} />
             </div>
-            {/* <div
-                className={`w-5 h-7 rounded-[7px] flex items-center justify-center shrink-0`}
-            >
-                <span className={`${otherInfo.color} `}>
-                    {otherInfo.icon}
-                </span>
-            </div> */}
             <div className="flex-1 min-w-0">
                 <p
                     style={
-                        isDesignEnabled
+                        isDesignEnabled && !isActive
                             ? { color: colorOption?.borderColorHex }
                             : {}
                     }
-                    className={` group-hover:text-[#1a1714] transition-colors`}
+                    className={`text-[12px] font-medium truncate transition-colors ${
+                        isActive
+                            ? "text-[#6D5EF6]"
+                            : "text-[#1A1A1A] group-hover:text-[#1A1A1A]"
+                    }`}
                 >
                     {otherInfo.title}
                 </p>
-                <p className="text-[11px] text-[#b8b3ac] truncate">
+                <p className="text-[10px] text-[#9A9A9A] truncate capitalize">
                     {otherInfo.type}
                 </p>
             </div>

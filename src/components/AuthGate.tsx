@@ -11,7 +11,7 @@ type Props = {
 };
 export default function AuthGate({
     roles,
-    redirectTo = "/login",
+    redirectTo = "/",
     children,
 }: Props) {
     const router = useRouter();

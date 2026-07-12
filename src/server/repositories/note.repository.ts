@@ -19,35 +19,84 @@ export async function saveBlocks({
     deleteData,
     editData,
 }: SaveBlocksType) {
-    return prisma.$transaction(async (tx) => {
-        await tx.block.deleteMany({
-            where: { id: { in: deleteData } },
-        });
+    const updates = editData.map(({ id, ...rest }) =>
+        prisma.block.update({
+            where: { id },
+            data: rest,
+        }),
+    );
 
-        await Promise.all(
-            editData.map(({ id, ...rest }) => {
-                tx.block.update({ where: { id }, data: rest });
+    const operations: Prisma.PrismaPromise<any>[] = [];
+
+    if (deleteData.length > 0) {
+        operations.push(
+            prisma.block.deleteMany({
+                where: {
+                    id: {
+                        in: deleteData,
+                    },
+                },
             }),
         );
+    }
+    if (updates.length > 0) operations.push(...updates);
 
-        return await tx.block.createManyAndReturn({
-            data: addData.map((item) => ({
-                publicId: item.publicId,
-                title: item.title ?? "",
-                content: item.content,
-                colorOptionId: item.colorOptionId,
-                designId: item.designId,
-                type: item.type,
-                order: item.order,
-                noteId: item.noteId,
-                createdAt: item.createdAt,
-            })),
-            select: {
-                id: true,
-                publicId: true,
-            },
-        });
-    });
+    if (addData.length > 0) {
+        operations.push(
+            prisma.block.createManyAndReturn({
+                data: addData.map((item) => ({
+                    publicId: item.publicId,
+                    title: item.title ?? "",
+                    content: item.content,
+                    colorOptionId: item.colorOptionId,
+                    designId: item.designId,
+                    type: item.type,
+                    order: item.order,
+                    noteId: item.noteId,
+                    createdAt: item.createdAt,
+                })),
+                select: {
+                    id: true,
+                    publicId: true,
+                },
+            }),
+        );
+    }
+
+    const results = await prisma.$transaction(operations);
+
+    // The last operation is createManyAndReturn()
+    return results[results.length - 1];
+
+    // return prisma.$transaction(async (tx) => {
+    //     await tx.block.deleteMany({
+    //         where: { id: { in: deleteData } },
+    //     });
+
+    //     await Promise.all(
+    //         editData.map(({ id, ...rest }) => {
+    //             return tx.block.update({ where: { id }, data: rest });
+    //         }),
+    //     );
+
+    //     return await tx.block.createManyAndReturn({
+    //         data: addData.map((item) => ({
+    //             publicId: item.publicId,
+    //             title: item.title ?? "",
+    //             content: item.content,
+    //             colorOptionId: item.colorOptionId,
+    //             designId: item.designId,
+    //             type: item.type,
+    //             order: item.order,
+    //             noteId: item.noteId,
+    //             createdAt: item.createdAt,
+    //         })),
+    //         select: {
+    //             id: true,
+    //             publicId: true,
+    //         },
+    //     });
+    // });
 }
 
 export async function findManyByAuthor(

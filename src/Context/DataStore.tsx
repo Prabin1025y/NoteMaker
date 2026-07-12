@@ -5,6 +5,7 @@ import { blockTypeOptions, EditorData } from "@/types/Editor";
 import { getBlocksFromNoteId } from "@/utils/UtilFunctions";
 import { apiFetch } from "@/lib/api-client";
 import { createNote, fetchNotes } from "@/services/noteService";
+import { isEqual } from "lodash";
 
 // export interface BlockType {
 //     id: string;
@@ -65,14 +66,19 @@ export type BlockSyncType = {
 type Store = {
     currentNote: NoteType | null;
     blocks: BlockType[];
+    syncedBlocks: BlockType[];
     title: string;
     notes: NoteType[];
     draggingBlockId: string | null;
+    activeBlockId: string | null;
     blocksToBeSynced: BlockSyncType[];
+    historyPast: BlockType[][];
+    historyFuture: BlockType[][];
 
     setTitle: (title: string) => void;
-    setBlocks: (blocks: BlockType[]) => void;
+    setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
+    setActiveBlockId: (id: string | null) => void;
     setNotes: (notes: NoteType[]) => void;
 
     createNote: (title?: string, description?: string) => Promise<NoteType>;
@@ -87,6 +93,12 @@ type Store = {
     pushToBlocksToBeSynced: (data: BlockSyncType) => void;
     syncLocally: () => void;
     syncToDB: () => Promise<void>;
+
+    undo: () => void;
+    redo: () => void;
+    canUndo: () => boolean;
+    canRedo: () => boolean;
+    snapshotHistory: () => void;
 };
 
 export const useNoteStore = create<Store>()(
@@ -96,12 +108,64 @@ export const useNoteStore = create<Store>()(
         title: "Untitled Note",
         notes: [],
         draggingBlockId: null,
+        activeBlockId: null,
         blocksToBeSynced: [],
+        historyPast: [],
+        historyFuture: [],
+        syncedBlocks: [],
 
         setTitle: (title) => set({ title }),
-        setBlocks: (blocks) => set({ blocks }),
+        setBlocks: (blocks, recordHistory = true) => {
+            if (recordHistory) get().snapshotHistory();
+            set({ blocks });
+        },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
+        setActiveBlockId: (id) => set({ activeBlockId: id }),
         setNotes: (notes) => set({ notes }),
+
+        snapshotHistory: () => {
+            const current = get().blocks;
+            set({
+                historyPast: [
+                    ...get().historyPast,
+                    structuredClone(current),
+                ].slice(-50),
+                historyFuture: [],
+            });
+        },
+
+        canUndo: () => get().historyPast.length > 0,
+        canRedo: () => get().historyFuture.length > 0,
+
+        undo: () => {
+            const past = get().historyPast;
+            if (past.length === 0) return;
+            const previous = past[past.length - 1];
+            set({
+                blocks: previous,
+                historyPast: past.slice(0, -1),
+                historyFuture: [
+                    structuredClone(get().blocks),
+                    ...get().historyFuture,
+                ],
+            });
+            get().syncLocally();
+        },
+
+        redo: () => {
+            const future = get().historyFuture;
+            if (future.length === 0) return;
+            const next = future[0];
+            set({
+                blocks: next,
+                historyFuture: future.slice(1),
+                historyPast: [
+                    ...get().historyPast,
+                    structuredClone(get().blocks),
+                ],
+            });
+            get().syncLocally();
+        },
 
         createNote: async (title = "Untitled Note", description = "") => {
             const { note, authorName } = await createNote(title, description);
@@ -149,11 +213,15 @@ export const useNoteStore = create<Store>()(
 
             const note = get().notes.find((note) => note.id === id);
             const blocks: BlockType[] = await getBlocksFromNoteId(id);
+            const sortedBlocks = blocks.sort((a, b) => a.order - b.order);
             set({
                 title: note?.title,
                 currentNote: note,
-                blocks: blocks.sort((a, b) => a.order - b.order),
+                blocks: sortedBlocks,
+                syncedBlocks: sortedBlocks,
                 blocksToBeSynced: [],
+                historyPast: [],
+                historyFuture: [],
             });
         },
 
@@ -171,6 +239,7 @@ export const useNoteStore = create<Store>()(
         },
 
         addSaveBlock: (editorData) => {
+            get().snapshotHistory();
             if (editorData.action === "add") {
                 const lastBlockOrder = get().blocks.at(-1)?.order;
                 const publicId = uuidv4();
@@ -251,12 +320,14 @@ export const useNoteStore = create<Store>()(
         },
 
         deleteBlock: (id) => {
+            get().snapshotHistory();
             set({ blocks: get().blocks.filter((block) => block.id !== id) });
             get().syncLocally();
             get().pushToBlocksToBeSynced({ id, action: "delete" });
         },
 
         duplicateBlock: (id) => {
+            get().snapshotHistory();
             const existingBlocks = get().blocks;
             const blockIndex = existingBlocks.findIndex(
                 (block) => block.id === id,
@@ -293,6 +364,11 @@ export const useNoteStore = create<Store>()(
         },
 
         pushToBlocksToBeSynced: (data) => {
+            if (isEqual(get().blocks, get().syncedBlocks)) {
+                set({ blocksToBeSynced: [] });
+                return;
+            }
+
             const exists = get().blocksToBeSynced.find(
                 (item) => item.id === data.id,
             );
@@ -354,6 +430,7 @@ export const useNoteStore = create<Store>()(
         syncToDB: async () => {
             try {
                 if (get().blocksToBeSynced.length === 0) return;
+                const currentBlocks = get().blocks;
 
                 const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
@@ -363,11 +440,15 @@ export const useNoteStore = create<Store>()(
                     },
                 );
 
-                set({ blocksToBeSynced: [] });
-
                 const data = await res.json();
 
-                if (data?.success) alert("Saved successfully");
+                if (res.ok) {
+                    set({ blocksToBeSynced: [], syncedBlocks: currentBlocks });
+                    alert("Saved successfully");
+                } else {
+                    alert("Couldn't save!");
+                    return;
+                }
 
                 const addedData = data.addedData;
 

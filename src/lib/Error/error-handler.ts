@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ForbiddenError, GeneralBadRequestError, UnauthorizedError } from "./custom-errors";
+import {
+    ForbiddenError,
+    GeneralBadRequestError,
+    UnauthorizedError,
+} from "./custom-errors";
 import { ZodError } from "zod";
 
 export function withErrorHandling<TContext = unknown>(
@@ -9,6 +13,7 @@ export function withErrorHandling<TContext = unknown>(
         try {
             return await handler(req, context);
         } catch (error) {
+            console.log(error);
             if (error instanceof UnauthorizedError) {
                 return NextResponse.json(
                     { message: error.message || "Unauthorized" },

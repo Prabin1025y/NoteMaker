@@ -146,6 +146,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                 <div
                                     className="relative group/add"
                                     key={block.id}
+                                    id={`block-${block.id}`}
                                 >
                                     <div className="absolute w-full hidden group-hover/add:flex items-center justify-center h-0 border-t border-dashed border-indigo-500 opacity-70 hover:opacity-100">
                                         <button
