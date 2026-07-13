@@ -356,7 +356,7 @@ const BlockEditorModal = ({
                                     </DropdownMenu>
                                 </div>
                             );
-                        else if (currentBlock.type === "divider") return null;
+                        else if (currentBlock.type === "divider" || currentBlock.type === "heading") return null;
                         else
                             return (
                                 <div>
@@ -389,7 +389,7 @@ const BlockEditorModal = ({
                                 />
                             );
                         else if (
-                            ["block", "text"].includes(currentBlock.type || "")
+                            ["block", "heading"].includes(currentBlock.type || "")
                         )
                             return (
                                 <div className="flex-1 flex flex-col">

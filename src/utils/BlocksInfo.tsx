@@ -5,8 +5,9 @@ import {
     Divide,
     Table2,
     ImageIcon,
+    Heading,
 } from "lucide-react";
-import { initialJsonForEditor } from "./UtilFunctions";
+import { initialHeadingJsonContent, initialJsonForEditor } from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { ALL_DIVIDERS } from "./Dividers";
 import { blockTypeOptions } from "@/types/Editor";
@@ -59,6 +60,18 @@ export const allBlocks: BlockItem[] = [
         description: "Definition, Example, Notes, Tips etc.",
         defaultContent: initialJsonForEditor,
         icon: <BookOpen size={20} />,
+        color: "text-[#6D5EF6]",
+        bgColor: "bg-[#F3F1FE]",
+        hoverColor: "hover:bg-[#EDE9FD]",
+        category: "basic",
+    },
+    {
+        defaultDesignId: 1,
+        type: "heading",
+        title: "Heading Block",
+        description: "New topic heading",
+        defaultContent: initialHeadingJsonContent,
+        icon: <Heading size={20} />,
         color: "text-[#6D5EF6]",
         bgColor: "bg-[#F3F1FE]",
         hoverColor: "hover:bg-[#EDE9FD]",

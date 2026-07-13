@@ -1,5 +1,6 @@
 export type blockTypeOptions =
     | "block"
+    | "heading"
     | "code"
     | "image"
     | "table"

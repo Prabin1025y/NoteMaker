@@ -1,13 +1,5 @@
+import { BlockType } from "@/generated/prisma/enums";
 import { z } from "zod";
-
-const BlockTypeOptionsSchema = z.enum([
-    "block",
-    "code",
-    "image",
-    "table",
-    "divider",
-    "formula",
-]);
 
 export const AddBlockSchema = z.object({
     publicId: z.string(),
@@ -15,7 +7,7 @@ export const AddBlockSchema = z.object({
     noteId: z.string(),
     designId: z.number(),
     colorOptionId: z.number(),
-    type: BlockTypeOptionsSchema,
+    type: z.enum(BlockType),
     content: z.string(),
     order: z.number(),
     title: z.string().optional(),

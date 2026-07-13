@@ -2,6 +2,7 @@ import CodeBlock from "@/components/Blocks/CodeBlock";
 import DividerBlock from "@/components/Blocks/DividerBlock";
 import FormulaBlock from "@/components/Blocks/FormulaBlock";
 import GeneralBlock from "@/components/Blocks/GeneralBlock";
+import HeaderBlock from "@/components/Blocks/HeaderBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import TableBlock from "@/components/Blocks/TableBlock";
 import { apiFetch } from "@/lib/api-client";
@@ -17,6 +18,7 @@ export function isValidJson(str: string) {
 }
 
 export const initialJsonForEditor = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`;
+export const initialHeadingJsonContent = `{"type":"doc","content":[{"type":"heading","attrs":{"textAlign":"center","level":1},"content":[{"type":"text","text":"Heading"}]}]}`
 
 export const MONACO_LANGUAGES = [
     "plaintext",
@@ -71,12 +73,13 @@ export const mapTypeToElement = (type: blockTypeOptions) => {
             return TableBlock;
         case "divider":
             return DividerBlock;
+        case "heading":
+            return HeaderBlock;
 
         default:
             return null;
     }
 };
-
 
 export const getBlocksFromNoteId = async (id: string) => {
     try {

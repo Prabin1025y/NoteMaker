@@ -80,6 +80,7 @@ enum BlockType {
   table
   divider
   formula
+  heading
 }
 
 enum Role {
