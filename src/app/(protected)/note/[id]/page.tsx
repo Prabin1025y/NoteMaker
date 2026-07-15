@@ -14,6 +14,7 @@ import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { toast } from "sonner";
+import AiBlockGenerator from "@/components/note/AiBlockGenerator";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -32,6 +33,8 @@ export default function NotePage() {
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
+    const [isAiOpen, setIsAiOpen] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editorData, setEditorData] = useState<EditorData>({
         id: "",
@@ -220,8 +223,7 @@ export default function NotePage() {
             },
             {
                 loading: `Exporting ${currentNote.title}...`,
-                success: () =>
-                    `${currentNote.title} Pdf has been exported.`,
+                success: () => `${currentNote.title} Pdf has been exported.`,
                 error: "Error",
                 toasterId: "promise",
             },
@@ -249,19 +251,23 @@ export default function NotePage() {
 
             <div className="flex flex-1 overflow-hidden">
                 {!isPreviewMode && (
-                    <LeftAside openBlockEditor={openBlockEditor} />
+                    <LeftAside
+                        openBlockEditor={openBlockEditor}
+                        isGenerating={isGenerating}
+                        openAiModel={() => setIsAiOpen(true)}
+                    />
                 )}
                 {isLoading ? (
                     <MainPageSkeleton />
                 ) : (
                     <MainPage
+                        isGenerating={isGenerating}
+                        openAiModel={() => setIsAiOpen(true)}
                         noteRef={noteRef}
                         openBlockEditor={openBlockEditor}
                     />
                 )}
-                {!isPreviewMode && (
-                    <RightAside searchQuery={searchQuery} />
-                )}
+                {!isPreviewMode && <RightAside searchQuery={searchQuery} />}
             </div>
 
             {isEditorOpen && (
@@ -271,6 +277,12 @@ export default function NotePage() {
                     editorData={editorData}
                 />
             )}
+
+            <AiBlockGenerator
+                isOpen={isAiOpen}
+                setIsGenerating={setIsGenerating}
+                onClose={() => setIsAiOpen(false)}
+            />
         </div>
     );
 }

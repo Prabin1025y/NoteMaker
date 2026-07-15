@@ -2,25 +2,26 @@
 
 import { useState } from "react";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
-import {
-    allBlocks,
-    blockCategories,
-} from "@/utils/BlocksInfo";
+import { allBlocks, blockCategories } from "@/utils/BlocksInfo";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AiBlockGenerator from "@/components/note/AiBlockGenerator";
 
 interface LeftAsideProps {
     openBlockEditor: (editorData: EditorData) => void;
+    isGenerating: boolean;
+    openAiModel: () => void;
 }
 
 const COLLAPSED_WIDTH = "w-[52px]";
 const EXPANDED_WIDTH = "w-60";
 
-const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
+const LeftAside = ({
+    openBlockEditor,
+    isGenerating,
+    openAiModel,
+}: LeftAsideProps) => {
     const [isHovered, setIsHovered] = useState(false);
-    const [isAiOpen, setIsAiOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<blockTypeOptions | null>(
         null,
     );
@@ -58,12 +59,15 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
             >
                 <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-3">
                     {/* AI Generator button */}
-                    <div className={`px-2 mb-2 ${isExpanded ? "" : "flex justify-center"}`}>
+                    <div
+                        className={`px-2 mb-2 ${isExpanded ? "" : "flex justify-center"}`}
+                    >
                         {isExpanded ? (
                             <Button
                                 size="sm"
-                                onClick={() => setIsAiOpen(true)}
-                                className="w-full bg-[#6D5EF6] text-white hover:bg-[#5B4DE0] transition-colors"
+                                onClick={() => openAiModel()}
+                                disabled={isGenerating}
+                                className={`${isGenerating && "cursor-not-allowed opacity-70"} w-full bg-[#6D5EF6] text-white hover:bg-[#5B4DE0] transition-colors`}
                             >
                                 <Sparkles size={14} />
                                 AI Block Generator
@@ -71,7 +75,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                         ) : (
                             <button
                                 type="button"
-                                onClick={() => setIsAiOpen(true)}
+                                onClick={() => openAiModel()}
                                 title="AI Block Generator"
                                 className="flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
                             >
@@ -80,11 +84,16 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                         )}
                     </div>
 
-                    <div className={`mx-2 mb-2 h-px bg-[#E8E8E8] ${isExpanded ? "" : "mx-3"}`} />
+                    <div
+                        className={`mx-2 mb-2 h-px bg-[#E8E8E8] ${isExpanded ? "" : "mx-3"}`}
+                    />
 
                     {/* Block categories */}
                     {blocksByCategory.map((category) => (
-                        <div key={category.id} className="mb-1">
+                        <div
+                            key={category.id}
+                            className="mb-1"
+                        >
                             {isExpanded && (
                                 <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#9A9A9A]">
                                     {category.label}
@@ -92,7 +101,8 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                             )}
                             <div className="flex flex-col gap-0.5 px-1.5">
                                 {category.blocks.map((block) => {
-                                    const isSelected = selectedType === block.type;
+                                    const isSelected =
+                                        selectedType === block.type;
                                     return (
                                         <button
                                             key={block.type}
@@ -137,11 +147,6 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                     ))}
                 </div>
             </aside>
-
-            <AiBlockGenerator
-                isOpen={isAiOpen}
-                onClose={() => setIsAiOpen(false)}
-            />
         </>
     );
 };

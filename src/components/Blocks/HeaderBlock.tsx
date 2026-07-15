@@ -1,6 +1,5 @@
 import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
-import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { EditIcon, Trash2Icon } from "lucide-react";
 
