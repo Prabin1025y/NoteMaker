@@ -398,7 +398,7 @@ const BlockEditorModal = ({
                                     </label>
                                     <div className="border flex-1 border-slate-300 rounded-lg overflow-hidden ">
                                         {/* Editor */}
-                                        <div className=" p-4 min-h-64 max-h-100 overflow-y-hidden">
+                                        <div className=" px-4 min-h-64 max-h-100 overflow-y-hidden">
                                             {
                                                 <SimpleEditor
                                                     className="max-w-full max-h-100"
