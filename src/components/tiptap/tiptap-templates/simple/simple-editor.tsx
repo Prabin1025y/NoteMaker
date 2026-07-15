@@ -105,7 +105,7 @@ export const tiptap_extensions_list = [
     //     onError: (error) => console.error("Upload failed:", error),
     // }),
     // CustomHardBreak,
-    CustomMathDelimiters,
+    // CustomMathDelimiters,
 ];
 
 const MainToolbarContent = ({
@@ -282,7 +282,8 @@ export function SimpleEditor({
             //     onError: (error) => console.error("Upload failed:", error),
             // }),
             // CustomHardBreak,
-            CustomMathDelimiters,
+            // CustomMathDelimiters,
+            
         ],
         content: JSON.parse(initialContent),
     });
