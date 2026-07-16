@@ -18,6 +18,7 @@ export function isValidJson(str: string) {
 }
 
 export const initialJsonForEditor = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`;
+export const editorJsonForPreview = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"This is example text for this block."}]}]}`;
 export const initialHeadingJsonContent = `{"type":"doc","content":[{"type":"heading","attrs":{"textAlign":"center","level":1},"content":[{"type":"text","text":"Heading"}]}]}`
 
 export const MONACO_LANGUAGES = [
