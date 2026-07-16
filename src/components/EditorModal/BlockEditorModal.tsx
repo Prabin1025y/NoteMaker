@@ -8,7 +8,7 @@ import {
     Save,
     X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { BlockItem, allBlocks } from "@/utils/BlocksInfo";
 import {
     DropdownMenu,
@@ -22,7 +22,6 @@ import DesignSelection from "./DesignSelection";
 import { ImageDropZone, type PreviewFile } from "../ImageUploader";
 import {
     editorJsonForPreview,
-    initialHeadingJsonContent,
     initialJsonForEditor,
     isValidJson,
     mapTypeToElement,
@@ -30,7 +29,6 @@ import {
     MonacoLanguage,
 } from "@/utils/UtilFunctions";
 import FormulaSection from "./FormulaSection";
-import ToogleButton from "../ui/ToogleButton";
 import CodeSection from "./CodeSection";
 import EditableTable from "./TableSection";
 import DividerSelection from "./DividerSelection";
@@ -154,6 +152,8 @@ const BlockEditorModal = ({
             !ALL_DIVIDERS.some((divider) => divider.name === content.trim())
         ) {
             setContent(ALL_DIVIDERS[0].name);
+        } else if (currentBlock?.type === "formula") {
+            setContent("E=mc^2");
         }
     }, [currentBlock, editorData.title]);
 
@@ -416,7 +416,7 @@ const BlockEditorModal = ({
                     </div>
 
                     {/* Right column: settings sidebar */}
-                    <div className="flex w-[340px] shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-slate-50/60 px-6 py-6">
+                    <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-slate-50/60 px-6 py-6">
                         {/* <h3 className="text-base font-semibold text-slate-900 mb-5">
                             Block Settings
                         </h3> */}
@@ -497,10 +497,19 @@ const BlockEditorModal = ({
                             <div
                                 className={`${designUnavailable && "saturate-0 opacity-40 pointer-events-none"} flex items-center justify-between`}
                             >
-                                <label className="text-sm font-semibold text-slate-700">
+                                <label
+                                    className="text-sm font-semibold text-slate-700 cursor-pointer"
+                                    htmlFor="design-switch"
+                                >
                                     2. Apply Design
                                 </label>
-                                <Switch />
+                                <Switch
+                                    className="data-checked:bg-indigo-500 data-unchecked:bg-red-500 cursor-pointer"
+                                    id="design-switch"
+                                    onCheckedChange={(checked) =>
+                                        setDesignEnabled(checked)
+                                    }
+                                />
                                 {/* <ToogleButton
                                     setDesignEnabled={setDesignEnabled}
                                     designEnabled={designEnabled}
@@ -525,11 +534,28 @@ const BlockEditorModal = ({
                                 <label className="text-sm font-semibold text-slate-700">
                                     5. Preview
                                 </label>
-                                <div className="bg-white mt-2">
+                                <div className="mt-2">
                                     {PreviewComponent && (
                                         <PreviewComponent
                                             title={title ? "Title" : ""}
-                                            content={editorJsonForPreview}
+                                            content={(() => {
+                                                switch (currentBlock.type) {
+                                                    case "formula":
+                                                        return "E=mc^2";
+
+                                                    case "image":
+                                                        return "https://my.clevelandclinic.org/-/scassets/images/org/health/articles/21704-heart-overview-outside";
+
+                                                    case "code":
+                                                        return `//Your code will be here`;
+                                                    
+                                                    case "divider":
+                                                        return content;
+
+                                                    default:
+                                                        return editorJsonForPreview;
+                                                }
+                                            })()}
                                             designId={
                                                 designEnabled ? designId : 0
                                             }
