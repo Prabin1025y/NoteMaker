@@ -1,7 +1,5 @@
-import { ColorOptionSelect } from "../ColorOptionSelect";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { allBlockDesigns } from "@/utils/DesignInfo";
-import { Dispatch, SetStateAction } from "react";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -14,8 +12,8 @@ import { Check } from "lucide-react";
 interface DesignSelectiontype {
     designId: number;
     colorOptionId: number;
-    setDesignId: Dispatch<SetStateAction<number>>;
-    setColorOptionId: Dispatch<SetStateAction<number>>;
+    setDesignId: (id: number) => void;
+    setColorOptionId: (id: number) => void;
     currentBlock: BlockItem | null;
     className?: string;
 }

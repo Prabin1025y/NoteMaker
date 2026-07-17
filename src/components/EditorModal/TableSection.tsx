@@ -189,9 +189,10 @@ export default function EditableTable({
         const newId = uid();
         setState((s) => {
             const refColId =
-                lastFocused.current?.kind === "header" ||
-                lastFocused.current?.kind === "cell"
-                    ? (lastFocused.current as any).colId
+                lastFocused.current?.kind === "header"
+                    ? lastFocused.current.colId
+                    : lastFocused.current?.kind === "cell"
+                    ? lastFocused.current.colId
                     : s.cols[s.cols.length - 1];
             const refIdx = s.cols.indexOf(refColId);
             const insertAt =

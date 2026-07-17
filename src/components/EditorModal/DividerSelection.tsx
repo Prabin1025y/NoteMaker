@@ -1,6 +1,5 @@
 import { ColorOptionSelect } from "../ColorOptionSelect";
 import { colorOptions } from "@/utils/ColorsInfo";
-import { Dispatch, SetStateAction } from "react";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -11,7 +10,7 @@ import { ALL_DIVIDERS } from "@/utils/Dividers";
 
 interface DividerSelectiontype {
     colorOptionId: number;
-    setColorOptionId: Dispatch<SetStateAction<number>>;
+    setColorOptionId: (id: number) => void;
     content: string;
     onChangeHandler: (value: string) => void;
 }

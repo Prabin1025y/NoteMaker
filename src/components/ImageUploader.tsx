@@ -10,7 +10,7 @@ export type PreviewFile = File & {
 
 interface ImageDropZoneProps {
     file: PreviewFile | null;
-    setFile: React.Dispatch<React.SetStateAction<PreviewFile | null>>;
+    setFile: (file: PreviewFile | null) => void;
     editorData: EditorData;
 }
 
@@ -27,11 +27,11 @@ export function ImageDropZone({
             preview: URL.createObjectURL(uploaded),
         });
 
-        setFile((prev) => {
-            if (prev) URL.revokeObjectURL(prev.preview);
-            return withPreview;
-        });
-    }, [setFile]);
+        if (file) {
+            URL.revokeObjectURL(file.preview);
+        }
+        setFile(withPreview);
+    }, [file, setFile]);
 
     useEffect(() => {
         return () => {
