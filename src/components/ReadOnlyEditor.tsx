@@ -1,7 +1,6 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useEffect } from "react";
 import { StarterKit } from "@tiptap/starter-kit";
-import { Image } from "@tiptap/extension-image";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { Typography } from "@tiptap/extension-typography";
@@ -54,7 +53,6 @@ export default function ReadOnlyEditor({
             TaskList,
             TaskItem.configure({ nested: true }),
             Highlight.configure({ multicolor: true }),
-            Image,
             Typography,
             Superscript,
             Subscript,

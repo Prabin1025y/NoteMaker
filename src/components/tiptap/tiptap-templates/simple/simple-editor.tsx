@@ -6,7 +6,6 @@ import "katex/dist/katex.min.css";
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit";
-import { Image } from "@tiptap/extension-image";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { Typography } from "@tiptap/extension-typography";
@@ -71,7 +70,6 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Styles ---
 import "@/components/tiptap/tiptap-templates/simple/simple-editor.scss";
-import { CustomMathDelimiters } from "../../tiptap-extension/CustomMathDelimeters";
 
 export const tiptap_extensions_list = [
     StarterKit.configure({
@@ -92,7 +90,6 @@ export const tiptap_extensions_list = [
     TaskList,
     TaskItem.configure({ nested: true }),
     Highlight.configure({ multicolor: true }),
-    Image,
     Typography,
     Superscript,
     Subscript,
@@ -269,7 +266,6 @@ export function SimpleEditor({
             TaskList,
             TaskItem.configure({ nested: true }),
             Highlight.configure({ multicolor: true }),
-            Image,
             Typography,
             Superscript,
             Subscript,
