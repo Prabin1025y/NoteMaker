@@ -1,51 +1,18 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
-import { blockTypeOptions, EditorData } from "@/types/Editor";
+import { EditorData } from "@/types/Editor";
 import { getBlocksFromNoteId } from "@/utils/UtilFunctions";
 import { apiFetch } from "@/lib/api-client";
 import { createNote, fetchNotes } from "@/services/noteService";
 import { isEqual } from "lodash";
-
-// export interface BlockType {
-//     id: string;
-//     type: blockTypeOptions;
-//     content: string;
-//     designId: number;
-//     colorOptionId: number;
-//     title: string | null;
-//     order: number;
-// }
-
-export interface BlockType {
-    id: string;
-    publicId: string;
-    noteId: string;
-    createdAt: Date;
-    updatedAt: Date;
-    type: blockTypeOptions;
-    content: string;
-    designId: number;
-    colorOptionId: number;
-    title: string | null;
-    order: number;
-}
-
-export interface NoteType {
-    id: string;
-    title: string;
-    blocksCount: number;
-    createdAt: Date;
-    updatedAt: Date;
-    description: string;
-    authorName: string;
-    authorId: string;
-}
-
-type AddBlockType = Omit<BlockType, "id" | "updatedAt">;
-type EditBlockType = Partial<
-    Omit<BlockType, "id" | "publicId" | "createdAt" | "updatedAt" | "noteId">
->;
+import {
+    AddBlockType,
+    BlockSyncType,
+    BlockType,
+    EditBlockType,
+    NoteType,
+} from "@/types/dataSotoreTypes";
 
 const BLOCK_SYNC_COMPARE_KEYS = [
     "order",
@@ -87,7 +54,9 @@ const buildBlockSyncDiff = (
     previousBlocks: BlockType[],
     nextBlocks: BlockType[],
 ): BlockSyncType[] => {
-    const previousMap = new Map(previousBlocks.map((block) => [block.id, block]));
+    const previousMap = new Map(
+        previousBlocks.map((block) => [block.id, block]),
+    );
     const nextMap = new Map(nextBlocks.map((block) => [block.id, block]));
     const syncDiffs: BlockSyncType[] = [];
 
@@ -122,22 +91,6 @@ const buildBlockSyncDiff = (
     return syncDiffs;
 };
 
-export type BlockSyncType = {
-    id: string;
-} & (
-    | {
-          action: "add";
-          block: AddBlockType;
-      }
-    | {
-          action: "delete";
-      }
-    | {
-          action: "edit";
-          data: EditBlockType;
-      }
-);
-
 type Store = {
     currentNote: NoteType | null;
     blocks: BlockType[];
@@ -160,6 +113,7 @@ type Store = {
     deleteNote: (id: string) => void;
     loadNote: (id: string) => Promise<void>;
     updateNoteTitle: (title: string) => void;
+    initializeSyncedBlocks: () => void;
 
     addSaveBlock: (editorData: EditorData) => void;
     deleteBlock: (id: string) => void;
@@ -198,6 +152,8 @@ export const useNoteStore = create<Store>()(
         setActiveBlockId: (id) => set({ activeBlockId: id }),
         setNotes: (notes) => set({ notes }),
 
+        initializeSyncedBlocks: () => set({ syncedBlocks: get().blocks }),
+
         snapshotHistory: () => {
             const current = get().blocks;
             set({
@@ -225,7 +181,10 @@ export const useNoteStore = create<Store>()(
                 historyFuture: [currentBlocks, ...get().historyFuture],
             });
 
-            for (const syncDiff of buildBlockSyncDiff(currentBlocks, previous)) {
+            for (const syncDiff of buildBlockSyncDiff(
+                currentBlocks,
+                previous,
+            )) {
                 get().pushToBlocksToBeSynced(syncDiff);
             }
 
@@ -277,33 +236,10 @@ export const useNoteStore = create<Store>()(
         },
 
         loadNote: async (id) => {
-            if (get().notes.length === 0) {
-                const { notes, authorName } = await fetchNotes();
-
-                if (notes && Array.isArray(notes)) {
-                    get().setNotes(
-                        notes.map((n) => ({
-                            id: n.id,
-                            title: n.title,
-                            blocksCount: n._count.blocks,
-                            createdAt: n.createdAt,
-                            updatedAt: n.updatedAt,
-                            description: n.description,
-                            authorName,
-                            authorId: n.authorId,
-                        })),
-                    );
-                }
-            }
-
             const note = get().notes.find((note) => note.id === id);
-            const blocks: BlockType[] = await getBlocksFromNoteId(id);
-            const sortedBlocks = blocks.sort((a, b) => a.order - b.order);
             set({
                 title: note?.title,
                 currentNote: note,
-                blocks: sortedBlocks,
-                syncedBlocks: sortedBlocks,
                 blocksToBeSynced: [],
                 historyPast: [],
                 historyFuture: [],
@@ -384,15 +320,13 @@ export const useNoteStore = create<Store>()(
                 const keysToCompare: Array<
                     keyof Pick<
                         BlockType,
-                        "designId" | "colorOptionId" | "content" | "title" | "type"
+                        | "designId"
+                        | "colorOptionId"
+                        | "content"
+                        | "title"
+                        | "type"
                     >
-                > = [
-                    "designId",
-                    "colorOptionId",
-                    "content",
-                    "title",
-                    "type",
-                ];
+                > = ["designId", "colorOptionId", "content", "title", "type"];
 
                 for (const key of keysToCompare) {
                     const editorValue = editorData[key as keyof EditorData];

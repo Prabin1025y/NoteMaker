@@ -22,6 +22,7 @@ import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
 import { fetchNotes } from "@/services/noteService";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
 
 const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
 const colorMap = [
@@ -33,34 +34,23 @@ const colorMap = [
 ];
 
 export default function HomeLayout() {
-    const {data} = useSession();
+    const { data } = useSession();
     const { notes, createNote: createNoteInStore, setNotes } = useNoteStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const router = useRouter();
-    const [fetching, setFetching] = useState(true);
+
+    const { data: notesData, isLoading } = useQuery({
+        queryKey: ["notes"],
+        queryFn: fetchNotes,
+        staleTime: 60 * 60 * 1000,
+    });
 
     useEffect(() => {
-        (async () => {
-            const { notes, authorName } = await fetchNotes();
-
-            if (notes && Array.isArray(notes)) {
-                setNotes(
-                    notes.map((n) => ({
-                        id: n.id,
-                        title: n.title,
-                        blocksCount: n._count.blocks,
-                        createdAt: n.createdAt,
-                        updatedAt: n.updatedAt,
-                        description: n.description,
-                        authorName,
-                        authorId: n.authorId,
-                    })),
-                );
-                setFetching(false);
-            }
-        })();
-    }, [setNotes]);
+        if (notesData) {
+            setNotes(notesData);
+        }
+    }, [notesData, setNotes]);
 
     const handleCreateNote = async (title: string, description: string) => {
         const newNote = await createNoteInStore(title, description);
@@ -143,7 +133,7 @@ export default function HomeLayout() {
 
                 {/* Note list */}
                 <div className="flex-1 overflow-y-auto px-2 pb-4">
-                    {fetching ? (
+                    {isLoading ? (
                         <ul>
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <SidebarNoteSkeleton key={i} />
@@ -234,7 +224,7 @@ export default function HomeLayout() {
             </aside>
 
             <HomePage
-                fetching={fetching}
+                fetching={isLoading}
                 onCreateNote={() => setIsCreateModalOpen(true)}
             />
 

@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Inter } from "next/font/google";
 import LeftAside from "@/components/LeftAside";
@@ -15,6 +15,8 @@ import { apiFetch } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { toast } from "sonner";
 import AiBlockGenerator from "@/components/note/AiBlockGenerator";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchBlocks, fetchNotes } from "@/services/noteService";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -27,7 +29,7 @@ export default function NotePage() {
     const noteId = params?.id as string;
 
     const noteRef = useRef<HTMLDivElement>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -53,19 +55,51 @@ export default function NotePage() {
         syncToDB,
         blocksToBeSynced,
         currentNote,
+        setBlocks,
+        setNotes,
+        initializeSyncedBlocks,
+        notes,
         undo,
         redo,
         canUndo,
         canRedo,
     } = useNoteStore();
 
+    const queryClient = useQueryClient();
+
+    const { data: notesData, isLoading: isFetchingNote } = useQuery({
+        queryKey: ["notes"],
+        queryFn: fetchNotes,
+        staleTime: 60 * 60 * 1000,
+        enabled: notes.length === 0,
+    });
+
+    const { data: blocks, isLoading: isFetchingBlocks } = useQuery({
+        queryKey: ["blocks", noteId],
+        queryFn: () => fetchBlocks(currentNote?.id || noteId),
+        staleTime: 60 * 60 * 1000,
+        enabled: !!currentNote && currentNote.id === noteId,
+    });
+
     useEffect(() => {
-        (async () => {
-            setIsLoading(true);
-            if (noteId) await loadNote(noteId);
-            setIsLoading(false);
-        })();
-    }, [noteId, loadNote]);
+        if (!notesData) return;
+
+        setNotes(notesData);
+        loadNote(noteId);
+    }, [notesData]);
+
+    const sortedBlocks = useMemo(() => {
+        if (!!!blocks || !Array.isArray(blocks)) return [];
+
+        return blocks.sort((a, b) => a.order - b.order);
+    }, [blocks]);
+
+    useEffect(() => {
+        if (!blocks) return;
+
+        setBlocks(sortedBlocks);
+        initializeSyncedBlocks();
+    }, [blocks]);
 
     useEffect(() => {
         document.body.style.overflow = isEditorOpen ? "hidden" : "";
@@ -113,10 +147,17 @@ export default function NotePage() {
     };
 
     const handleSave = useCallback(async () => {
+        if (blocksToBeSynced.length === 0) return;
         setIsSyncing(true);
         await syncToDB();
+        queryClient.invalidateQueries({
+            queryKey: ["blocks", noteId],
+        });
+        queryClient.invalidateQueries({
+            queryKey: ['notes']
+        })
         setIsSyncing(false);
-    }, [syncToDB]);
+    }, [syncToDB, blocksToBeSynced]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -257,7 +298,7 @@ export default function NotePage() {
                         openAiModel={() => setIsAiOpen(true)}
                     />
                 )}
-                {isLoading ? (
+                {isFetchingBlocks || isFetchingNote ? (
                     <MainPageSkeleton />
                 ) : (
                     <MainPage

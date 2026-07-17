@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import QueryProvider from "@/Providers/QueryProvider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -33,7 +35,10 @@ export default function RootLayout({
         >
             <body className="min-h-full flex flex-col overflow-y-auto">
                 <SessionProvider>
-                    <TooltipProvider>{children}</TooltipProvider>
+                    <QueryProvider>
+                        <TooltipProvider>{children}</TooltipProvider>
+                        <ReactQueryDevtools initialIsOpen={false} />
+                    </QueryProvider>
                     <Toaster
                         theme="light"
                         richColors
