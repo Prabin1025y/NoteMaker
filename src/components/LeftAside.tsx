@@ -4,7 +4,7 @@ import { useState } from "react";
 import { blockTypeOptions, EditorData } from "@/types/Editor";
 import { allBlocks, blockCategories } from "@/utils/BlocksInfo";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
-import { Sparkles } from "lucide-react";
+import { PanelLeftCloseIcon, PanelRightCloseIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LeftAsideProps {
@@ -21,12 +21,12 @@ const LeftAside = ({
     isGenerating,
     openAiModel,
 }: LeftAsideProps) => {
-    const [isHovered, setIsHovered] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [selectedType, setSelectedType] = useState<blockTypeOptions | null>(
         null,
     );
 
-    const isExpanded = isHovered;
+    // const isExpanded = isHovered;
 
     const handleBlockClick = (
         type: blockTypeOptions,
@@ -53,34 +53,53 @@ const LeftAside = ({
     return (
         <>
             <aside
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                className={`relative flex h-full shrink-0 flex-col overflow-hidden border-r border-[#E8E8E8] bg-[#FAFAFA] transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH}`}
+                className={`relative group/aside flex h-full shrink-0 flex-col overflow-hidden border-r border-[#E8E8E8] bg-[#FAFAFA] transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH}`}
             >
                 <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-3">
                     {/* AI Generator button */}
+
                     <div
                         className={`px-2 mb-2 ${isExpanded ? "" : "flex justify-center"}`}
                     >
                         {isExpanded ? (
-                            <Button
-                                size="sm"
-                                onClick={() => openAiModel()}
-                                disabled={isGenerating}
-                                className={`${isGenerating && "cursor-not-allowed opacity-70"} w-full bg-[#6D5EF6] text-white hover:bg-[#5B4DE0] transition-colors`}
-                            >
-                                <Sparkles size={14} />
-                                AI Block Generator
-                            </Button>
+                            <div className="flex gap-2 items-center">
+                                <Button
+                                    size="sm"
+                                    onClick={() => openAiModel()}
+                                    disabled={isGenerating}
+                                    className={`${isGenerating && "cursor-not-allowed opacity-70"} flex-1 bg-[#6D5EF6] text-white hover:bg-[#5B4DE0] transition-colors`}
+                                >
+                                    <Sparkles size={14} />
+                                    AI Block Generator
+                                </Button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsExpanded(false)}
+                                    title="Close Left Panel"
+                                    className="h-9 w-9 flex items-center justify-center rounded-full text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                                >
+                                    <PanelLeftCloseIcon size={18} />
+                                </button>
+                            </div>
                         ) : (
-                            <button
-                                type="button"
-                                onClick={() => openAiModel()}
-                                title="AI Block Generator"
-                                className="flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
-                            >
-                                <Sparkles size={18} />
-                            </button>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => openAiModel()}
+                                    title="AI Block Generator"
+                                    className="group-hover/aside:hidden flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                                >
+                                    <Sparkles size={18} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsExpanded(true)}
+                                    title="Open Left Panel"
+                                    className="hidden group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                                >
+                                    <PanelRightCloseIcon size={18} />
+                                </button>
+                            </>
                         )}
                     </div>
 

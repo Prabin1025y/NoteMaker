@@ -16,6 +16,7 @@ export interface BlockType {
 
 export interface NoteType {
     id: string;
+    folderId: string;
     title: string;
     blocksCount: number;
     createdAt: Date;

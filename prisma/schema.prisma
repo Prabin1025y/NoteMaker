@@ -29,17 +29,32 @@ model Account {
 model User {
   id String @id @default(uuid())
 
-  email String  @unique
-  emailVerified   DateTime?
-  name  String?
-  image String?
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   role     Role      @default(USER)
   notes    Note[]
+  folders  Folder[]
   accounts Account[]
+}
+
+model Folder {
+  id String @id @default(uuid())
+
+  name      String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  notes  Note[]
+
+  @@index([authorId])
 }
 
 model Block {
@@ -65,12 +80,15 @@ model Note {
   title       String
   description String?
   authorId    String
+  folderId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   blocks      Block[]
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  folder      Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
 
   @@index([authorId])
+  @@index([folderId])
 }
 
 enum BlockType {

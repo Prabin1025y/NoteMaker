@@ -19,10 +19,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateNoteModal from "@/components/CreateNoteModal";
 import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
-import { fetchNotes } from "@/services/noteService";
+import { fetchFolders, fetchNotes } from "@/services/noteService";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { FolderOption } from "@/types/misc";
 
 const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
 const colorMap = [
@@ -39,10 +40,17 @@ export default function HomeLayout() {
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const { data: notesData, isLoading } = useQuery({
         queryKey: ["notes"],
         queryFn: fetchNotes,
+        staleTime: 60 * 60 * 1000,
+    });
+
+    const { data: folders = [] } = useQuery<FolderOption[]>({
+        queryKey: ["folders"],
+        queryFn: fetchFolders,
         staleTime: 60 * 60 * 1000,
     });
 
@@ -52,9 +60,25 @@ export default function HomeLayout() {
         }
     }, [notesData, setNotes]);
 
-    const handleCreateNote = async (title: string, description: string) => {
-        const newNote = await createNoteInStore(title, description);
+    const handleCreateNote = async (
+        title: string,
+        description: string,
+        folderDetails?: {
+            isNewFolder: boolean;
+            folderId?: string;
+            folderName?: string;
+        },
+    ) => {
+        const newNote = await createNoteInStore(
+            title,
+            description,
+            folderDetails,
+        );
         setIsCreateModalOpen(false);
+        queryClient.invalidateQueries({queryKey: ['notes']})
+        if(folderDetails?.isNewFolder){
+            queryClient.invalidateQueries({queryKey: ['folders']})
+        }
         router.push(`/note/${newNote.id}`);
     };
 
@@ -225,6 +249,7 @@ export default function HomeLayout() {
 
             <HomePage
                 fetching={isLoading}
+                folders={folders}
                 onCreateNote={() => setIsCreateModalOpen(true)}
             />
 
@@ -232,6 +257,7 @@ export default function HomeLayout() {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onCreateNote={handleCreateNote}
+                folders={folders}
             />
         </div>
     );

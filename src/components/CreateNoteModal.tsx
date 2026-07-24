@@ -1,21 +1,68 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { FolderOption } from "@/types/misc";
+
+type FolderSelection = {
+    isNewFolder: boolean;
+    folderId?: string;
+    folderName?: string;
+};
 
 interface CreateNoteModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreateNote: (title: string, description: string) => void;
+    onCreateNote: (
+        title: string,
+        description: string,
+        folderDetails?: FolderSelection,
+    ) => void;
+    folders: FolderOption[];
 }
 
-export default function CreateNoteModal({ isOpen, onClose, onCreateNote }: CreateNoteModalProps) {
+export default function CreateNoteModal({
+    isOpen,
+    onClose,
+    onCreateNote,
+    folders,
+}: CreateNoteModalProps) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [isNewFolder, setIsNewFolder] = useState(false);
+    const [selectedFolderId, setSelectedFolderId] = useState("");
+    const [newFolderName, setNewFolderName] = useState("");
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        if (folders.length > 0) {
+            setSelectedFolderId((current) => current || folders[0].id);
+            setIsNewFolder(false);
+        } else {
+            setSelectedFolderId("");
+            setIsNewFolder(true);
+        }
+
+        setNewFolderName("");
+    }, [isOpen, folders]);
 
     const handleCreate = () => {
-        onCreateNote(title || "Untitled", description);
+        const folderDetails: FolderSelection = isNewFolder
+            ? {
+                  isNewFolder: true,
+                  folderName: newFolderName.trim(),
+              }
+            : {
+                  isNewFolder: false,
+                  folderId: selectedFolderId,
+              };
+
+        onCreateNote(title || "Untitled", description, folderDetails);
         setTitle("");
         setDescription("");
+        setSelectedFolderId(folders[0]?.id || "");
+        setNewFolderName("");
+        setIsNewFolder(!folders.length);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -69,6 +116,50 @@ export default function CreateNoteModal({ isOpen, onClose, onCreateNote }: Creat
                             className="w-full px-3 py-2.5 bg-[#faf9f7] border border-[#e2e0dc] rounded-[9px] text-[13px] text-[#1a1714] placeholder-[#b8b3ac] outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
                         />
                     </div>
+
+                    <div>
+                        <label htmlFor="folder" className="block text-[12px] font-medium text-[#5a5550] mb-1.5">
+                            Folder
+                        </label>
+                        <select
+                            id="folder"
+                            value={isNewFolder ? "new" : selectedFolderId}
+                            onChange={(e) => {
+                                if (e.target.value === "new") {
+                                    setIsNewFolder(true);
+                                    setSelectedFolderId("");
+                                    return;
+                                }
+
+                                setIsNewFolder(false);
+                                setSelectedFolderId(e.target.value);
+                            }}
+                            className="w-full px-3 py-2.5 bg-[#faf9f7] border border-[#e2e0dc] rounded-[9px] text-[13px] text-[#1a1714] outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+                        >
+                            {folders.map((folder) => (
+                                <option key={folder.id} value={folder.id}>
+                                    {folder.name}
+                                </option>
+                            ))}
+                            <option value="new">New folder</option>
+                        </select>
+                    </div>
+
+                    {isNewFolder && (
+                        <div>
+                            <label htmlFor="newFolder" className="block text-[12px] font-medium text-[#5a5550] mb-1.5">
+                                New folder name
+                            </label>
+                            <input
+                                id="newFolder"
+                                type="text"
+                                value={newFolderName}
+                                onChange={(e) => setNewFolderName(e.target.value)}
+                                placeholder="Enter a folder name"
+                                className="w-full px-3 py-2.5 bg-[#faf9f7] border border-[#e2e0dc] rounded-[9px] text-[13px] text-[#1a1714] placeholder-[#b8b3ac] outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+                            />
+                        </div>
+                    )}
                     <p className="text-[11px] text-[#b8b3ac]">
                         Tip: press{" "}
                         <kbd className="px-1.5 py-0.5 bg-[#f5f3f0] border border-[#e2e0dc] rounded-[5px] font-mono text-[10px] text-[#5a5550]">

@@ -3,53 +3,44 @@ import { useNoteStore } from "@/Context/DataStore";
 import Link from "next/link";
 import {
     Plus,
-    Heart,
     LayoutList,
     FileText,
     Trash2Icon,
+    Folder,
+    FolderOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { NoteCardSkeleton } from "@/skeletons/NoteCardSkeleton";
 import { apiFetch } from "@/lib/api-client";
+import { FolderOption } from "@/types/misc";
 
 interface HomePageProps {
     onCreateNote: () => void;
     fetching: boolean;
+    folders: FolderOption[];
 }
 
-const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
+const HomePage = ({ onCreateNote, fetching, folders }: HomePageProps) => {
     const { notes, deleteNote } = useNoteStore();
-    const [favorites, _setFavorites] = useState<string[]>([]);
-    const [activeTab, setActiveTab] = useState<"recent" | "favorites" | "all">(
-        "recent",
-    );
+    const [activeTab, setActiveTab] = useState("recent");
     const [deleting, setDeleting] = useState<string | null>(null);
-
-    // const toggleFavorite = (e: React.MouseEvent, noteId: string) => {
-    //     e.preventDefault();
-    //     setFavorites((prev) =>
-    //         prev.includes(noteId)
-    //             ? prev.filter((id) => id !== noteId)
-    //             : [...prev, noteId],
-    //     );
-    // };
+    const [currentFolder, setCurrentFolder] = useState<FolderOption | null>(
+        null,
+    );
 
     const sorted = [...notes].sort(
         (a, b) =>
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
     const recentNotes = sorted.slice(0, 10);
-    const favoriteNotes = notes.filter((n) => favorites.includes(n.id));
     const displayNotes =
         activeTab === "recent"
             ? recentNotes
-            : activeTab === "favorites"
-              ? favoriteNotes
+            : activeTab === currentFolder?.name
+              ? notes.filter((n) => n.folderId === currentFolder.id)
               : sorted;
 
     const NoteCard = ({ note }: { note: (typeof notes)[0] }) => {
-        const isFav = favorites.includes(note.id);
-
         const handleDelete = async (id: string) => {
             try {
                 const confirm = window.confirm(
@@ -92,20 +83,12 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                 <button
                     onClick={() => handleDelete(note.id)}
                     disabled={deleting === note.id}
-                    aria-label={isFav ? "Unfavorite" : "Favorite"}
-                    className={`absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-lg transition-all ${
-                        isFav
-                            ? "opacity-100"
-                            : "opacity-0 group-hover:opacity-100"
-                    } hover:bg-red-50`}
+                    aria-label={"delete"}
+                    className={`absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-lg transition-all opacity-0 group-hover:opacity-100 hover:bg-red-50`}
                 >
                     <Trash2Icon
                         size={15}
-                        className={
-                            isFav
-                                ? "fill-red-500 text-red-500"
-                                : "text-gray-300"
-                        }
+                        className={"text-gray-300"}
                     />
                 </button>
 
@@ -222,7 +205,7 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                 {fetching ? (
                     <>
                         <div className="flex gap-1 mb-5 border-b border-[#f0ede8]">
-                            {(["recent", "favorites", "all"] as const).map(
+                            {(["recent", "folders", "all"] as const).map(
                                 (tab) => (
                                     <button
                                         key={tab}
@@ -237,12 +220,6 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                                             ? "All notes"
                                             : tab.charAt(0).toUpperCase() +
                                               tab.slice(1)}
-                                        {tab === "favorites" &&
-                                            favorites.length > 0 && (
-                                                <span className="ml-1.5 px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-full">
-                                                    {favorites.length}
-                                                </span>
-                                            )}
                                     </button>
                                 ),
                             )}
@@ -258,8 +235,13 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                     notes.length > 0 && (
                         <>
                             <div className="flex gap-1 mb-5 border-b border-[#f0ede8]">
-                                {(["recent", "favorites", "all"] as const).map(
-                                    (tab) => (
+                                {["recent", "folders", "all"]
+                                    .concat(
+                                        currentFolder
+                                            ? [currentFolder.name]
+                                            : [],
+                                    )
+                                    .map((tab) => (
                                         <button
                                             key={tab}
                                             onClick={() => setActiveTab(tab)}
@@ -273,18 +255,35 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                                                 ? "All notes"
                                                 : tab.charAt(0).toUpperCase() +
                                                   tab.slice(1)}
-                                            {tab === "favorites" &&
-                                                favorites.length > 0 && (
-                                                    <span className="ml-1.5 px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-full">
-                                                        {favorites.length}
-                                                    </span>
-                                                )}
                                         </button>
-                                    ),
-                                )}
+                                    ))}
                             </div>
 
-                            {displayNotes.length > 0 ? (
+                            {activeTab === "folders" ? (
+                                <div className="grid grid-cols-4 gap-3 md:grid-cols-6 lg:grid-cols-8">
+                                    {folders.map((folder) => (
+                                        <div
+                                            key={folder.id}
+                                            onDoubleClick={() => {
+                                                setCurrentFolder(folder);
+                                                setActiveTab(folder.name);
+                                            }}
+                                            className="select-none cursor-pointer hover:bg-gray-100 rounded-md flex flex-col"
+                                        >
+                                            <div className=" w-full grid place-items-center">
+                                                <Folder
+                                                    fill="gray"
+                                                    size={80}
+                                                    className="flex-1 aspect-square"
+                                                />
+                                            </div>
+                                            <p className="w-full flex items-center justify-center text-center">
+                                                {folder.name}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : displayNotes.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                                     {displayNotes.map((note) => (
                                         <NoteCard
@@ -296,18 +295,15 @@ const HomePage = ({ onCreateNote, fetching }: HomePageProps) => {
                             ) : (
                                 <div className="text-center py-14 border border-dashed border-[#e2e0dc] rounded-xl">
                                     <div className="w-12 h-12 bg-indigo-50 rounded-[14px] flex items-center justify-center mx-auto mb-3">
-                                        <Heart
+                                        <FolderOpen
                                             size={22}
                                             className="text-indigo-400"
                                         />
                                     </div>
                                     <p className="text-[14px] font-medium text-[#1a1714] mb-1">
-                                        No favorites yet
+                                        No notes in this folder yet
                                     </p>
-                                    <p className="text-[12px] text-[#9e9a94]">
-                                        Hover a card and click the heart to save
-                                        it here.
-                                    </p>
+                                    
                                 </div>
                             )}
                         </>

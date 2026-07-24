@@ -13,11 +13,24 @@ export const AddBlockSchema = z.object({
     title: z.string().optional(),
 });
 
-export const createNoteSchema = z.object({
-    title: z.string().min(1, "The title must be at least 1 character long"),
-    description: z.string().optional(),
-    // publicId: z.string(),
-});
+export const createNoteSchema = z
+    .object({
+        title: z.string().min(1, "The title must be at least 1 character long"),
+        description: z.string().optional(),
+        isNewFolder: z.boolean(),
+        folderId: z.string().optional(),
+        folderName: z.string().trim().min(1, "Folder name is required when creating a new folder").optional(),
+    })
+    .refine((data) => {
+        if (data.isNewFolder) {
+            return Boolean(data.folderName);
+        }
+
+        return Boolean(data.folderId);
+    }, {
+        message: "Provide folderName when isNewFolder is true, or folderId when it is false.",
+        path: ["folderId"],
+    });
 
 export const BlockSyncSchema = z.discriminatedUnion("action", [
     z.object({

@@ -14,7 +14,6 @@ interface BlockSettingsSidebarProps {
 }
 
 const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSidebarProps) => {
-    const config = getBlockTypeConfig(state.currentType);
     const designUnavailable = !supportsDesign(state.currentType);
 
     return (

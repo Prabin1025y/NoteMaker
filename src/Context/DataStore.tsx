@@ -2,9 +2,8 @@ import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
-import { getBlocksFromNoteId } from "@/utils/UtilFunctions";
 import { apiFetch } from "@/lib/api-client";
-import { createNote, fetchNotes } from "@/services/noteService";
+import { createNote } from "@/services/noteService";
 import { isEqual } from "lodash";
 import {
     AddBlockType,
@@ -109,7 +108,15 @@ type Store = {
     setActiveBlockId: (id: string | null) => void;
     setNotes: (notes: NoteType[]) => void;
 
-    createNote: (title?: string, description?: string) => Promise<NoteType>;
+    createNote: (
+        title?: string,
+        description?: string,
+        folderOptions?: {
+            isNewFolder: boolean;
+            folderId?: string;
+            folderName?: string;
+        },
+    ) => Promise<NoteType>;
     deleteNote: (id: string) => void;
     loadNote: (id: string) => Promise<void>;
     updateNoteTitle: (title: string) => void;
@@ -211,10 +218,19 @@ export const useNoteStore = create<Store>()(
             get().syncLocally();
         },
 
-        createNote: async (title = "Untitled Note", description = "") => {
-            const { note, authorName } = await createNote(title, description);
+        createNote: async (
+            title = "Untitled Note",
+            description = "",
+            folderOptions,
+        ) => {
+            const { note, authorName, folderId } = await createNote(
+                title,
+                description,
+                folderOptions,
+            );
             const newNote: NoteType = {
                 id: note.id,
+                folderId,
                 authorName: authorName,
                 description: note.description,
                 title: note.title,
