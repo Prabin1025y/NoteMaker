@@ -90,3 +90,34 @@ export async function findManyByAuthor(
         ...args,
     });
 }
+
+type UpdateNoteMetaInput = {
+    title?: string;
+    description?: string;
+    isFavorite?: boolean;
+    isPinned?: boolean;
+    folderId?: string;
+};
+
+export async function updateNoteMetaForAuthor(
+    id: string,
+    authorId: string,
+    data: UpdateNoteMetaInput,
+) {
+    // Ownership-scoped update; returns null when nothing matched.
+    const result = await prisma.note.updateMany({
+        where: { id, authorId },
+        data,
+    });
+
+    if (result.count === 0) return null;
+
+    return prisma.note.findFirst({
+        where: { id, authorId },
+        include: {
+            _count: {
+                select: { blocks: true },
+            },
+        },
+    });
+}

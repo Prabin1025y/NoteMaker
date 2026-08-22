@@ -46,10 +46,13 @@ model User {
 model Folder {
   id String @id @default(uuid())
 
-  name      String
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  name       String
+  color      String?
+  icon       String?
+  isFavorite Boolean  @default(false)
+  authorId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
   notes  Note[]
@@ -81,6 +84,8 @@ model Note {
   description String?
   authorId    String
   folderId    String
+  isFavorite  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   blocks      Block[]
@@ -99,6 +104,7 @@ enum BlockType {
   divider
   formula
   heading
+  canvas
 }
 
 enum Role {

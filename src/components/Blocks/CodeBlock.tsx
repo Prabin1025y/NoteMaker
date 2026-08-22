@@ -1,5 +1,5 @@
 import { EditIcon, Trash2Icon, CopyIcon, CheckIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import BlockActionButton from "../ui/BlockActionButton";
@@ -73,7 +73,7 @@ export default function CodeBlock({
 }: CodeBlockProps) {
     const [copied, setCopied] = useState(false);
 
-    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
+    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
 
@@ -92,33 +92,33 @@ export default function CodeBlock({
         <div className={`pt-2 ${!isDesignDisabled && "break-inside-avoid"}`}>
             <div
                 className={`
-                group relative  rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5 my-3"}
-                 ${!!title?.trim() && !isDesignDisabled ? "pt-5" : "pt-3"} pb-3 transition-all duration-300
+                group relative  rounded-xl ${isDesignDisabled ? "px-3" : "ds-block-surface border-2 px-5 my-3"}
+                 ${!!title?.trim() && !isDesignDisabled ? "pt-5" : "pt-3"} pb-3 transition-[box-shadow,transform] duration-300
                 hover:shadow-lg
                 ${className}
             `}
                 style={
                     !isDesignDisabled
-                        ? {
-                              backgroundColor: colorOption.backgroundColorHex,
-                              borderColor: colorOption.borderColorHex,
-                          }
+                        ? ({
+                              "--block-bg": colorOption.backgroundColorHex,
+                              "--block-border": colorOption.borderColorHex,
+                          } as CSSProperties)
                         : {}
                 }
             >
                 {/* Action buttons (Edit / Delete) */}
                 <div
-                    className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                    className={`hidden border border-hairline shadow-sm group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
                     <BlockActionButton
                         icon={
                             copied ? (
                                 <CheckIcon
-                                    className={`${iconClassName} hover:text-blue-500`}
+                                    className={`${iconClassName} hover:text-brand-cta`}
                                 />
                             ) : (
                                 <CopyIcon
-                                    className={`${iconClassName} hover:text-blue-500`}
+                                    className={`${iconClassName} hover:text-brand-cta`}
                                 />
                             )
                         }
@@ -129,7 +129,7 @@ export default function CodeBlock({
                     <BlockActionButton
                         icon={
                             <EditIcon
-                                className={`${iconClassName} hover:text-blue-500`}
+                                className={`${iconClassName} hover:text-brand-cta`}
                             />
                         }
                         onClick={() => onEdit()}
@@ -139,7 +139,7 @@ export default function CodeBlock({
                     <BlockActionButton
                         icon={
                             <Trash2Icon
-                                className={`${iconClassName} hover:text-red-500`}
+                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
                             />
                         }
                         onClick={() => onDelete()}
@@ -163,36 +163,6 @@ export default function CodeBlock({
 
                 {/* Code area */}
                 <div className={`relative ${!isDesignDisabled ? "pt-2" : ""}`}>
-                    {/* Copy button — visible on hover of the whole block */}
-                    {/* <button
-                    onClick={handleCopy}
-                    aria-label="Copy code"
-                    className="
-                        hidden group-hover:flex
-                        absolute right-2 top-2 z-10
-                        items-center gap-1.5
-                        rounded-md px-2 py-1
-                        text-xs font-medium
-                        bg-white/80 dark:bg-black/50
-                        border border-gray-200 dark:border-gray-700
-                        text-gray-600 dark:text-gray-300
-                        hover:bg-white dark:hover:bg-black/70
-                        transition-all shadow-sm
-                    "
-                >
-                    {copied ? (
-                        <>
-                            <CheckIcon className="w-3.5 h-3.5 text-green-500" />
-                            Copied
-                        </>
-                    ) : (
-                        <>
-                            <CopyIcon className="w-3.5 h-3.5" />
-                            Copy
-                        </>
-                    )}
-                </button> */}
-
                     <SyntaxHighlighter
                         language={lang}
                         style={highlighterTheme}

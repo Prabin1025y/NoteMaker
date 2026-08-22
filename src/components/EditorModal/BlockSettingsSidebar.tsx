@@ -17,25 +17,25 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
     const designUnavailable = !supportsDesign(state.currentType);
 
     return (
-        <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-slate-50/60 px-6 py-6">
+        <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-hairline bg-paper px-6 py-6">
             <div className="space-y-6">
                 <BlockTypeSelector
                     currentBlock={currentBlock}
                     onTypeChange={(type) => dispatch({ type: "setType", payload: type })}
                 />
-                <hr />
-                <div className={`${designUnavailable && "saturate-0 opacity-40 pointer-events-none"} flex items-center justify-between`}> 
-                    <label className="text-sm font-semibold text-slate-700 cursor-pointer" htmlFor="design-switch">
+                <hr className="border-hairline" />
+                <div className={`${designUnavailable && "saturate-0 opacity-40 pointer-events-none"} flex items-center justify-between`}>
+                    <label className="text-[13px] font-semibold text-body cursor-pointer" htmlFor="design-switch">
                         2. Apply Design
                     </label>
                     <Switch
-                        className="data-checked:bg-indigo-500 data-unchecked:bg-red-500 cursor-pointer"
+                        className="data-checked:bg-brand-cta data-unchecked:bg-strong cursor-pointer"
                         id="design-switch"
                         checked={state.designEnabled}
                         onCheckedChange={(checked) => dispatch({ type: "setDesignEnabled", payload: checked })}
                     />
                 </div>
-                <hr />
+                <hr className="border-hairline" />
                 <DesignSelection
                     className={`${(!state.designEnabled || designUnavailable) && "saturate-0 opacity-40 pointer-events-none"}`}
                     currentBlock={currentBlock}
@@ -44,9 +44,9 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
                     setDesignId={(id) => dispatch({ type: "setDesignId", payload: id })}
                     setColorOptionId={(id) => dispatch({ type: "setColorOptionId", payload: id })}
                 />
-                <hr />
+                <hr className="border-hairline" />
                 <div>
-                    <label className="text-sm font-semibold text-slate-700">5. Preview</label>
+                    <label className="text-[13px] font-semibold text-body">5. Preview</label>
                     <BlockPreview currentBlock={currentBlock} state={state} />
                 </div>
             </div>

@@ -58,3 +58,40 @@ export const BlockSyncSchema = z.discriminatedUnion("action", [
 export const SaveNoteSchema = z.array(BlockSyncSchema);
 
 export type SaveNoteSchemaType = z.infer<typeof SaveNoteSchema>;
+
+// ---- Note metadata updates (favorite / pin / rename / move) ----
+export const updateNoteSchema = z
+    .object({
+        title: z.string().min(1).optional(),
+        description: z.string().optional(),
+        isFavorite: z.boolean().optional(),
+        isPinned: z.boolean().optional(),
+        folderId: z.string().optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "No fields provided to update.",
+    });
+
+export type UpdateNoteSchemaType = z.infer<typeof updateNoteSchema>;
+
+// ---- Folder create / update ----
+export const createFolderSchema = z.object({
+    name: z.string().trim().min(1, "Folder name is required"),
+    color: z.string().trim().optional(),
+    icon: z.string().trim().optional(),
+});
+
+export type CreateFolderSchemaType = z.infer<typeof createFolderSchema>;
+
+export const updateFolderSchema = z
+    .object({
+        name: z.string().trim().min(1).optional(),
+        color: z.string().trim().nullable().optional(),
+        icon: z.string().trim().nullable().optional(),
+        isFavorite: z.boolean().optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "No fields provided to update.",
+    });
+
+export type UpdateFolderSchemaType = z.infer<typeof updateFolderSchema>;

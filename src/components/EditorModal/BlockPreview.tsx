@@ -33,6 +33,9 @@ const BlockPreview = ({ currentBlock, state }: BlockPreviewProps) => {
             case "table":
                 return state.content;
 
+            case "canvas":
+                return state.content;
+
             default:
                 return editorJsonForPreview;
         }

@@ -21,7 +21,7 @@ export default function DividerBlock({
     onEdit,
     onDelete,
 }: DividerBlockProps) {
-    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
+    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
     const DividerComponent = ALL_DIVIDERS.find(
@@ -42,7 +42,7 @@ export default function DividerBlock({
                 <BlockActionButton
                     icon={
                         <EditIcon
-                            className={`${iconClassName} hover:text-blue-500`}
+                            className={`${iconClassName} hover:text-brand-cta`}
                         />
                     }
                     onClick={() => onEdit()}
@@ -52,7 +52,7 @@ export default function DividerBlock({
                 <BlockActionButton
                     icon={
                         <Trash2Icon
-                            className={`${iconClassName} hover:text-red-500`}
+                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
                         />
                     }
                     onClick={() => onDelete()}

@@ -24,6 +24,8 @@ export interface NoteType {
     description: string;
     authorName: string;
     authorId: string;
+    isFavorite: boolean;
+    isPinned: boolean;
 }
 
 export type AddBlockType = Omit<BlockType, "id" | "updatedAt">;

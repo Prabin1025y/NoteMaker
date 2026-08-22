@@ -27,7 +27,7 @@ export default function ImageBlock({
     onEdit,
     onDelete,
 }: ImageBlockProps) {
-    const iconClassName = "max-w-5 transition-all group-hover/button:scale-110";
+    const iconClassName = "max-w-5 transition-transform group-hover/button:scale-110";
 
     return (
         <figure
@@ -40,14 +40,14 @@ export default function ImageBlock({
             <div
                 className="
                     absolute right-2 top-2 z-10
-                    hidden overflow-hidden rounded-md
+                    hidden overflow-hidden rounded-md border border-hairline shadow-sm
                     group-hover:flex
                 "
             >
                 <BlockActionButton
                     icon={
                         <EditIcon
-                            className={`${iconClassName} hover:text-blue-500`}
+                            className={`${iconClassName} hover:text-brand-cta`}
                         />
                     }
                     onClick={onEdit}
@@ -58,7 +58,7 @@ export default function ImageBlock({
                 <BlockActionButton
                     icon={
                         <Trash2Icon
-                            className={`${iconClassName} hover:text-red-500`}
+                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
                         />
                     }
                     onClick={onDelete}
@@ -76,7 +76,7 @@ export default function ImageBlock({
                         max-h-[600px]
                         max-w-full
                         object-contain
-                        transition-all
+                        transition-[box-shadow]
                         duration-300
                         group-hover:shadow-md
                     "
@@ -92,7 +92,7 @@ export default function ImageBlock({
                         text-center
                         text-sm
                         italic
-                        text-neutral-500
+                        text-muted-ink
                     "
                 >
                     {title}

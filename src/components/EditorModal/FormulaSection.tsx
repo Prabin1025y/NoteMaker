@@ -11,32 +11,21 @@ const FormulaSection = ({ content, onChangeHandler }: FormulaSectionProps) => {
     return (
         <div className="flex-1 w-full flex flex-col gap-5">
             <div className="flex-1 flex flex-col">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <label className="mb-3 block text-[13px] font-semibold text-body">
                     Formula
                 </label>
-                {/* <FormulaEditor
-                    className="flex-1 border-2 rounded-md p-5 size-full"
-                    content=""
-                    
-                    editable={true}
-                /> */}
                 <textarea
                 defaultValue={content}
                     onChange={(e) => onChangeHandler(e.target.value)}
-                    className="flex-1 border-2 rounded-md p-5 size-full"
+                    className="flex-1 size-full rounded-md border border-[color:var(--ds-border-input)] bg-surface p-4 font-mono text-[13px] text-ink outline-none transition-colors duration-150 placeholder:text-faint focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 />
             </div>
             <div className="flex-1 flex flex-col">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <label className="mb-3 block text-[13px] font-semibold text-body">
                     Preview
                 </label>
-                {/* <FormulaEditor
-                    className="flex-1 border-2 rounded-md p-5 size-full"
-                    content={content}
-                    editable={false}
-                /> */}
                 <FormulaViewer
-                    className="flex-1 border-2 rounded-md p-5 size-full grid place-items-center"
+                    className="flex-1 size-full grid place-items-center rounded-md border border-hairline bg-paper p-4"
                     latex={content}
                 />
             </div>

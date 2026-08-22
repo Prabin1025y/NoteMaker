@@ -52,14 +52,14 @@ const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
 
     return (
         <aside
-            className={`relative flex h-full shrink-0 flex-col overflow-hidden border-l border-[#E8E8E8] bg-[#FAFAFA] transition-[width,opacity,transform] duration-300 ease-out ${isCollapsed ? "w-10" : "w-56"}`}
+            className={`relative flex h-full shrink-0 flex-col overflow-hidden border-l border-hairline bg-paper transition-[width,opacity,transform] duration-300 ease-out ${isCollapsed ? "w-10" : "w-56"}`}
         >
             {isCollapsed ? (
                 <div className="flex h-full flex-col items-center pt-3">
                     <button
                         type="button"
                         onClick={() => setIsCollapsed(false)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6B6B6B] transition-colors hover:bg-[#F5F3FF] hover:text-[#6D5EF6]"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-ink transition-colors hover:bg-tint hover:text-brand-cta"
                         aria-label="Expand outline"
                     >
                         <PanelRightOpen size={16} />
@@ -67,12 +67,12 @@ const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
                 </div>
             ) : (
                 <>
-                    <div className="flex items-center justify-between border-b border-[#E8E8E8] px-4 py-3">
+                    <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
                         <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9A9A9A]">
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-faint">
                                 Outline
                             </p>
-                            <p className="mt-0.5 text-[10px] text-[#B0B0B0]">
+                            <p className="mt-0.5 text-[10px] text-faint">
                                 {blocks.length}{" "}
                                 {blocks.length === 1 ? "block" : "blocks"}
                             </p>
@@ -80,7 +80,7 @@ const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
                         <button
                             type="button"
                             onClick={() => setIsCollapsed(true)}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B6B6B] transition-colors hover:bg-[#F5F3FF] hover:text-[#6D5EF6]"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-ink transition-colors hover:bg-tint hover:text-brand-cta"
                             aria-label="Collapse outline"
                         >
                             <PanelRightClose size={15} />
@@ -89,12 +89,12 @@ const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
 
                     <div className="flex-1 overflow-y-auto px-2 py-2">
                         {blocks.length === 0 ? (
-                            <p className="px-3 pt-3 text-[12px] text-[#9A9A9A] leading-relaxed">
+                            <p className="px-3 pt-3 text-[12px] text-faint leading-relaxed">
                                 Blocks you add will appear here for quick
                                 navigation.
                             </p>
                         ) : filteredBlocks.length === 0 ? (
-                            <p className="px-3 pt-3 text-[12px] text-[#9A9A9A]">
+                            <p className="px-3 pt-3 text-[12px] text-faint">
                                 No blocks match your search.
                             </p>
                         ) : (

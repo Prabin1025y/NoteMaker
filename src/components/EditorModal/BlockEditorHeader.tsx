@@ -7,21 +7,21 @@ interface BlockEditorHeaderProps {
 
 const BlockEditorHeader = ({ action, onClose }: BlockEditorHeaderProps) => {
     return (
-        <div className="flex items-center justify-between border-b border-slate-200 px-8 py-5">
+        <div className="flex items-center justify-between border-b border-hairline px-8 py-5">
             <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-cta text-[color:var(--ds-accent-contrast)]">
                     {action === "add" ? <Plus size={20} /> : <PenBox size={18} />}
                 </div>
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold tracking-tight text-ink">
                     {action === "add" ? "New Block" : "Edit Block"}
                 </h2>
             </div>
             <button
                 onClick={onClose}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-slate-700"
+                className="grid h-9 w-9 place-items-center rounded-lg text-muted-ink outline-none transition-colors duration-150 hover:bg-paper hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 aria-label="Close editor"
             >
-                <X size={24} />
+                <X size={20} />
             </button>
         </div>
     );

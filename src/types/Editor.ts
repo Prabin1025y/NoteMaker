@@ -5,7 +5,8 @@ export type blockTypeOptions =
     | "image"
     | "table"
     | "divider"
-    | "formula";
+    | "formula"
+    | "canvas";
 
 export interface EditorData {
     id: string;

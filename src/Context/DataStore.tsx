@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
 import { apiFetch } from "@/lib/api-client";
-import { createNote } from "@/services/noteService";
+import { createNote, updateNote } from "@/services/noteService";
 import { isEqual } from "lodash";
 import {
     AddBlockType,
@@ -118,6 +118,8 @@ type Store = {
         },
     ) => Promise<NoteType>;
     deleteNote: (id: string) => void;
+    toggleNoteFavorite: (id: string) => Promise<void>;
+    toggleNotePin: (id: string) => Promise<void>;
     loadNote: (id: string) => Promise<void>;
     updateNoteTitle: (title: string) => void;
     initializeSyncedBlocks: () => void;
@@ -238,6 +240,8 @@ export const useNoteStore = create<Store>()(
                 createdAt: note.createdAt,
                 updatedAt: note.updatedAt,
                 authorId: note.authorId,
+                isFavorite: Boolean(note.isFavorite),
+                isPinned: Boolean(note.isPinned),
             };
             set({
                 notes: [...get().notes, newNote],
@@ -249,6 +253,58 @@ export const useNoteStore = create<Store>()(
 
         deleteNote: (id) => {
             set({ notes: get().notes.filter((note) => note.id !== id) });
+        },
+
+        toggleNoteFavorite: async (id) => {
+            const note = get().notes.find((n) => n.id === id);
+            if (!note) return;
+
+            const nextValue = !note.isFavorite;
+
+            // Optimistic update.
+            set({
+                notes: get().notes.map((n) =>
+                    n.id === id ? { ...n, isFavorite: nextValue } : n,
+                ),
+            });
+
+            try {
+                await updateNote(id, { isFavorite: nextValue });
+            } catch (error) {
+                // Roll back on failure.
+                set({
+                    notes: get().notes.map((n) =>
+                        n.id === id ? { ...n, isFavorite: !nextValue } : n,
+                    ),
+                });
+                if (process.env.NODE_ENV === "development") console.log(error);
+            }
+        },
+
+        toggleNotePin: async (id) => {
+            const note = get().notes.find((n) => n.id === id);
+            if (!note) return;
+
+            const nextValue = !note.isPinned;
+
+            // Optimistic update.
+            set({
+                notes: get().notes.map((n) =>
+                    n.id === id ? { ...n, isPinned: nextValue } : n,
+                ),
+            });
+
+            try {
+                await updateNote(id, { isPinned: nextValue });
+            } catch (error) {
+                // Roll back on failure.
+                set({
+                    notes: get().notes.map((n) =>
+                        n.id === id ? { ...n, isPinned: !nextValue } : n,
+                    ),
+                });
+                if (process.env.NODE_ENV === "development") console.log(error);
+            }
         },
 
         loadNote: async (id) => {

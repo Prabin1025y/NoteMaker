@@ -30,11 +30,11 @@ const DesignSelection = ({
     return (
         <div className={`${className} flex flex-col gap-5`}>
             <div className="flex-1">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <label className="mb-3 block text-[13px] font-semibold text-body">
                     3. Design Type
                 </label>
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="w-full border cursor-pointer hover:bg-amber-50 border-dashed rounded-lg flex items-center justify-center py-2">
+                    <DropdownMenuTrigger className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-strong py-2 outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
                         {allBlockDesigns
                             .find((b) => b.id === designId)
                             ?.exampleDesign(
@@ -61,7 +61,7 @@ const DesignSelection = ({
                 </DropdownMenu>
             </div>
             <div className="flex-1">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <label className="mb-3 block text-[13px] font-semibold text-body">
                     4. Color Options
                 </label>
                 {/* <DropdownMenu>

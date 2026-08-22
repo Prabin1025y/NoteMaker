@@ -55,6 +55,10 @@ const previewContentForType = (
         return content;
     }
 
+    if (type === "canvas") {
+        return content;
+    }
+
     return content || editorJsonForPreview;
 };
 
@@ -151,6 +155,28 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         titleLabel: "",
         validate: ({ content }) => content.trim().length > 0,
         previewContent: ({ content }) => content || "E=mc^2",
+    },
+    canvas: {
+        type: "canvas",
+        showTitleField: true,
+        supportsDesign: false,
+        initialContent: "",
+        titleLabel: "Caption",
+        validate: ({ content }) => {
+            if (!content) return false;
+            try {
+                const parsed = JSON.parse(content);
+                return (
+                    Array.isArray(parsed?.strokes) &&
+                    parsed.strokes.length > 0 &&
+                    typeof parsed?.dataUrl === "string" &&
+                    parsed.dataUrl.length > 0
+                );
+            } catch {
+                return false;
+            }
+        },
+        previewContent: ({ content }) => content,
     },
 };
 

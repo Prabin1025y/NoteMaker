@@ -54,16 +54,16 @@ function Sortable({
                     ? { backgroundColor: colorOption?.backgroundColorHex }
                     : {}
             }
-            className={`w-full text-left flex items-center gap-2 rounded-lg px-2 py-2 transition-all duration-150 cursor-pointer group ${
+            className={`w-full text-left flex items-center gap-2 rounded-lg px-2 py-2 transition-[background-color,box-shadow,transform] duration-150 cursor-pointer group ${
                 isActive
-                    ? "bg-[#F5F3FF] ring-1 ring-[#6D5EF6]/20"
-                    : "hover:bg-[#F5F3FF]/50"
-            } ${isDragging ? "shadow-md ring-1 ring-[#6D5EF6]/30 bg-white scale-[1.02]" : ""}`}
+                    ? "bg-brand-soft ring-1 ring-[color:var(--ds-accent-soft)]"
+                    : "hover:bg-tint"
+            } ${isDragging ? "shadow-md ring-1 ring-[color:var(--ds-accent-soft)] bg-surface scale-[1.02]" : ""}`}
         >
             <div
                 ref={handleRef}
                 onClick={(e) => e.stopPropagation()}
-                className="text-[#C8C8C8] cursor-grab active:cursor-grabbing transition-colors group-hover:text-[#9A9A9A] shrink-0"
+                className="text-faint cursor-grab active:cursor-grabbing transition-colors group-hover:text-muted-ink shrink-0"
             >
                 <GripVerticalIcon size={16} />
             </div>
@@ -76,13 +76,13 @@ function Sortable({
                     }
                     className={`text-[12px] font-medium truncate transition-colors ${
                         isActive
-                            ? "text-[#6D5EF6]"
-                            : "text-[#1A1A1A] group-hover:text-[#1A1A1A]"
+                            ? "text-brand-cta"
+                            : "text-ink group-hover:text-ink"
                     }`}
                 >
                     {otherInfo.title}
                 </p>
-                <p className="text-[10px] text-[#9A9A9A] truncate capitalize">
+                <p className="text-[10px] text-faint truncate capitalize">
                     {otherInfo.type}
                 </p>
             </div>

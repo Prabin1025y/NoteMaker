@@ -1,46 +1,54 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
 import HomePage from "@/components/HomePage";
-import Link from "next/link";
 import {
     Plus,
     Search,
     Settings,
-    Lightbulb,
-    Users,
-    Code2,
-    BarChart2,
-    BookOpen,
-    FileText,
     Star,
-    LogOutIcon,
+    FileText,
+    LogOut,
+    FolderPlus,
+    Trash2,
+    Check,
+    X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import CreateNoteModal from "@/components/CreateNoteModal";
 import SidebarNoteSkeleton from "@/skeletons/SideBarNoteSkeleton";
-import { fetchFolders, fetchNotes } from "@/services/noteService";
+import {
+    createFolder,
+    deleteFolder,
+    fetchFolders,
+    fetchNotes,
+    updateFolder,
+} from "@/services/noteService";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FolderOption } from "@/types/misc";
-
-const iconMap = [Lightbulb, Users, Code2, BarChart2, BookOpen, FileText, Star];
-const colorMap = [
-    { bg: "bg-violet-100", text: "text-violet-600" },
-    { bg: "bg-blue-100", text: "text-blue-600" },
-    { bg: "bg-emerald-100", text: "text-emerald-600" },
-    { bg: "bg-amber-100", text: "text-amber-600" },
-    { bg: "bg-pink-100", text: "text-pink-600" },
-];
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { resolveFolderColor } from "@/utils/folderColors";
+import ThemeToggle from "@/components/ThemeToggle";
+import type { DashboardView, FolderOption } from "@/types/misc";
 
 export default function HomeLayout() {
     const { data } = useSession();
     const { notes, createNote: createNoteInStore, setNotes } = useNoteStore();
+
     const [searchQuery, setSearchQuery] = useState("");
+    const [view, setView] = useState<DashboardView>({ kind: "all" });
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+    const [newFolderName, setNewFolderName] = useState("");
+    const [folderBusy, setFolderBusy] = useState(false);
+
     const router = useRouter();
     const queryClient = useQueryClient();
+    const menuTriggerRef = useRef<HTMLButtonElement>(null);
+    const newFolderInputRef = useRef<HTMLInputElement>(null);
 
     const { data: notesData, isLoading } = useQuery({
         queryKey: ["notes"],
@@ -55,10 +63,40 @@ export default function HomeLayout() {
     });
 
     useEffect(() => {
-        if (notesData) {
-            setNotes(notesData);
-        }
+        if (notesData) setNotes(notesData);
     }, [notesData, setNotes]);
+
+    // Lock background scroll + close on Escape while the mobile drawer is open.
+    useEffect(() => {
+        if (!sidebarOpen) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setSidebarOpen(false);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", onKey);
+        };
+    }, [sidebarOpen]);
+
+    useEffect(() => {
+        if (isCreatingFolder) newFolderInputRef.current?.focus();
+    }, [isCreatingFolder]);
+
+    const closeSidebar = useCallback(() => {
+        setSidebarOpen(false);
+        menuTriggerRef.current?.focus();
+    }, []);
+
+    const selectView = useCallback(
+        (next: DashboardView) => {
+            setView(next);
+            setSidebarOpen(false);
+        },
+        [],
+    );
 
     const handleCreateNote = async (
         title: string,
@@ -69,188 +107,444 @@ export default function HomeLayout() {
             folderName?: string;
         },
     ) => {
-        const newNote = await createNoteInStore(
-            title,
-            description,
-            folderDetails,
-        );
+        const newNote = await createNoteInStore(title, description, folderDetails);
         setIsCreateModalOpen(false);
-        queryClient.invalidateQueries({queryKey: ['notes']})
-        if(folderDetails?.isNewFolder){
-            queryClient.invalidateQueries({queryKey: ['folders']})
+        queryClient.invalidateQueries({ queryKey: ["notes"] });
+        if (folderDetails?.isNewFolder) {
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
         }
         router.push(`/note/${newNote.id}`);
     };
 
-    const filteredNotes = notes.filter((note) =>
-        note.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-
-    const sortedNotes = [...filteredNotes].sort(
-        (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
-
-    const handleLogout = async () => {
-        signOut({ redirectTo: "/" });
+    const handleCreateFolder = async () => {
+        const name = newFolderName.trim();
+        if (!name || folderBusy) return;
+        try {
+            setFolderBusy(true);
+            await createFolder({ name });
+            await queryClient.invalidateQueries({ queryKey: ["folders"] });
+            toast.success(`Folder “${name}” created`, { toasterId: "normal" });
+            setNewFolderName("");
+            setIsCreatingFolder(false);
+        } catch (error) {
+            toast.error(
+                error instanceof Error ? error.message : "Couldn't create folder",
+                { toasterId: "normal" },
+            );
+        } finally {
+            setFolderBusy(false);
+        }
     };
 
-    return (
-        <div
-            className="flex h-screen w-screen bg-[#faf9f7] overflow-hidden"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+    const handleToggleFolderFavorite = async (folder: FolderOption) => {
+        try {
+            await updateFolder(folder.id, { isFavorite: !folder.isFavorite });
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
+        } catch (error) {
+            toast.error(
+                error instanceof Error ? error.message : "Couldn't update folder",
+                { toasterId: "normal" },
+            );
+        }
+    };
+
+    const handleDeleteFolder = async (folder: FolderOption) => {
+        const confirmed = window.confirm(
+            `Delete the folder “${folder.name}”? Notes must be moved out first.`,
+        );
+        if (!confirmed) return;
+        try {
+            await deleteFolder(folder.id);
+            await queryClient.invalidateQueries({ queryKey: ["folders"] });
+            if (view.kind === "folder" && view.folderId === folder.id) {
+                setView({ kind: "all" });
+            }
+            toast.success(`Folder “${folder.name}” deleted`, {
+                toasterId: "normal",
+            });
+        } catch (error) {
+            toast.error(
+                error instanceof Error ? error.message : "Couldn't delete folder",
+                { toasterId: "normal" },
+            );
+        }
+    };
+
+    const handleLogout = () => signOut({ redirectTo: "/" });
+
+    const allCount = notes.length;
+    const favCount = notes.filter((n) => n.isFavorite).length;
+
+    const orderedFolders = [...folders].sort((a, b) => {
+        if (Boolean(b.isFavorite) !== Boolean(a.isFavorite)) {
+            return b.isFavorite ? 1 : -1;
+        }
+        return a.name.localeCompare(b.name);
+    });
+
+    const NavItem = ({
+        active,
+        icon,
+        label,
+        count,
+        onClick,
+    }: {
+        active: boolean;
+        icon: React.ReactNode;
+        label: string;
+        count: number;
+        onClick: () => void;
+    }) => (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium outline-none transition-colors duration-150",
+                "focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
+                active
+                    ? "bg-tint text-ink"
+                    : "text-body hover:bg-paper hover:text-ink",
+            )}
         >
-            <aside className="w-80 border-r border-[#e8e5e0] bg-[#faf9f7] flex flex-col shrink-0">
+            <span
+                className={cn(
+                    "shrink-0",
+                    active ? "text-brand-cta" : "text-muted-ink",
+                )}
+            >
+                {icon}
+            </span>
+            <span className="flex-1 text-left">{label}</span>
+            <span className="text-[11px] text-faint tabular-nums">{count}</span>
+        </button>
+    );
+
+    return (
+        <div className="flex h-screen w-screen overflow-hidden bg-canvas">
+            {/* Mobile backdrop */}
+            {sidebarOpen && (
+                <div
+                    aria-hidden
+                    onClick={closeSidebar}
+                    className="ds-animate-fade-in fixed inset-0 z-40 bg-black/40 md:hidden"
+                />
+            )}
+
+            <aside
+                className={cn(
+                    "fixed inset-y-0 left-0 z-50 flex w-[280px] shrink-0 flex-col border-r border-hairline bg-paper",
+                    "transition-transform duration-[240ms] ease-[cubic-bezier(0.2,0,0,1)]",
+                    "md:static md:z-auto md:translate-x-0",
+                    sidebarOpen ? "translate-x-0" : "-translate-x-full",
+                )}
+                aria-label="Primary navigation"
+            >
                 {/* Brand */}
-                <div className="px-4 py-5 border-b border-[#e8e5e0]">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-7 h-7  flex items-center justify-center shrink-0">
-                            {/* <Notebook
-                                size={14}
-                                className="text-white"
-                            /> */}
-                            <Image
-                                src={"/logo.png"}
-                                alt="Logo"
-                                width={100}
-                                height={100}
-                            />
-                        </div>
-                        <span className="text-[15px] text-indigo-700 tracking-tight">
+                <div className="flex items-center justify-between gap-2 px-4 py-4">
+                    <div className="flex items-center gap-2">
+                        <Image
+                            src="/logo.png"
+                            alt="Eton Note logo"
+                            width={26}
+                            height={26}
+                            className="rounded-md"
+                        />
+                        <span className="text-[15px] tracking-tight text-ink">
                             <span className="font-bold">Eton</span> Note
                         </span>
                     </div>
+                    <div className="flex items-center gap-1">
+                        <ThemeToggle />
+                        <button
+                            type="button"
+                            aria-label="Close navigation"
+                            onClick={closeSidebar}
+                            className="grid h-9 w-9 place-items-center rounded-lg text-muted-ink outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] md:hidden"
+                        >
+                            <X size={16} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* New note */}
+                <div className="px-4 pb-3">
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-[10px] text-[13px] font-medium transition-colors"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-cta py-2.5 text-[13px] font-semibold text-[color:var(--ds-accent-contrast)] outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-paper)] active:scale-[0.98]"
                     >
-                        <Plus
-                            size={14}
-                            strokeWidth={2.5}
-                        />
+                        <Plus size={15} strokeWidth={2.5} />
                         New note
                     </button>
                 </div>
 
                 {/* Search */}
-                <div className="px-4 pt-3 pb-1">
-                    <div className="flex items-center gap-2 bg-white border border-[#e2e0dc] rounded-[9px] px-3 py-2">
-                        <Search
-                            size={14}
-                            className="text-[#9e9a94] shrink-0"
-                        />
+                <div className="px-4 pb-3">
+                    <div className="flex items-center gap-2 rounded-md border border-hairline bg-surface px-3 py-2 transition-colors duration-150 focus-within:border-[color:var(--ds-border-input)] focus-within:ring-2 focus-within:ring-[color:var(--ds-focus-ring)]">
+                        <Search size={14} className="shrink-0 text-faint" />
                         <input
                             type="text"
-                            placeholder="Search notes..."
+                            placeholder="Search notes…"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="flex-1 text-[13px] text-[#1a1714] bg-transparent outline-none placeholder-[#b8b3ac]"
+                            className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-faint"
                         />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                aria-label="Clear search"
+                                onClick={() => setSearchQuery("")}
+                                className="shrink-0 text-faint outline-none transition-colors duration-150 hover:text-ink"
+                            >
+                                <X size={13} />
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                <div className="px-5 pt-4 pb-1.5">
-                    <span className="text-[10px] font-semibold text-[#b8b3ac] uppercase tracking-[0.08em]">
-                        All notes
+                {/* Nav */}
+                <nav className="px-2.5">
+                    <NavItem
+                        active={view.kind === "all"}
+                        icon={<FileText size={15} />}
+                        label="All notes"
+                        count={allCount}
+                        onClick={() => selectView({ kind: "all" })}
+                    />
+                    <NavItem
+                        active={view.kind === "favorites"}
+                        icon={<Star size={15} />}
+                        label="Favorites"
+                        count={favCount}
+                        onClick={() => selectView({ kind: "favorites" })}
+                    />
+                </nav>
+
+                {/* Folders header */}
+                <div className="flex items-center justify-between px-5 pb-1.5 pt-5">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-faint">
+                        Folders
                     </span>
+                    <button
+                        type="button"
+                        aria-label="New folder"
+                        onClick={() => setIsCreatingFolder((v) => !v)}
+                        className="grid h-6 w-6 place-items-center rounded-md text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                    >
+                        <FolderPlus size={14} />
+                    </button>
                 </div>
 
-                {/* Note list */}
-                <div className="flex-1 overflow-y-auto px-2 pb-4">
+                {/* Folder list */}
+                <div className="flex-1 overflow-y-auto px-2.5 pb-3">
+                    {isCreatingFolder && (
+                        <div className="mb-1 flex items-center gap-1 px-1">
+                            <input
+                                ref={newFolderInputRef}
+                                value={newFolderName}
+                                onChange={(e) => setNewFolderName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleCreateFolder();
+                                    if (e.key === "Escape") {
+                                        setIsCreatingFolder(false);
+                                        setNewFolderName("");
+                                    }
+                                }}
+                                placeholder="Folder name"
+                                className="min-w-0 flex-1 rounded-md border border-[color:var(--ds-border-input)] bg-surface px-2.5 py-1.5 text-[13px] text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            />
+                            <button
+                                type="button"
+                                aria-label="Create folder"
+                                disabled={!newFolderName.trim() || folderBusy}
+                                onClick={handleCreateFolder}
+                                className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-[color:var(--ds-success)] outline-none transition-colors duration-150 hover:bg-surface focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] disabled:opacity-40"
+                            >
+                                <Check size={15} />
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Cancel"
+                                onClick={() => {
+                                    setIsCreatingFolder(false);
+                                    setNewFolderName("");
+                                }}
+                                className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            >
+                                <X size={15} />
+                            </button>
+                        </div>
+                    )}
+
                     {isLoading ? (
                         <ul>
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <SidebarNoteSkeleton key={i} />
                             ))}
                         </ul>
-                    ) : sortedNotes.length > 0 ? (
-                        <ul>
-                            {sortedNotes.map((note, i) => {
-                                const color = colorMap[i % colorMap.length];
-                                const Icon = iconMap[i % iconMap.length];
+                    ) : orderedFolders.length > 0 ? (
+                        <ul className="flex flex-col gap-0.5">
+                            {orderedFolders.map((folder) => {
+                                const color = resolveFolderColor(folder.color);
+                                const active =
+                                    view.kind === "folder" &&
+                                    view.folderId === folder.id;
+                                const count = notes.filter(
+                                    (n) => n.folderId === folder.id,
+                                ).length;
                                 return (
-                                    <li key={note.id}>
-                                        <Link
-                                            prefetch={false}
-                                            href={`/note/${note.id}`}
-                                            className="flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] hover:bg-[#f0ede8] transition-colors group"
+                                    <li key={folder.id} className="group/folder">
+                                        <div
+                                            className={cn(
+                                                "flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors duration-150",
+                                                active
+                                                    ? "bg-tint"
+                                                    : "hover:bg-surface",
+                                            )}
                                         >
-                                            <div
-                                                className={`w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0 ${color.bg}`}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    selectView({
+                                                        kind: "folder",
+                                                        folderId: folder.id,
+                                                    })
+                                                }
+                                                aria-current={
+                                                    active ? "page" : undefined
+                                                }
+                                                className="flex min-w-0 flex-1 items-center gap-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                                             >
-                                                <Icon
-                                                    size={13}
-                                                    className={color.text}
+                                                <span
+                                                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            color.dot,
+                                                    }}
                                                 />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-[13px] font-medium text-[#1a1714] truncate group-hover:text-indigo-700 transition-colors">
-                                                    {note.title || "Untitled"}
-                                                </p>
-                                                <p className="text-[11px] text-[#b8b3ac]">
-                                                    {new Date(
-                                                        note.updatedAt,
-                                                    ).toLocaleDateString(
-                                                        "en-US",
-                                                        {
-                                                            month: "short",
-                                                            day: "numeric",
-                                                        },
+                                                <span
+                                                    className={cn(
+                                                        "min-w-0 flex-1 truncate text-[13px] font-medium",
+                                                        active
+                                                            ? "text-ink"
+                                                            : "text-body",
                                                     )}
-                                                </p>
+                                                >
+                                                    {folder.name}
+                                                </span>
+                                            </button>
+
+                                            {/* Right cluster: count is always
+                                                present (no hover layout shift);
+                                                actions fade in but keep their
+                                                space + tab order. */}
+                                            <div className="flex shrink-0 items-center">
+                                                <button
+                                                    type="button"
+                                                    aria-label={
+                                                        folder.isFavorite
+                                                            ? "Unfavorite folder"
+                                                            : "Favorite folder"
+                                                    }
+                                                    onClick={() =>
+                                                        handleToggleFolderFavorite(
+                                                            folder,
+                                                        )
+                                                    }
+                                                    className={cn(
+                                                        "grid h-6 w-6 place-items-center rounded-md outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
+                                                        folder.isFavorite
+                                                            ? "text-brand opacity-100"
+                                                            : "text-faint opacity-0 hover:text-ink focus-visible:opacity-100 group-hover/folder:opacity-100",
+                                                    )}
+                                                >
+                                                    <Star
+                                                        size={13}
+                                                        className={
+                                                            folder.isFavorite
+                                                                ? "fill-current"
+                                                                : ""
+                                                        }
+                                                    />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    aria-label="Delete folder"
+                                                    onClick={() =>
+                                                        handleDeleteFolder(
+                                                            folder,
+                                                        )
+                                                    }
+                                                    className="grid h-6 w-6 place-items-center rounded-md text-faint opacity-0 outline-none transition-colors duration-150 hover:bg-paper hover:text-[color:var(--ds-danger)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] group-hover/folder:opacity-100"
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                                <span className="w-6 text-right text-[11px] text-faint tabular-nums">
+                                                    {count}
+                                                </span>
                                             </div>
-                                        </Link>
+                                        </div>
                                     </li>
                                 );
                             })}
                         </ul>
                     ) : (
-                        <p className="px-3 pt-2 text-[12px] text-[#b8b3ac]">
-                            {searchQuery
-                                ? "No results found."
-                                : "No notes yet."}
+                        <p className="px-3 pt-1 text-[12px] text-faint">
+                            No folders yet.
                         </p>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 py-3 border-t border-[#e8e5e0]">
+                <div className="border-t border-hairline px-4 py-3">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 bg-indigo-700 overflow-hidden rounded-full flex items-center justify-center text-[11px] font-semibold text-white">
-                                {data?.user.image && (
+                        <div className="flex min-w-0 items-center gap-2">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-cta text-[11px] font-semibold text-[color:var(--ds-accent-contrast)]">
+                                {data?.user?.image ? (
                                     <Image
-                                        alt="User Avatar"
-                                        src={data?.user.image}
+                                        alt="User avatar"
+                                        src={data.user.image}
                                         height={28}
                                         width={28}
                                         className="h-7 w-7"
                                     />
+                                ) : (
+                                    (data?.user?.name?.charAt(0) ?? "U")
                                 )}
                             </div>
-                            <span className="text-[12px] font-medium text-[#5a5550]">
-                                {data?.user.name}
+                            <span className="truncate text-[12px] font-medium text-body">
+                                {data?.user?.name ?? "Account"}
                             </span>
                         </div>
-                        <div className="flex gap-3">
-                            <Settings
-                                size={15}
-                                className="text-[#b8b3ac] cursor-pointer hover:text-[#5a5550] transition-colors"
-                            />
-                            <LogOutIcon
+                        <div className="flex items-center gap-1">
+                            <button
+                                type="button"
+                                aria-label="Settings"
+                                className="grid h-8 w-8 place-items-center rounded-lg text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            >
+                                <Settings size={15} />
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Log out"
                                 onClick={handleLogout}
-                                size={15}
-                                className="text-[#b8b3ac] cursor-pointer hover:text-[#5a5550] transition-colors"
-                            />
+                                className="grid h-8 w-8 place-items-center rounded-lg text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-[color:var(--ds-danger)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            >
+                                <LogOut size={15} />
+                            </button>
                         </div>
                     </div>
                 </div>
             </aside>
 
             <HomePage
-                fetching={isLoading}
+                view={view}
+                setView={setView}
                 folders={folders}
+                searchQuery={searchQuery}
+                fetching={isLoading}
                 onCreateNote={() => setIsCreateModalOpen(true)}
+                onOpenSidebar={() => setSidebarOpen(true)}
             />
 
             <CreateNoteModal

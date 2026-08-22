@@ -1,5 +1,6 @@
 import { signIn } from "@/auth";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 // Google "G" mark — brand icon, not decorative art, used for the sign-in button
 function GoogleIcon() {
@@ -8,6 +9,7 @@ function GoogleIcon() {
             viewBox="0 0 48 48"
             width="20"
             height="20"
+            aria-hidden="true"
         >
             <path
                 fill="#FFC107"
@@ -29,21 +31,43 @@ function GoogleIcon() {
     );
 }
 
-export function SignInButton() {
+interface SignInButtonProps {
+    label?: string;
+    size?: "sm" | "default" | "lg";
+    variant?: "default" | "outline";
+    className?: string;
+    fullWidth?: boolean;
+}
+
+export function SignInButton({
+    label = "Continue with Google",
+    size = "lg",
+    variant = "default",
+    className,
+    fullWidth = false,
+}: SignInButtonProps) {
     return (
         <form
             action={async () => {
                 "use server";
                 await signIn("google");
             }}
+            className={fullWidth ? "w-full" : "inline-flex"}
         >
             <Button
-                size="lg"
-                variant="outline"
-                className="gap-2 bg-white border-slate-300 hover:bg-slate-50 h-12 cursor-pointer px-6 text-base"
+                size={size}
+                variant={variant}
+                className={cn(
+                    "gap-2 cursor-pointer font-medium",
+                    variant === "outline"
+                        ? "bg-surface border-hairline text-ink hover:bg-paper"
+                        : "bg-brand-cta text-[color:var(--ds-accent-contrast)] border-transparent transition-[transform,filter] duration-150 hover:brightness-105 active:scale-[0.98]",
+                    fullWidth && "w-full",
+                    className,
+                )}
             >
                 <GoogleIcon />
-                Continue with Google
+                {label}
             </Button>
         </form>
     );

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { EditorData } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { useBlockEditorState } from "./block-editor-state";
@@ -68,13 +68,36 @@ const BlockEditorModal = ({ onClose, onSave, editorData }: BlockEditorModalProps
         onClose();
     };
 
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        window.addEventListener("keydown", onKey);
+        const id = window.setTimeout(() => panelRef.current?.focus(), 30);
+        return () => {
+            window.removeEventListener("keydown", onKey);
+            window.clearTimeout(id);
+        };
+    }, [onClose]);
+
     if (!currentBlock) {
         return null;
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm transition-opacity duration-200 ease-out">
-            <div className="flex h-full max-w-7xl w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-200 ease-out">
+        <div
+            className="ds-animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label={editorData.action === "add" ? "New block editor" : "Edit block editor"}
+        >
+            <div
+                ref={panelRef}
+                tabIndex={-1}
+                className="ds-animate-fade-up flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-hairline bg-elevated shadow-2xl outline-none"
+            >
                 <BlockEditorHeader action={editorData.action} onClose={handleClose} />
                 <div className="flex flex-1 overflow-hidden">
                     <BlockContentEditor

@@ -11,36 +11,48 @@ interface BlockTypeSelectorProps {
 const BlockTypeSelector = ({ currentBlock, onTypeChange }: BlockTypeSelectorProps) => {
     return (
         <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3">1. Block Type</label>
+            <label className="mb-3 block text-[13px] font-semibold text-body">
+                1. Block type
+            </label>
             <DropdownMenu>
                 <DropdownMenuTrigger className="w-full">
-                    <div
-                        className={`w-full cursor-pointer text-left p-3 rounded-lg transition-colors border border-slate-200 ${currentBlock.bgColor} ${currentBlock.hoverColor} focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-300`}
-                    >
-                        <div className="flex items-start gap-3">
-                            <div className={`shrink-0 mt-0.5 ${currentBlock.color}`}>{currentBlock.icon}</div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className={`text-sm font-semibold ${currentBlock.color}`}>{currentBlock.title}</h3>
-                            </div>
-                            <ChevronDown className="h-4 w-4 mt-0.5 shrink-0 opacity-60" />
-                        </div>
+                    <div className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-hairline bg-surface p-2.5 text-left outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
+                        <span
+                            className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${currentBlock.bgColor} ${currentBlock.color}`}
+                        >
+                            {currentBlock.icon}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[13px] font-semibold text-ink">
+                                {currentBlock.title}
+                            </span>
+                        </span>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-faint" />
                     </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-full">
+                <DropdownMenuContent className="w-72 max-w-[calc(100vw-2rem)]">
                     {allBlocks.map((block) => (
                         <DropdownMenuItem
                             key={block.type}
                             onSelect={() => onTypeChange(block.type)}
-                            className="rounded-none min-w-full"
+                            className="rounded-md p-0"
                             asChild
                         >
-                            <div className={`w-full cursor-pointer text-left p-3 transition-colors border border-transparent ${block.bgColor} ${block.hoverColor} hover:border-slate-300`}>
-                                <div className="flex items-start gap-3">
-                                    <div className={`shrink-0 mt-0.5 ${block.color}`}>{block.icon}</div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className={`text-sm font-semibold ${block.color}`}>{block.title}</h3>
-                                        <p className="text-xs text-slate-500 truncate">{block.description}</p>
-                                    </div>
+                            <div
+                                className={`flex w-full cursor-pointer items-start gap-3 rounded-md p-2.5 transition-colors duration-150 ${block.hoverColor}`}
+                            >
+                                <span
+                                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${block.bgColor} ${block.color}`}
+                                >
+                                    {block.icon}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-[13px] font-semibold text-ink">
+                                        {block.title}
+                                    </h3>
+                                    <p className="truncate text-[12px] text-muted-ink">
+                                        {block.description}
+                                    </p>
                                 </div>
                             </div>
                         </DropdownMenuItem>

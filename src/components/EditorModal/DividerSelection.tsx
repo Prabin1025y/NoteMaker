@@ -25,12 +25,12 @@ const DividerSelection = ({
     return (
         <div className="flex gap-5">
             <div className="flex-1">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <label className="mb-3 block text-[13px] font-semibold text-body">
                     Design Type
                 </label>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="w-full border cursor-pointer hover:bg-amber-50 border-dashed rounded-lg flex items-center justify-center py-4">
+                    <DropdownMenuTrigger className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-strong py-4 outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
                         {(() => {
                             const DividerComponent = ALL_DIVIDERS.find(
                                 (b) => b.name === content.trim(),
@@ -69,7 +69,7 @@ const DividerSelection = ({
                 </DropdownMenu>
             </div>
             <div className="flex-1">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                <label className="mb-3 block text-[13px] font-semibold text-body">
                     Color Options
                 </label>
                 <DropdownMenu>

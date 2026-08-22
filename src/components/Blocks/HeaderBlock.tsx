@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
 import { colorOptions } from "@/utils/ColorsInfo";
@@ -23,7 +24,7 @@ export default function HeaderBlock({
     onEdit,
     onDelete,
 }: HeaderBlockProps) {
-    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
+    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
 
@@ -34,17 +35,17 @@ export default function HeaderBlock({
         >
             <div
                 className={`
-                group relative  rounded-xl ${isDesignDisabled ? "px-3" : "border-2 px-5 my-3 "}
-                 ${!!title?.trim() && !isDesignDisabled ? "pt-6" : "pt-3"} pb-3 transition-all duration-300
+                group relative  rounded-xl ${isDesignDisabled ? "px-3" : "ds-block-surface border-2 px-5 my-3 "}
+                 ${!!title?.trim() && !isDesignDisabled ? "pt-6" : "pt-3"} pb-3 transition-[box-shadow,transform] duration-300
                 hover:shadow-lg
                 ${className}
             `}
                 style={
                     !isDesignDisabled
-                        ? {
-                              backgroundColor: colorOption.backgroundColorHex,
-                              borderColor: colorOption.borderColorHex,
-                          }
+                        ? ({
+                              "--block-bg": colorOption.backgroundColorHex,
+                              "--block-border": colorOption.borderColorHex,
+                          } as CSSProperties)
                         : {}
                 }
             >
@@ -54,7 +55,7 @@ export default function HeaderBlock({
                     <BlockActionButton
                         icon={
                             <EditIcon
-                                className={`${iconClassName} hover:text-blue-500`}
+                                className={`${iconClassName} hover:text-brand-cta`}
                             />
                         }
                         onClick={() => onEdit()}
@@ -64,7 +65,7 @@ export default function HeaderBlock({
                     <BlockActionButton
                         icon={
                             <Trash2Icon
-                                className={`${iconClassName} hover:text-red-500`}
+                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
                             />
                         }
                         onClick={() => onDelete()}

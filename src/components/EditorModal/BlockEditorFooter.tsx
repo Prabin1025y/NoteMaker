@@ -10,28 +10,28 @@ interface BlockEditorFooterProps {
 
 const BlockEditorFooter = ({ onClose, onSave, disabled, isAdding, action }: BlockEditorFooterProps) => {
     return (
-        <div className="border-t border-slate-200 px-8 py-4 bg-slate-50 flex items-center justify-end">
+        <div className="flex items-center justify-end border-t border-hairline bg-paper px-8 py-4">
             <div className="flex gap-3">
                 <button
                     onClick={onClose}
-                    className="px-6 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-100 transition-colors"
+                    className="rounded-lg border border-hairline bg-surface px-6 py-2 font-medium text-body outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
                 >
                     Cancel
                 </button>
                 <button
                     onClick={onSave}
                     disabled={disabled || isAdding}
-                    className={`${disabled || isAdding ? " bg-indigo-600/50 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"} px-6 py-2 rounded-lg text-white font-medium transition-colors flex items-center justify-center w-32`}
+                    className={`${disabled || isAdding ? "cursor-not-allowed opacity-40" : "hover:brightness-105 active:scale-[0.98]"} flex w-32 items-center justify-center rounded-lg bg-brand-cta px-6 py-2 font-medium text-[color:var(--ds-accent-contrast)] outline-none transition-[transform,filter] duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2`}
                 >
                     {isAdding ? (
                         <Loader className="animate-spin" />
                     ) : action === "add" ? (
                         "Add Block"
                     ) : (
-                        <p className="flex gap-2 items-center">
-                            <Save size={20} />
+                        <span className="flex items-center gap-2">
+                            <Save size={18} />
                             <span>Save</span>
-                        </p>
+                        </span>
                     )}
                 </button>
             </div>

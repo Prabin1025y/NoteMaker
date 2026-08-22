@@ -5,6 +5,7 @@ import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import HeaderBlock from "@/components/Blocks/HeaderBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import TableBlock from "@/components/Blocks/TableBlock";
+import CanvasBlock from "@/components/Blocks/CanvasBlock";
 import { apiFetch } from "@/lib/api-client";
 import { blockTypeOptions } from "@/types/Editor";
 
@@ -76,6 +77,8 @@ export const mapTypeToElement = (type: blockTypeOptions) => {
             return DividerBlock;
         case "heading":
             return HeaderBlock;
+        case "canvas":
+            return CanvasBlock;
 
         default:
             return null;

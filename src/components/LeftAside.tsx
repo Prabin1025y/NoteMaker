@@ -53,7 +53,7 @@ const LeftAside = ({
     return (
         <>
             <aside
-                className={`relative group/aside flex h-full shrink-0 flex-col overflow-hidden border-r border-[#E8E8E8] bg-[#FAFAFA] transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH}`}
+                className={`relative group/aside flex h-full shrink-0 flex-col overflow-hidden border-r border-hairline bg-paper transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH}`}
             >
                 <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-3">
                     {/* AI Generator button */}
@@ -67,7 +67,7 @@ const LeftAside = ({
                                     size="sm"
                                     onClick={() => openAiModel()}
                                     disabled={isGenerating}
-                                    className={`${isGenerating && "cursor-not-allowed opacity-70"} flex-1 bg-[#6D5EF6] text-white hover:bg-[#5B4DE0] transition-colors`}
+                                    className={`${isGenerating && "cursor-not-allowed opacity-70"} flex-1 bg-brand-cta text-[color:var(--ds-accent-contrast)] transition-[filter] duration-150 hover:brightness-105`}
                                 >
                                     <Sparkles size={14} />
                                     AI Block Generator
@@ -76,7 +76,7 @@ const LeftAside = ({
                                     type="button"
                                     onClick={() => setIsExpanded(false)}
                                     title="Close Left Panel"
-                                    className="h-9 w-9 flex items-center justify-center rounded-full text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                                    className="h-9 w-9 flex items-center justify-center rounded-full text-brand-cta transition-colors hover:bg-tint"
                                 >
                                     <PanelLeftCloseIcon size={18} />
                                 </button>
@@ -87,7 +87,7 @@ const LeftAside = ({
                                     type="button"
                                     onClick={() => openAiModel()}
                                     title="AI Block Generator"
-                                    className="group-hover/aside:hidden flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                                    className="group-hover/aside:hidden flex h-9 w-9 items-center justify-center rounded-lg text-brand-cta transition-colors hover:bg-tint"
                                 >
                                     <Sparkles size={18} />
                                 </button>
@@ -95,7 +95,7 @@ const LeftAside = ({
                                     type="button"
                                     onClick={() => setIsExpanded(true)}
                                     title="Open Left Panel"
-                                    className="hidden group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-[#6D5EF6] transition-colors hover:bg-[#F5F3FF]"
+                                    className="hidden group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-brand-cta transition-colors hover:bg-tint"
                                 >
                                     <PanelRightCloseIcon size={18} />
                                 </button>
@@ -104,7 +104,7 @@ const LeftAside = ({
                     </div>
 
                     <div
-                        className={`mx-2 mb-2 h-px bg-[#E8E8E8] ${isExpanded ? "" : "mx-3"}`}
+                        className={`mx-2 mb-2 h-px bg-hairline ${isExpanded ? "" : "mx-3"}`}
                     />
 
                     {/* Block categories */}
@@ -114,7 +114,7 @@ const LeftAside = ({
                             className="mb-1"
                         >
                             {isExpanded && (
-                                <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#9A9A9A]">
+                                <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-faint">
                                     {category.label}
                                 </p>
                             )}
@@ -133,17 +133,17 @@ const LeftAside = ({
                                                 )
                                             }
                                             title={block.title}
-                                            className={`group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-all duration-150 ${
+                                            className={`group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors duration-150 ${
                                                 isSelected
-                                                    ? "bg-[#F5F3FF] text-[#6D5EF6]"
-                                                    : "text-[#4A4A4A] hover:bg-[#F5F3FF]/60"
+                                                    ? "bg-brand-soft text-brand-cta"
+                                                    : "text-body hover:bg-tint"
                                             } ${!isExpanded ? "justify-center px-0" : ""}`}
                                         >
                                             <span
                                                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
                                                     isSelected
-                                                        ? "bg-[#EDE9FD] text-[#6D5EF6]"
-                                                        : "text-[#6B6B6B] group-hover:text-[#6D5EF6] group-hover:bg-[#F5F3FF]"
+                                                        ? "bg-tint text-brand-cta"
+                                                        : "text-muted-ink group-hover:text-brand-cta group-hover:bg-tint"
                                                 }`}
                                             >
                                                 {block.icon}
@@ -153,7 +153,7 @@ const LeftAside = ({
                                                     <p className="text-[12px] font-medium truncate">
                                                         {block.title}
                                                     </p>
-                                                    <p className="text-[10px] text-[#9A9A9A] truncate">
+                                                    <p className="text-[10px] text-faint truncate">
                                                         {block.description}
                                                     </p>
                                                 </div>

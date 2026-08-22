@@ -11,6 +11,7 @@ import CodeSection from "./CodeSection";
 import FormulaSection from "./FormulaSection";
 import EditableTable from "./TableSection";
 import DividerSelection from "./DividerSelection";
+import CanvasSection from "./CanvasSection";
 import { ImageDropZone, PreviewFile } from "../ImageUploader";
 import { getBlockTypeConfig } from "./block-editor-config";
 
@@ -28,15 +29,15 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
         if (state.currentType === "code") {
             return (
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-3">Language</label>
+                    <label className="mb-3 block text-[13px] font-semibold text-body">Language</label>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
-                                className="flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-[color:var(--ds-border-input)] bg-surface px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                             >
                                 <span className="capitalize">{state.language}</span>
-                                <ChevronDown className="h-4 w-4 opacity-60" />
+                                <ChevronDown className="h-4 w-4 text-faint" />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="max-h-80 w-56 overflow-y-auto">
@@ -62,20 +63,24 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
 
         return (
             <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
-                    {state.currentType === "image" ? "Caption" : "Title"}{" "}
-                    <span className="font-normal text-slate-400">(optional)</span>
+                <label className="mb-3 block text-[13px] font-semibold text-body">
+                    {state.currentType === "image" ||
+                    state.currentType === "canvas"
+                        ? "Caption"
+                        : "Title"}{" "}
+                    <span className="font-normal text-faint">(optional)</span>
                 </label>
                 <input
                     type="text"
                     value={state.title}
                     onChange={(e) => dispatch({ type: "setTitle", payload: e.target.value })}
                     placeholder={
-                        state.currentType === "image"
+                        state.currentType === "image" ||
+                        state.currentType === "canvas"
                             ? "Enter caption"
                             : "Enter title (optional)"
                     }
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 font-medium transition-all outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-offset-1 focus:ring-indigo-300 bg-white text-slate-900"
+                    className="w-full rounded-md border border-[color:var(--ds-border-input)] bg-surface px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-faint focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 />
             </div>
         );
@@ -102,7 +107,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
             case "heading":
                 return (
                     <div className="flex-1 flex flex-col min-h-0">
-                        <div className="flex-1 flex flex-col min-h-0 border border-slate-300 rounded-lg overflow-hidden">
+                        <div className="flex-1 flex flex-col min-h-0 border border-hairline rounded-lg overflow-hidden">
                             <div className="flex-1 min-h-0 overflow-y-auto px-4">
                                 <SimpleEditor
                                     key={state.currentType}
@@ -122,6 +127,15 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                 return <EditableTable onChangeHandler={handleTableChange} editorData={editorData} />;
             case "divider":
                 return <DividerSelection colorOptionId={state.colorOptionId} setColorOptionId={updateColorOptionId} content={state.content} onChangeHandler={(value) => dispatch({ type: "setContent", payload: value.trim() })} />;
+            case "canvas":
+                return (
+                    <CanvasSection
+                        content={state.content}
+                        onChangeHandler={(value) =>
+                            dispatch({ type: "setContent", payload: value })
+                        }
+                    />
+                );
             default:
                 return null;
         }

@@ -2,6 +2,7 @@ import { withErrorHandling } from "@/lib/Error/error-handler";
 import prisma from "@/lib/prisma";
 import requireAuth from "@/lib/requireAuth";
 import { findManyByAuthor } from "@/server/repositories/note.repository";
+import * as folderService from "@/server/services/folder.service";
 import { createNoteSchema } from "@/validation/notes";
 import { NextResponse } from "next/server";
 
@@ -9,6 +10,7 @@ export const GET = withErrorHandling(async () => {
     const user = await requireAuth();
 
     const notes = await findManyByAuthor(user.id, {
+        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
         include: {
             _count: {
                 select: {
@@ -32,18 +34,17 @@ export const POST = withErrorHandling(async (req) => {
         if (!folderName?.trim())
             throw new Error("Foldername is required for new folder.");
 
-        const folder = await prisma.folder.create({
-            data: {
-                name: folderName,
-                authorId: user.id,
-            },
+        // Route inline folder creation through the service so it gets a color.
+        const folder = await folderService.createFolder(user.id, {
+            name: folderName,
         });
 
         f_id = folder.id;
     } else {
-        const folder = await prisma.folder.findUnique({
+        const folder = await prisma.folder.findFirst({
             where: {
                 id: folderId,
+                authorId: user.id,
             },
         });
 

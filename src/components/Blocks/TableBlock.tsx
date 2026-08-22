@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
 import { colorOptions } from "@/utils/ColorsInfo";
@@ -39,8 +40,16 @@ function ReadOnlyTable({
 
     return (
         <div
-            className="overflow-x-auto rounded-xl border"
-            style={{ borderColor }}
+            className="overflow-x-auto rounded-xl border ds-table-surface"
+            style={
+                {
+                    "--tbl-accent": borderColor,
+                    "--tbl-border-src": borderColor,
+                    "--tbl-header-bg-src": headerBg,
+                    "--tbl-header-text-src": headerText,
+                    borderColor: "var(--tbl-border)",
+                } as CSSProperties
+            }
         >
             <table
                 className="border-collapse w-full"
@@ -67,8 +76,8 @@ function ReadOnlyTable({
                         <th
                             className="border-b"
                             style={{
-                                background: headerBg,
-                                borderColor,
+                                background: "var(--tbl-header-bg)",
+                                borderColor: "var(--tbl-border)",
                             }}
                         />
                         {cols.map((colId, ci) => (
@@ -76,14 +85,14 @@ function ReadOnlyTable({
                                 key={colId}
                                 className="border-b border-l text-left"
                                 style={{
-                                    background: headerBg,
-                                    borderColor,
+                                    background: "var(--tbl-header-bg)",
+                                    borderColor: "var(--tbl-border)",
                                 }}
                             >
                                 <div className="h-10 flex items-center px-3">
                                     <span
                                         className="text-sm font-bold truncate"
-                                        style={{ color: headerText }}
+                                        style={{ color: "var(--tbl-header-text)" }}
                                     >
                                         {headers[colId]?.trim() ? (
                                             headers[colId]
@@ -107,9 +116,9 @@ function ReadOnlyTable({
                             <td
                                 className="border-t text-center font-bold text-xs"
                                 style={{
-                                    background: headerBg,
-                                    borderColor,
-                                    color: headerText,
+                                    background: "var(--tbl-header-bg)",
+                                    borderColor: "var(--tbl-border)",
+                                    color: "var(--tbl-header-text)",
                                     opacity: 0.7,
                                 }}
                             >
@@ -121,7 +130,7 @@ function ReadOnlyTable({
                                     key={colId}
                                     className="border-t border-l px-3 h-10 text-sm"
                                     style={{
-                                        borderColor,
+                                        borderColor: "var(--tbl-border)",
                                         background: cellFocusBg,
                                         color: "inherit",
                                     }}
@@ -138,9 +147,9 @@ function ReadOnlyTable({
             <div
                 className="flex items-center gap-2 px-3 py-1.5 text-xs border-t"
                 style={{
-                    borderColor,
-                    background: headerBg,
-                    color: headerText,
+                    borderColor: "var(--tbl-border)",
+                    background: "var(--tbl-header-bg)",
+                    color: "var(--tbl-header-text)",
                     opacity: 0.7,
                 }}
             >
@@ -178,7 +187,7 @@ export default function TableBlock({
     onEdit,
     onDelete,
 }: TableBlockProps) {
-    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-all";
+    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
 
@@ -189,7 +198,7 @@ export default function TableBlock({
         <figure
             className={`
                 group relative  rounded-xl
-                 transition-all duration-300
+                 transition-[box-shadow,transform] duration-300
                  py-3
                 hover:shadow-lg
                 ${className}
@@ -201,7 +210,7 @@ export default function TableBlock({
                 <BlockActionButton
                     icon={
                         <EditIcon
-                            className={`${iconClassName} hover:text-blue-500`}
+                            className={`${iconClassName} hover:text-brand-cta`}
                         />
                     }
                     onClick={() => onEdit()}
@@ -211,7 +220,7 @@ export default function TableBlock({
                 <BlockActionButton
                     icon={
                         <Trash2Icon
-                            className={`${iconClassName} hover:text-red-500`}
+                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
                         />
                     }
                     onClick={() => onDelete()}

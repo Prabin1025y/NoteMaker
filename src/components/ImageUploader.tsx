@@ -64,12 +64,12 @@ export function ImageDropZone({
                     {...getRootProps()}
                     className={`
                     group relative overflow-hidden rounded-3xl
-                    border transition-all duration-200
+                    border transition-colors duration-200
                     cursor-pointer
                     ${
                         isDragActive
-                            ? "border-blue-500 ring-4 ring-blue-100"
-                            : "border-neutral-200 hover:border-neutral-300"
+                            ? "border-[color:var(--ds-focus-ring)] ring-4 ring-[color:var(--ds-accent-soft)]"
+                            : "border-hairline hover:border-strong"
                     }
                 `}
                 >
@@ -87,12 +87,12 @@ export function ImageDropZone({
                             </div>
                             <div className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black/40 transition-opacity duration-700">
                                 <div className="flex gap-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                    <button className="px-4 py-2 bg-white border-2 cursor-pointer rounded-full">
+                                    <button className="px-4 py-2 bg-surface border border-hairline text-ink cursor-pointer rounded-full">
                                         Replace
                                     </button>
                                     <button
                                         onClick={removeImage}
-                                        className="px-4 py-2 bg-red-500 text-white border-2 border-red-900 cursor-pointer rounded-full"
+                                        className="px-4 py-2 bg-[color:var(--ds-danger)] text-white border border-transparent cursor-pointer rounded-full"
                                     >
                                         Delete
                                     </button>
@@ -103,7 +103,7 @@ export function ImageDropZone({
                                     {!!file ? file.name : editorData.title}
                                 </p>
 
-                                <p className="text-sm text-neutral-500">
+                                <p className="text-sm text-muted-ink">
                                     {(file.size / 1024 / 1024).toFixed(2)} MB
                                 </p>
                             </div>
@@ -115,17 +115,17 @@ export function ImageDropZone({
                                     className="
                                     mb-4 flex h-16 w-16 items-center
                                     justify-center rounded-2xl
-                                    bg-neutral-100
+                                    bg-paper
                                 "
                                 >
-                                    <ImagePlus className="h-8 w-8 text-neutral-500" />
+                                    <ImagePlus className="h-8 w-8 text-muted-ink" />
                                 </div>
 
                                 <h3 className="text-lg font-semibold">
                                     Upload an image
                                 </h3>
 
-                                <p className="mt-2 max-w-xs text-sm text-neutral-500">
+                                <p className="mt-2 max-w-xs text-sm text-muted-ink">
                                     Drag and drop an image here, or click to
                                     browse from your device.
                                 </p>
@@ -133,8 +133,8 @@ export function ImageDropZone({
                                 <div
                                     className="
                                     mt-6 rounded-xl
-                                    border px-4 py-2 text-sm
-                                    font-medium
+                                    border border-strong px-4 py-2 text-sm
+                                    font-medium text-body
                                 "
                                 >
                                     Choose Image
