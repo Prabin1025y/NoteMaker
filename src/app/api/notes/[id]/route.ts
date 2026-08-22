@@ -5,6 +5,34 @@ import * as noteService from "@/server/services/note.service";
 import { updateNoteSchema } from "@/validation/notes";
 import { NextResponse } from "next/server";
 
+export const GET = withErrorHandling(
+    async (req, { params }: { params: Promise<{ id: string }> }) => {
+        // Must be authenticated — public notes are link-only, not anonymous.
+        const user = await requireAuth();
+        const { id } = await params;
+
+        if (!id)
+            return NextResponse.json(
+                { message: "Note Not Found" },
+                { status: 404 },
+            );
+
+        // Returns the note when the user owns it OR the note is public.
+        const note = await noteService.getNoteForViewer(id, user.id);
+
+        if (!note)
+            return NextResponse.json(
+                { message: "Note Not Found" },
+                { status: 404 },
+            );
+
+        return NextResponse.json({
+            note,
+            isOwner: note.authorId === user.id,
+        });
+    },
+);
+
 export const PATCH = withErrorHandling(
     async (req, { params }: { params: Promise<{ id: string }> }) => {
         const user = await requireAuth();

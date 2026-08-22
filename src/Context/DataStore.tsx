@@ -101,12 +101,14 @@ type Store = {
     blocksToBeSynced: BlockSyncType[];
     historyPast: BlockType[][];
     historyFuture: BlockType[][];
+    isReadOnly: boolean;
 
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
     setActiveBlockId: (id: string | null) => void;
     setNotes: (notes: NoteType[]) => void;
+    setReadOnly: (value: boolean) => void;
 
     createNote: (
         title?: string,
@@ -120,7 +122,9 @@ type Store = {
     deleteNote: (id: string) => void;
     toggleNoteFavorite: (id: string) => Promise<void>;
     toggleNotePin: (id: string) => Promise<void>;
+    toggleNotePublic: (id: string) => Promise<void>;
     loadNote: (id: string) => Promise<void>;
+    loadPublicNote: (note: NoteType, isOwner: boolean) => void;
     updateNoteTitle: (title: string) => void;
     initializeSyncedBlocks: () => void;
 
@@ -151,15 +155,19 @@ export const useNoteStore = create<Store>()(
         historyPast: [],
         historyFuture: [],
         syncedBlocks: [],
+        isReadOnly: false,
 
         setTitle: (title) => set({ title }),
         setBlocks: (blocks, recordHistory = true) => {
-            if (recordHistory) get().snapshotHistory();
+            // Setting blocks must work in read-only mode too (public viewers
+            // receive fetched blocks); only history recording is skipped.
+            if (!get().isReadOnly && recordHistory) get().snapshotHistory();
             set({ blocks });
         },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
         setActiveBlockId: (id) => set({ activeBlockId: id }),
         setNotes: (notes) => set({ notes }),
+        setReadOnly: (value) => set({ isReadOnly: value }),
 
         initializeSyncedBlocks: () => set({ syncedBlocks: get().blocks }),
 
@@ -178,6 +186,7 @@ export const useNoteStore = create<Store>()(
         canRedo: () => get().historyFuture.length > 0,
 
         undo: () => {
+            if (get().isReadOnly) return;
             const past = get().historyPast;
             if (past.length === 0) return;
 
@@ -201,6 +210,7 @@ export const useNoteStore = create<Store>()(
         },
 
         redo: () => {
+            if (get().isReadOnly) return;
             const future = get().historyFuture;
             if (future.length === 0) return;
 
@@ -242,6 +252,7 @@ export const useNoteStore = create<Store>()(
                 authorId: note.authorId,
                 isFavorite: Boolean(note.isFavorite),
                 isPinned: Boolean(note.isPinned),
+                isPublic: Boolean(note.isPublic),
             };
             set({
                 notes: [...get().notes, newNote],
@@ -307,11 +318,66 @@ export const useNoteStore = create<Store>()(
             }
         },
 
+        toggleNotePublic: async (id) => {
+            const current = get().currentNote;
+            const note =
+                get().notes.find((n) => n.id === id) ??
+                (current?.id === id ? current : undefined);
+            if (!note) return;
+
+            const nextValue = !note.isPublic;
+
+            // Optimistic update of both the notes list and the open note.
+            set({
+                notes: get().notes.map((n) =>
+                    n.id === id ? { ...n, isPublic: nextValue } : n,
+                ),
+                currentNote:
+                    current && current.id === id
+                        ? { ...current, isPublic: nextValue }
+                        : current,
+            });
+
+            try {
+                await updateNote(id, { isPublic: nextValue });
+            } catch (error) {
+                // Roll back on failure.
+                const rolledBackCurrent = get().currentNote;
+                set({
+                    notes: get().notes.map((n) =>
+                        n.id === id ? { ...n, isPublic: !nextValue } : n,
+                    ),
+                    currentNote:
+                        rolledBackCurrent && rolledBackCurrent.id === id
+                            ? { ...rolledBackCurrent, isPublic: !nextValue }
+                            : rolledBackCurrent,
+                });
+                if (process.env.NODE_ENV === "development") console.log(error);
+            }
+        },
+
         loadNote: async (id) => {
             const note = get().notes.find((note) => note.id === id);
+            // Only the owner's own notes live in `notes`; if it isn't here the
+            // caller should use loadPublicNote (viewer path) instead.
+            if (!note) return;
             set({
-                title: note?.title,
+                title: note.title,
                 currentNote: note,
+                isReadOnly: false,
+                blocksToBeSynced: [],
+                historyPast: [],
+                historyFuture: [],
+            });
+        },
+
+        loadPublicNote: (note, isOwner) => {
+            // Viewer path: the note isn't in the user's own list, so set it as
+            // the current note directly. Non-owners get a read-only session.
+            set({
+                title: note.title,
+                currentNote: note,
+                isReadOnly: !isOwner,
                 blocksToBeSynced: [],
                 historyPast: [],
                 historyFuture: [],
@@ -332,6 +398,7 @@ export const useNoteStore = create<Store>()(
         },
 
         addSaveBlock: (editorData) => {
+            if (get().isReadOnly) return;
             get().snapshotHistory();
             if (editorData.action === "add") {
                 const lastBlockOrder = get().blocks.at(-1)?.order;
@@ -428,6 +495,7 @@ export const useNoteStore = create<Store>()(
         },
 
         deleteBlock: (id) => {
+            if (get().isReadOnly) return;
             get().snapshotHistory();
             set({ blocks: get().blocks.filter((block) => block.id !== id) });
             get().syncLocally();
@@ -435,6 +503,7 @@ export const useNoteStore = create<Store>()(
         },
 
         duplicateBlock: (id) => {
+            if (get().isReadOnly) return;
             get().snapshotHistory();
             const existingBlocks = get().blocks;
             const blockIndex = existingBlocks.findIndex(
@@ -535,6 +604,7 @@ export const useNoteStore = create<Store>()(
 
         syncToDB: async () => {
             try {
+                if (get().isReadOnly) return;
                 if (get().blocksToBeSynced.length === 0) return;
 
                 const res = await apiFetch(

@@ -13,8 +13,12 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
             { status: 404 },
         );
 
+    // Allow reading blocks when the user owns the note OR the note is public.
     const exists = await prisma.note.count({
-        where: { id: noteId, authorId: user.id },
+        where: {
+            id: noteId,
+            OR: [{ authorId: user.id }, { isPublic: true }],
+        },
     });
 
     if (exists === 0)

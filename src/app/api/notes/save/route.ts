@@ -8,14 +8,16 @@ import {
 import { NextResponse } from "next/server";
 
 export const POST = withErrorHandling(async (req) => {
-    await requireAuth();
+    const user = await requireAuth();
 
     const body = await req.json();
     const parsed = SaveNoteSchema.safeParse(body);
 
     if (!parsed.success) throw new GeneralBadRequestError("Invalid Data");
 
-    const addedData = await saveBlocks(parsed.data);
+    // Pass the owner id so the repository can enforce that every block written
+    // belongs to a note this user owns (keeps public notes read-only).
+    const addedData = await saveBlocks(user.id, parsed.data);
 
     return NextResponse.json({ addedData });
 });

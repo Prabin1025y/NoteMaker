@@ -11,6 +11,7 @@ type TableBlockProps = {
     content: string;
 
     className?: string;
+    readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
 };
@@ -184,6 +185,7 @@ export default function TableBlock({
     colorOptionId,
     title,
     className = "",
+    readOnly = false,
     onEdit,
     onDelete,
 }: TableBlockProps) {
@@ -204,30 +206,32 @@ export default function TableBlock({
                 ${className}
             `}
         >
-            <div
-                className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
-            >
-                <BlockActionButton
-                    icon={
-                        <EditIcon
-                            className={`${iconClassName} hover:text-brand-cta`}
-                        />
-                    }
-                    onClick={() => onEdit()}
+            {!readOnly && (
+                <div
+                    className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
-                    Edit
-                </BlockActionButton>
-                <BlockActionButton
-                    icon={
-                        <Trash2Icon
-                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
-                        />
-                    }
-                    onClick={() => onDelete()}
-                >
-                    Delete
-                </BlockActionButton>
-            </div>
+                    <BlockActionButton
+                        icon={
+                            <EditIcon
+                                className={`${iconClassName} hover:text-brand-cta`}
+                            />
+                        }
+                        onClick={() => onEdit()}
+                    >
+                        Edit
+                    </BlockActionButton>
+                    <BlockActionButton
+                        icon={
+                            <Trash2Icon
+                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
+                            />
+                        }
+                        onClick={() => onDelete()}
+                    >
+                        Delete
+                    </BlockActionButton>
+                </div>
+            )}
 
             {/* Ribbon / Title */}
             {title && title.trim() !== "" && (

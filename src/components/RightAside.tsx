@@ -10,9 +10,10 @@ import { PanelRightClose, PanelRightOpen } from "lucide-react";
 
 interface RightAsideProps {
     searchQuery?: string;
+    isReadOnly?: boolean;
 }
 
-const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
+const RightAside = ({ searchQuery = "", isReadOnly = false }: RightAsideProps) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const {
         blocks,
@@ -100,6 +101,7 @@ const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
                         ) : (
                             <DragDropProvider
                                 onDragEnd={(event) => {
+                                    if (isReadOnly) return;
                                     const newBlocks = move(blocks, event);
                                     const orderUpdatedBlocks = newBlocks.map(
                                         (b, index) => {
@@ -168,6 +170,7 @@ const RightAside = ({ searchQuery = "" }: RightAsideProps) => {
                                                 id={block.id}
                                                 index={index}
                                                 isActive={isActive}
+                                                disabled={isReadOnly}
                                                 onClick={() =>
                                                     handleBlockClick(block.id)
                                                 }

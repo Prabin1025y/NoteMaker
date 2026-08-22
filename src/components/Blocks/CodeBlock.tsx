@@ -15,6 +15,7 @@ type CodeBlockProps = {
     content: string;
 
     className?: string;
+    readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
 };
@@ -68,6 +69,7 @@ export default function CodeBlock({
     colorOptionId,
     title,
     className = "",
+    readOnly = false,
     onEdit,
     onDelete,
 }: CodeBlockProps) {
@@ -106,7 +108,7 @@ export default function CodeBlock({
                         : {}
                 }
             >
-                {/* Action buttons (Edit / Delete) */}
+                {/* Action buttons (Copy always; Edit / Delete owner-only) */}
                 <div
                     className={`hidden border border-hairline shadow-sm group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
@@ -126,26 +128,30 @@ export default function CodeBlock({
                     >
                         {copied ? "Copied" : "Copy"}
                     </BlockActionButton>
-                    <BlockActionButton
-                        icon={
-                            <EditIcon
-                                className={`${iconClassName} hover:text-brand-cta`}
-                            />
-                        }
-                        onClick={() => onEdit()}
-                    >
-                        Edit
-                    </BlockActionButton>
-                    <BlockActionButton
-                        icon={
-                            <Trash2Icon
-                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
-                            />
-                        }
-                        onClick={() => onDelete()}
-                    >
-                        Delete
-                    </BlockActionButton>
+                    {!readOnly && (
+                        <>
+                            <BlockActionButton
+                                icon={
+                                    <EditIcon
+                                        className={`${iconClassName} hover:text-brand-cta`}
+                                    />
+                                }
+                                onClick={() => onEdit()}
+                            >
+                                Edit
+                            </BlockActionButton>
+                            <BlockActionButton
+                                icon={
+                                    <Trash2Icon
+                                        className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
+                                    />
+                                }
+                                onClick={() => onDelete()}
+                            >
+                                Delete
+                            </BlockActionButton>
+                        </>
+                    )}
                 </div>
 
                 {/* Language label / Ribbon */}

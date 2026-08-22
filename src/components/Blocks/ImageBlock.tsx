@@ -16,6 +16,7 @@ type ImageBlockProps = {
     backgroundColor?: string;
     titleColor?: string;
 
+    readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
 };
@@ -24,6 +25,7 @@ export default function ImageBlock({
     content,
     title,
     className = "",
+    readOnly = false,
     onEdit,
     onDelete,
 }: ImageBlockProps) {
@@ -37,35 +39,37 @@ export default function ImageBlock({
             `}
         >
             {/* Actions */}
-            <div
-                className="
-                    absolute right-2 top-2 z-10
-                    hidden overflow-hidden rounded-md border border-hairline shadow-sm
-                    group-hover:flex
-                "
-            >
-                <BlockActionButton
-                    icon={
-                        <EditIcon
-                            className={`${iconClassName} hover:text-brand-cta`}
-                        />
-                    }
-                    onClick={onEdit}
+            {!readOnly && (
+                <div
+                    className="
+                        absolute right-2 top-2 z-10
+                        hidden overflow-hidden rounded-md border border-hairline shadow-sm
+                        group-hover:flex
+                    "
                 >
-                    Edit
-                </BlockActionButton>
+                    <BlockActionButton
+                        icon={
+                            <EditIcon
+                                className={`${iconClassName} hover:text-brand-cta`}
+                            />
+                        }
+                        onClick={onEdit}
+                    >
+                        Edit
+                    </BlockActionButton>
 
-                <BlockActionButton
-                    icon={
-                        <Trash2Icon
-                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
-                        />
-                    }
-                    onClick={onDelete}
-                >
-                    Delete
-                </BlockActionButton>
-            </div>
+                    <BlockActionButton
+                        icon={
+                            <Trash2Icon
+                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
+                            />
+                        }
+                        onClick={onDelete}
+                    >
+                        Delete
+                    </BlockActionButton>
+                </div>
+            )}
 
             {/* Image */}
             <div className="flex justify-center">

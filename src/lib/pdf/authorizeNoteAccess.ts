@@ -2,8 +2,13 @@ import { ForbiddenError } from "../Error/custom-errors";
 import prisma from "../prisma";
 
 export async function authorizeNoteAccess(userId: string, noteId: string) {
-    const note = await prisma.note.findUnique({
-        where: { authorId: userId, id: noteId },
+    // Owner OR public note: authenticated viewers of a public note may export
+    // it (read-only access includes read/export/copy).
+    const note = await prisma.note.findFirst({
+        where: {
+            id: noteId,
+            OR: [{ authorId: userId }, { isPublic: true }],
+        },
     });
 
     const authorized = !!note;

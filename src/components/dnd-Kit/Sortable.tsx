@@ -10,11 +10,13 @@ function Sortable({
     otherInfo,
     isActive,
     onClick,
+    disabled = false,
 }: {
     id: string;
     index: number;
     isActive?: boolean;
     onClick?: () => void;
+    disabled?: boolean;
     otherInfo: {
         colorOptionId: number;
         designId: number;
@@ -30,6 +32,7 @@ function Sortable({
         index,
         element,
         handle: handleRef,
+        disabled,
     });
 
     const colorOption = colorOptions.find(
@@ -60,13 +63,15 @@ function Sortable({
                     : "hover:bg-tint"
             } ${isDragging ? "shadow-md ring-1 ring-[color:var(--ds-accent-soft)] bg-surface scale-[1.02]" : ""}`}
         >
-            <div
-                ref={handleRef}
-                onClick={(e) => e.stopPropagation()}
-                className="text-faint cursor-grab active:cursor-grabbing transition-colors group-hover:text-muted-ink shrink-0"
-            >
-                <GripVerticalIcon size={16} />
-            </div>
+            {!disabled && (
+                <div
+                    ref={handleRef}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-faint cursor-grab active:cursor-grabbing transition-colors group-hover:text-muted-ink shrink-0"
+                >
+                    <GripVerticalIcon size={16} />
+                </div>
+            )}
             <div className="flex-1 min-w-0">
                 <p
                     style={

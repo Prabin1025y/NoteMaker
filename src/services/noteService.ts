@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api-client";
+import type { NoteType } from "@/types/dataSotoreTypes";
 
 type CreateNoteFolderOptions = {
     isNewFolder: boolean;
@@ -86,6 +87,7 @@ export const fetchNotes = async () => {
             authorId: n.authorId,
             isFavorite: Boolean(n.isFavorite),
             isPinned: Boolean(n.isPinned),
+            isPublic: Boolean(n.isPublic),
         }));
     } catch (error) {
         if (process.env.NODE_ENV === "development") console.log(error);
@@ -96,6 +98,45 @@ export const fetchNotes = async () => {
                 : "Unable to fetch your notes",
         );
     }
+};
+
+// Fetch a single note by id. Succeeds when the current user owns the note OR
+// the note is public. Returns the mapped note plus whether the viewer owns it.
+// Returns null when the note is not accessible (caller handles "not found").
+export const fetchNoteById = async (
+    id: string,
+): Promise<{ note: NoteType; isOwner: boolean } | null> => {
+    const response = await apiFetch(
+        `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/${id}`,
+        {
+            method: "GET",
+        },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        if (response.status === 404 || response.status === 403) return null;
+        throw new Error(data.message || "Unable to load note");
+    }
+
+    const n = data.note;
+    const note: NoteType = {
+        id: n.id,
+        title: n.title,
+        blocksCount: n._count?.blocks ?? 0,
+        createdAt: n.createdAt,
+        updatedAt: n.updatedAt,
+        description: n.description,
+        folderId: n.folderId,
+        authorName: n.author?.name ?? "",
+        authorId: n.authorId,
+        isFavorite: Boolean(n.isFavorite),
+        isPinned: Boolean(n.isPinned),
+        isPublic: Boolean(n.isPublic),
+    };
+
+    return { note, isOwner: Boolean(data.isOwner) };
 };
 
 export const fetchBlocks = async (noteId: string) => {
@@ -129,6 +170,7 @@ export type UpdateNotePayload = {
     description?: string;
     isFavorite?: boolean;
     isPinned?: boolean;
+    isPublic?: boolean;
     folderId?: string;
 };
 

@@ -16,7 +16,7 @@ import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { toast } from "sonner";
 import AiBlockGenerator from "@/components/note/AiBlockGenerator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchBlocks, fetchNotes } from "@/services/noteService";
+import { fetchBlocks, fetchNotes, fetchNoteById } from "@/services/noteService";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -52,6 +52,7 @@ export default function NotePage() {
     const {
         addSaveBlock,
         loadNote,
+        loadPublicNote,
         syncToDB,
         blocksToBeSynced,
         currentNote,
@@ -63,6 +64,7 @@ export default function NotePage() {
         redo,
         canUndo,
         canRedo,
+        isReadOnly,
     } = useNoteStore();
 
     const queryClient = useQueryClient();
@@ -81,12 +83,44 @@ export default function NotePage() {
         enabled: !!currentNote && currentNote.id === noteId,
     });
 
+    // Tracks which note id we've already resolved, so churn in `notes`
+    // (e.g. syncLocally bumping blocksCount while editing) never re-runs
+    // loadNote and wipes unsaved sync/history state.
+    const resolvedNoteIdRef = useRef<string | null>(null);
+
     useEffect(() => {
         if (!notesData) return;
-
         setNotes(notesData);
-        loadNote(noteId);
     }, [notesData]);
+
+    // Resolve the open note exactly once: owner path when it's in the user's
+    // own list, otherwise the viewer path (public link → read-only session).
+    useEffect(() => {
+        if (!noteId) return;
+        // Wait until the owner's note list has settled before deciding.
+        if (isFetchingNote) return;
+        if (resolvedNoteIdRef.current === noteId) return;
+
+        const owned = notes.find((n) => n.id === noteId);
+        if (owned) {
+            resolvedNoteIdRef.current = noteId;
+            loadNote(noteId);
+            return;
+        }
+
+        resolvedNoteIdRef.current = noteId;
+        (async () => {
+            const result = await fetchNoteById(noteId);
+            if (result) {
+                loadPublicNote(result.note, result.isOwner);
+            } else {
+                toast.error(
+                    "This note doesn't exist or hasn't been shared with you.",
+                );
+                router.push("/");
+            }
+        })();
+    }, [noteId, isFetchingNote, notes]);
 
     const sortedBlocks = useMemo(() => {
         if (!!!blocks || !Array.isArray(blocks)) return [];
@@ -288,10 +322,11 @@ export default function NotePage() {
                 isExporting={isExporting}
                 hasUnsaved={hasUnsaved}
                 isPreviewMode={isPreviewMode}
+                isReadOnly={isReadOnly}
             />
 
             <div className="flex flex-1 overflow-hidden">
-                {!isPreviewMode && (
+                {!isPreviewMode && !isReadOnly && (
                     <LeftAside
                         openBlockEditor={openBlockEditor}
                         isGenerating={isGenerating}
@@ -306,9 +341,15 @@ export default function NotePage() {
                         openAiModel={() => setIsAiOpen(true)}
                         noteRef={noteRef}
                         openBlockEditor={openBlockEditor}
+                        isReadOnly={isReadOnly}
                     />
                 )}
-                {!isPreviewMode && <RightAside searchQuery={searchQuery} />}
+                {!isPreviewMode && (
+                    <RightAside
+                        searchQuery={searchQuery}
+                        isReadOnly={isReadOnly}
+                    />
+                )}
             </div>
 
             {isEditorOpen && (

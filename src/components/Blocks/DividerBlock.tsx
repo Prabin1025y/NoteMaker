@@ -10,6 +10,7 @@ type DividerBlockProps = {
     content: string;
 
     className?: string;
+    readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
 };
@@ -18,6 +19,7 @@ export default function DividerBlock({
     content,
     colorOptionId,
     className = "",
+    readOnly = false,
     onEdit,
     onDelete,
 }: DividerBlockProps) {
@@ -36,30 +38,32 @@ export default function DividerBlock({
                 ${className}
             `}
         >
-            <div
-                className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
-            >
-                <BlockActionButton
-                    icon={
-                        <EditIcon
-                            className={`${iconClassName} hover:text-brand-cta`}
-                        />
-                    }
-                    onClick={() => onEdit()}
+            {!readOnly && (
+                <div
+                    className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
-                    Edit
-                </BlockActionButton>
-                <BlockActionButton
-                    icon={
-                        <Trash2Icon
-                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
-                        />
-                    }
-                    onClick={() => onDelete()}
-                >
-                    Delete
-                </BlockActionButton>
-            </div>
+                    <BlockActionButton
+                        icon={
+                            <EditIcon
+                                className={`${iconClassName} hover:text-brand-cta`}
+                            />
+                        }
+                        onClick={() => onEdit()}
+                    >
+                        Edit
+                    </BlockActionButton>
+                    <BlockActionButton
+                        icon={
+                            <Trash2Icon
+                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
+                            />
+                        }
+                        onClick={() => onDelete()}
+                    >
+                        Delete
+                    </BlockActionButton>
+                </div>
+            )}
 
             {DividerComponent ? (
                 <DividerComponent

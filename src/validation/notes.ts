@@ -66,6 +66,7 @@ export const updateNoteSchema = z
         description: z.string().optional(),
         isFavorite: z.boolean().optional(),
         isPinned: z.boolean().optional(),
+        isPublic: z.boolean().optional(),
         folderId: z.string().optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {

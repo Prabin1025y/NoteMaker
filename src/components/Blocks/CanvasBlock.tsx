@@ -8,6 +8,7 @@ type CanvasBlockProps = {
     content: string;
 
     className?: string;
+    readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
 };
@@ -32,6 +33,7 @@ export default function CanvasBlock({
     content,
     title,
     className = "",
+    readOnly = false,
     onEdit,
     onDelete,
 }: CanvasBlockProps) {
@@ -42,28 +44,30 @@ export default function CanvasBlock({
     return (
         <figure className={`group relative break-inside-avoid ${className}`}>
             {/* Actions */}
-            <div className="absolute right-2 top-2 z-10 hidden overflow-hidden rounded-md group-hover:flex">
-                <BlockActionButton
-                    icon={
-                        <EditIcon
-                            className={`${iconClassName} hover:text-[color:var(--ds-accent)]`}
-                        />
-                    }
-                    onClick={onEdit}
-                >
-                    Edit
-                </BlockActionButton>
-                <BlockActionButton
-                    icon={
-                        <Trash2Icon
-                            className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
-                        />
-                    }
-                    onClick={onDelete}
-                >
-                    Delete
-                </BlockActionButton>
-            </div>
+            {!readOnly && (
+                <div className="absolute right-2 top-2 z-10 hidden overflow-hidden rounded-md group-hover:flex">
+                    <BlockActionButton
+                        icon={
+                            <EditIcon
+                                className={`${iconClassName} hover:text-[color:var(--ds-accent)]`}
+                            />
+                        }
+                        onClick={onEdit}
+                    >
+                        Edit
+                    </BlockActionButton>
+                    <BlockActionButton
+                        icon={
+                            <Trash2Icon
+                                className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
+                            />
+                        }
+                        onClick={onDelete}
+                    >
+                        Delete
+                    </BlockActionButton>
+                </div>
+            )}
 
             {dataUrl ? (
                 <div className="flex justify-center">

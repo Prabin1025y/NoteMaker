@@ -86,6 +86,7 @@ model Note {
   folderId    String
   isFavorite  Boolean  @default(false)
   isPinned    Boolean  @default(false)
+  isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   blocks      Block[]

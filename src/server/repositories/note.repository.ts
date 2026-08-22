@@ -1,6 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { AddBlockSchema, BlockSyncSchema } from "@/validation/notes";
+import { ForbiddenError } from "@/lib/Error/custom-errors";
 import { z } from "zod";
 
 type AddBlockType = z.infer<typeof AddBlockSchema>;
@@ -10,11 +11,13 @@ type EditBlockType = Extract<
 >["data"] & { id: string };
 
 type SaveBlocksType = {
+    authorId: string;
     addData: AddBlockType[];
     deleteData: string[];
     editData: EditBlockType[];
 };
 export async function saveBlocks({
+    authorId,
     addData,
     deleteData,
     editData,
@@ -29,6 +32,50 @@ export async function saveBlocks({
 
     return prisma.$transaction(
         async (tx) => {
+            // --- Ownership enforcement -------------------------------------
+            // Every note a block is added to, and every block being edited or
+            // deleted, must belong to the requesting user. This keeps public
+            // notes strictly read-only for non-owners even though their note
+            // and block ids are discoverable via the public link.
+            const addNoteIds = [
+                ...new Set(
+                    addData
+                        .map((a) => a.noteId)
+                        .filter((id): id is string => Boolean(id)),
+                ),
+            ];
+            if (addNoteIds.length > 0) {
+                const ownedCount = await tx.note.count({
+                    where: { id: { in: addNoteIds }, authorId },
+                });
+                if (ownedCount !== addNoteIds.length) {
+                    throw new ForbiddenError(
+                        "You do not have permission to modify this note.",
+                    );
+                }
+            }
+
+            const blockIds = [
+                ...new Set([
+                    ...deleteData,
+                    ...editData.map((e) => e.id),
+                ]),
+            ];
+            if (blockIds.length > 0) {
+                const ownedBlocks = await tx.block.count({
+                    where: {
+                        id: { in: blockIds },
+                        note: { is: { authorId } },
+                    },
+                });
+                if (ownedBlocks !== blockIds.length) {
+                    throw new ForbiddenError(
+                        "You do not have permission to modify these blocks.",
+                    );
+                }
+            }
+            // ---------------------------------------------------------------
+
             if (deleteData.length > 0) {
                 await tx.block.deleteMany({
                     where: {
@@ -96,6 +143,7 @@ type UpdateNoteMetaInput = {
     description?: string;
     isFavorite?: boolean;
     isPinned?: boolean;
+    isPublic?: boolean;
     folderId?: string;
 };
 
@@ -117,6 +165,26 @@ export async function updateNoteMetaForAuthor(
         include: {
             _count: {
                 select: { blocks: true },
+            },
+        },
+    });
+}
+
+// Fetch a single note for a viewer. Returns the note when the requesting user
+// owns it OR when it is public. Includes block count and the author's name so
+// the client can render attribution. Returns null when not accessible.
+export async function findByIdForViewer(id: string, userId: string) {
+    return prisma.note.findFirst({
+        where: {
+            id,
+            OR: [{ authorId: userId }, { isPublic: true }],
+        },
+        include: {
+            _count: {
+                select: { blocks: true },
+            },
+            author: {
+                select: { name: true },
             },
         },
     });
