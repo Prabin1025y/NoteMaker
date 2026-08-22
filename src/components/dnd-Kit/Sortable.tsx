@@ -54,14 +54,13 @@ function Sortable({
             onClick={onClick}
             style={
                 isDesignEnabled && !isActive
-                    ? { backgroundColor: colorOption?.backgroundColorHex }
+                    ? {
+                          backgroundColor: colorOption?.primaryColorHex + "20",
+                          borderColor: colorOption?.borderColorHex + "80",
+                      }
                     : {}
             }
-            className={`w-full text-left flex items-center gap-2 rounded-lg px-2 py-2 transition-[background-color,box-shadow,transform] duration-150 cursor-pointer group ${
-                isActive
-                    ? "bg-brand-soft ring-1 ring-[color:var(--ds-accent-soft)]"
-                    : "hover:bg-tint"
-            } ${isDragging ? "shadow-md ring-1 ring-[color:var(--ds-accent-soft)] bg-surface scale-[1.02]" : ""}`}
+            className={`w-full text-left border flex items-center gap-2 rounded-lg px-2 py-2 transition-[background-color,box-shadow,transform] duration-150 cursor-pointer group hover:bg-tint ${isDragging ? "shadow-md ring-1 ring-[color:var(--ds-accent-soft)] bg-surface scale-[1.02]" : ""}`}
         >
             {!disabled && (
                 <div
@@ -74,16 +73,12 @@ function Sortable({
             )}
             <div className="flex-1 min-w-0">
                 <p
-                    style={
-                        isDesignEnabled && !isActive
-                            ? { color: colorOption?.borderColorHex }
-                            : {}
-                    }
-                    className={`text-[12px] font-medium truncate transition-colors ${
-                        isActive
-                            ? "text-brand-cta"
-                            : "text-ink group-hover:text-ink"
-                    }`}
+                    // style={
+                    //     isDesignEnabled && !isActive
+                    //         ? { color: colorOption?.borderColorHex }
+                    //         : {}
+                    // }
+                    className={`text-[12px] font-medium truncate transition-colors text-ink group-hover:text-ink`}
                 >
                     {otherInfo.title}
                 </p>

@@ -12,6 +12,7 @@ import { SignInButton } from "@/components/auth/sign-in-button";
 import { Reveal } from "@/components/landing/Reveal";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const FEATURES = [
     {
@@ -229,12 +230,15 @@ export default async function LandingPage() {
                         </a>
                     </nav>
 
-                    <SignInButton
-                        label="Sign in"
-                        size="sm"
-                        variant="outline"
-                        className="h-9 px-3.5 text-[13px]"
-                    />
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <SignInButton
+                            label="Sign in"
+                            size="sm"
+                            variant="outline"
+                            className="h-9 px-3.5 text-[13px]"
+                        />
+                    </div>
                 </div>
             </header>
 
@@ -257,7 +261,9 @@ export default async function LandingPage() {
                         >
                             Notes that build
                             <br className="hidden sm:block" /> themselves,{" "}
-                            <span className="text-brand-cta">block by block.</span>
+                            <span className="text-brand-cta">
+                                block by block.
+                            </span>
                         </h1>
                         <p
                             className="hero-fade mt-5 max-w-md text-[15px] leading-relaxed text-body md:text-base"
@@ -271,7 +277,10 @@ export default async function LandingPage() {
                             className="hero-fade mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center"
                             style={{ animationDelay: "280ms" }}
                         >
-                            <SignInButton label="Start for free" size="lg" />
+                            <SignInButton
+                                label="Start for free"
+                                size="lg"
+                            />
                             <a
                                 href="#features"
                                 className="inline-flex h-11 items-center gap-1.5 rounded-lg px-4 text-[14px] font-medium text-body outline-none transition-colors duration-150 hover:bg-paper hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
@@ -284,8 +293,8 @@ export default async function LandingPage() {
                             className="hero-fade mt-5 text-[12px] text-faint"
                             style={{ animationDelay: "360ms" }}
                         >
-                            Free to start · Sign in with Google · Your notes stay
-                            yours.
+                            Free to start · Sign in with Google · Your notes
+                            stay yours.
                         </p>
                     </div>
 
@@ -313,8 +322,8 @@ export default async function LandingPage() {
                         </h2>
                         <p className="mt-4 text-[15px] leading-relaxed text-body">
                             Eton Note gives each idea its own block, so a single
-                            page can hold a definition, a diagram, a proof, and a
-                            snippet of code — and still read cleanly.
+                            page can hold a definition, a diagram, a proof, and
+                            a snippet of code — and still read cleanly.
                         </p>
                     </Reveal>
 
@@ -398,11 +407,11 @@ export default async function LandingPage() {
                             <p>
                                 Eton Note is a note-taking app for students who
                                 think in pieces. Instead of one long text box,
-                                every note is built from blocks — headings, code,
-                                math, tables, images, and freehand sketches — that
-                                you can rearrange, summarize with AI, and export
-                                as a clean PDF when it&apos;s time to hand
-                                something in.
+                                every note is built from blocks — headings,
+                                code, math, tables, images, and freehand
+                                sketches — that you can rearrange, summarize
+                                with AI, and export as a clean PDF when
+                                it&apos;s time to hand something in.
                             </p>
                             <p>
                                 It started as a tool for getting messy lecture
@@ -435,10 +444,14 @@ export default async function LandingPage() {
                                 Start your first note.
                             </h2>
                             <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-body">
-                                Sign in and build a page in the next two minutes.
+                                Sign in and build a page in the next two
+                                minutes.
                             </p>
                             <div className="mt-8 flex justify-center">
-                                <SignInButton label="Start for free" size="lg" />
+                                <SignInButton
+                                    label="Start for free"
+                                    size="lg"
+                                />
                             </div>
                         </div>
                     </Reveal>

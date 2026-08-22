@@ -116,7 +116,7 @@ export const allBlockDesigns: DesignType[] = [
             >
                 <div
                     style={{ borderColor: primaryColorHex }}
-                    className={`bg-white relative border-2 rounded-sm -translate-y-1/2 text-black px-5 py-2 `}
+                    className={`bg-background relative border-2 rounded-sm -translate-y-1/2 text-foreground px-5 py-2 `}
                 >
                     {title}
                     <div

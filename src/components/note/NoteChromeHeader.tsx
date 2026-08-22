@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNoteStore } from "@/Context/DataStore";
 import { toast } from "sonner";
+import ThemeToggle from "../ThemeToggle";
 
 interface NoteChromeHeaderProps {
     searchQuery: string;
@@ -46,16 +47,22 @@ const NoteChromeHeader = ({
     isPreviewMode = false,
     isReadOnly = false,
 }: NoteChromeHeaderProps) => {
-    const { currentNote, blocks, undo, redo, canUndo, canRedo, toggleNotePublic } =
-        useNoteStore();
+    const {
+        currentNote,
+        blocks,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        toggleNotePublic,
+    } = useNoteStore();
 
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [isTogglingPublic, setIsTogglingPublic] = useState(false);
     const [copied, setCopied] = useState(false);
 
     const isPublic = Boolean(currentNote?.isPublic);
-    const shareLink =
-        typeof window !== "undefined" ? window.location.href : "";
+    const shareLink = typeof window !== "undefined" ? window.location.href : "";
 
     const handleTogglePublic = async () => {
         if (!currentNote) return;
@@ -170,6 +177,8 @@ const NoteChromeHeader = ({
                         </Button>
 
                         <div className="h-4 w-px bg-hairline mx-1" />
+
+                        <ThemeToggle className="h-7" />
 
                         <Button
                             variant="outline"
