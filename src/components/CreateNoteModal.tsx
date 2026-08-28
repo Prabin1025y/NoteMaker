@@ -104,7 +104,7 @@ export default function CreateNoteModal({
                 className="ds-animate-fade-in absolute inset-0 bg-black/40"
             />
 
-            <div className="ds-animate-fade-up relative w-full max-w-[420px] overflow-hidden rounded-2xl border border-hairline bg-elevated shadow-2xl">
+            <div className="ds-animate-fade-up relative w-full max-w-[420px] overflow-hidden rounded-2xl border border-hairline bg-card shadow-2xl">
                 <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
                     <div className="flex items-center gap-2.5">
                         <span className="grid h-8 w-8 place-items-center rounded-lg bg-tint text-brand-cta">
@@ -185,11 +185,11 @@ export default function CreateNoteModal({
                                 className={cn(inputClass, "appearance-none pl-7")}
                             >
                                 {folders.map((folder) => (
-                                    <option key={folder.id} value={folder.id}>
+                                    <option className="bg-card" key={folder.id} value={folder.id}>
                                         {folder.name}
                                     </option>
                                 ))}
-                                <option value="new">+ New folder</option>
+                                <option value="new" className="bg-card">+ New folder</option>
                             </select>
                         </div>
                     </div>
@@ -232,7 +232,7 @@ export default function CreateNoteModal({
                     <button
                         onClick={handleCreate}
                         disabled={!canCreate}
-                        className="flex-1 rounded-lg bg-brand-cta py-2.5 text-[13px] font-semibold text-[color:var(--ds-accent-contrast)] outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
+                        className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-[13px] font-semibold  outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
                     >
                         Create note
                     </button>

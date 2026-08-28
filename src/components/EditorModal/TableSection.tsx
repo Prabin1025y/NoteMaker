@@ -64,12 +64,12 @@ function ToolbarButton({ onClick, icon, label, danger }: ToolbarButtonProps) {
             aria-label={label}
             className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
-        border bg-surface transition-colors duration-150 active:scale-95 select-none
+        border bg-card/80 transition-colors duration-150 active:scale-95 select-none
         outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]
         ${
             danger
-                ? "border-hairline text-[color:var(--ds-danger)] hover:bg-paper"
-                : "border-hairline text-body hover:bg-paper"
+                ? "border-muted text-destructive bg-background/80 hover:bg-background/60"
+                : "border-muted text-body hover:bg-background/60"
         }
       `}
         >
@@ -305,8 +305,8 @@ export default function EditableTable({
         <div className="p-4">
             {/* Toolbar */}
             <div className="flex flex-wrap gap-2 mb-3">
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-paper rounded-lg border border-hairline">
-                    <span className="text-xs text-faint uppercase tracking-wide mr-1">
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-background/60 rounded-lg border border-muted">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide mr-1">
                         Col
                     </span>
                     <ToolbarButton
@@ -321,8 +321,8 @@ export default function EditableTable({
                     />
                 </div>
 
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-paper rounded-lg border border-hairline">
-                    <span className="text-xs text-faint uppercase tracking-wide mr-1">
+                <div className="flex items-center gap-1.5 px-3 py-1 bg-background/60 rounded-lg border border-muted">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide mr-1">
                         Row
                     </span>
                     <ToolbarButton
@@ -338,19 +338,19 @@ export default function EditableTable({
                 </div>
 
                 {confirmClear ? (
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-paper rounded-lg border border-hairline">
-                        <span className="text-xs text-[color:var(--ds-danger)]">
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-background/60 rounded-lg border border-muted">
+                        <span className="text-xs text-destructive">
                             Clear all cells?
                         </span>
                         <button
                             onClick={clearAll}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-[color:var(--ds-danger)] text-white outline-none transition-[filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-destructive text-white outline-none transition-[filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                         >
                             <Check size={12} /> Yes
                         </button>
                         <button
                             onClick={() => setConfirmClear(false)}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-hairline text-body outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-muted text-body outline-none transition-colors duration-150 hover:bg-background/60 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                         >
                             <X size={12} /> No
                         </button>
@@ -366,7 +366,7 @@ export default function EditableTable({
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
+            <div className="overflow-x-auto rounded-xl border border-muted bg-card/80">
                 <table
                     className="border-collapse w-full"
                     style={{
@@ -389,12 +389,12 @@ export default function EditableTable({
                     <thead>
                         <tr>
                             {/* Corner */}
-                            <th className="bg-paper border-b border-hairline" />
+                            <th className="bg-background/60 border-b border-muted" />
 
                             {cols.map((colId, ci) => (
                                 <th
                                     key={colId}
-                                    className="bg-paper border-b border-l border-hairline p-0 group/th"
+                                    className="bg-background/60 border-b border-l border-muted p-0 group/th"
                                 >
                                     <div className="flex items-center h-10">
                                         <input
@@ -418,7 +418,7 @@ export default function EditableTable({
                                             className="
                         flex-1 h-full px-3 bg-transparent border-none outline-none
                         text-sm font-medium text-ink
-                        placeholder:text-faint
+                        placeholder:text-muted-foreground
                         min-w-0
                       "
                                         />
@@ -431,7 +431,7 @@ export default function EditableTable({
                                                 className="
                           opacity-0 group-hover/th:opacity-100
                           flex items-center justify-center w-6 h-6 mr-1.5 rounded-md shrink-0
-                          text-faint hover:text-[color:var(--ds-danger)] hover:bg-paper
+                          text-muted-foreground hover:text-destructive hover:bg-background/60
                           transition-colors duration-150
                         "
                                             >
@@ -452,8 +452,8 @@ export default function EditableTable({
                                 className="group/row"
                             >
                                 {/* Row number + delete */}
-                                <td className="bg-paper border-t border-hairline relative p-0 text-center">
-                                    <span className="group-hover/row:opacity-0 text-xs text-faint transition-opacity">
+                                <td className="bg-background/60 border-t border-muted relative p-0 text-center">
+                                    <span className="group-hover/row:opacity-0 text-xs text-muted-foreground transition-opacity">
                                         {ri + 1}
                                     </span>
                                     {rows.length > 1 && (
@@ -463,7 +463,7 @@ export default function EditableTable({
                                             className="
                         absolute inset-0 opacity-0 group-hover/row:opacity-100
                         flex items-center justify-center
-                        text-faint hover:text-[color:var(--ds-danger)] hover:bg-paper
+                        text-muted-foreground hover:text-destructive hover:bg-background/60
                         transition-colors duration-150 rounded-none
                       "
                                         >
@@ -475,7 +475,7 @@ export default function EditableTable({
                                 {cols.map((colId, ci) => (
                                     <td
                                         key={colId}
-                                        className="border-t border-l border-hairline p-0 focus-within:ring-1 focus-within:ring-[color:var(--ds-focus-ring)] focus-within:ring-inset focus-within:z-10 relative"
+                                        className="border-t border-l bg-background/40 border-muted p-0 focus-within:ring-1 focus-within:ring-[color:var(--ds-focus-ring)] focus-within:ring-inset focus-within:z-10 relative"
                                     >
                                         <input
                                             ref={registerRef(
@@ -520,15 +520,15 @@ export default function EditableTable({
                         <tr>
                             <td
                                 colSpan={cols.length + 1}
-                                className="border-t border-hairline p-0"
+                                className="border-t border-muted p-0"
                             >
                                 <button
                                     onClick={() => addRow("end")}
                                     aria-label="Add row at end"
                                     className="
                     w-full flex items-center justify-center gap-2 py-2.5
-                    text-sm text-faint hover:text-body
-                    hover:bg-paper
+                    text-sm text-muted-foreground hover:text-body
+                    hover:bg-background/60
                     transition-colors duration-150
                     rounded-b-xl
                   "
@@ -543,8 +543,8 @@ export default function EditableTable({
             </div>
 
             {/* Status bar */}
-            <div className="flex items-center gap-3 mt-2.5 text-xs text-faint">
-                <span className="flex items-center gap-1.5 bg-paper border border-hairline text-body rounded-full px-3 py-0.5">
+            <div className="flex items-center gap-3 mt-2.5 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5 bg-background/60 border border-muted text-body rounded-full px-3 py-0.5">
                     {rows.length} rows × {cols.length} cols
                 </span>
                 <span className="hidden sm:inline">

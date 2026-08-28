@@ -22,7 +22,7 @@ const BlockActionButton: React.FC<BlockActionButtonProps> = ({
         <Tooltip>
             <TooltipTrigger asChild>
                 <button
-                    className={`${className} px-3 py-2 group/button block h-full bg-surface text-muted-ink gap-2 cursor-pointer transition-colors duration-150`}
+                    className={`${className} px-3 py-2 group/button block h-full bg-card text-muted-foreground gap-2 cursor-pointer transition-colors duration-150`}
                     onClick={onClick}
                 >
                     {icon}

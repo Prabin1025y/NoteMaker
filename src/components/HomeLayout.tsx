@@ -90,13 +90,10 @@ export default function HomeLayout() {
         menuTriggerRef.current?.focus();
     }, []);
 
-    const selectView = useCallback(
-        (next: DashboardView) => {
-            setView(next);
-            setSidebarOpen(false);
-        },
-        [],
-    );
+    const selectView = useCallback((next: DashboardView) => {
+        setView(next);
+        setSidebarOpen(false);
+    }, []);
 
     const handleCreateNote = async (
         title: string,
@@ -107,7 +104,11 @@ export default function HomeLayout() {
             folderName?: string;
         },
     ) => {
-        const newNote = await createNoteInStore(title, description, folderDetails);
+        const newNote = await createNoteInStore(
+            title,
+            description,
+            folderDetails,
+        );
         setIsCreateModalOpen(false);
         queryClient.invalidateQueries({ queryKey: ["notes"] });
         if (folderDetails?.isNewFolder) {
@@ -128,7 +129,9 @@ export default function HomeLayout() {
             setIsCreatingFolder(false);
         } catch (error) {
             toast.error(
-                error instanceof Error ? error.message : "Couldn't create folder",
+                error instanceof Error
+                    ? error.message
+                    : "Couldn't create folder",
                 { toasterId: "normal" },
             );
         } finally {
@@ -142,7 +145,9 @@ export default function HomeLayout() {
             queryClient.invalidateQueries({ queryKey: ["folders"] });
         } catch (error) {
             toast.error(
-                error instanceof Error ? error.message : "Couldn't update folder",
+                error instanceof Error
+                    ? error.message
+                    : "Couldn't update folder",
                 { toasterId: "normal" },
             );
         }
@@ -164,7 +169,9 @@ export default function HomeLayout() {
             });
         } catch (error) {
             toast.error(
-                error instanceof Error ? error.message : "Couldn't delete folder",
+                error instanceof Error
+                    ? error.message
+                    : "Couldn't delete folder",
                 { toasterId: "normal" },
             );
         }
@@ -203,25 +210,18 @@ export default function HomeLayout() {
                 "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium outline-none transition-colors duration-150",
                 "focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
                 active
-                    ? "bg-tint text-ink"
-                    : "text-body hover:bg-paper hover:text-ink",
+                    ? "bg-primary/20"
+                    : "hover:bg-muted/40",
             )}
         >
-            <span
-                className={cn(
-                    "shrink-0",
-                    active ? "text-brand-cta" : "text-muted-ink",
-                )}
-            >
-                {icon}
-            </span>
+            <span className={cn("shrink-0", active && "text-primary")}>{icon}</span>
             <span className="flex-1 text-left">{label}</span>
             <span className="text-[11px] text-faint tabular-nums">{count}</span>
         </button>
     );
 
     return (
-        <div className="flex h-screen w-screen overflow-hidden bg-canvas">
+        <div className="flex h-screen w-screen overflow-hidden bg-background">
             {/* Mobile backdrop */}
             {sidebarOpen && (
                 <div
@@ -233,7 +233,7 @@ export default function HomeLayout() {
 
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 flex w-[280px] shrink-0 flex-col border-r border-hairline bg-paper",
+                    "fixed inset-y-0 left-0 z-50 flex w-[280px] shrink-0 flex-col border-r border-hairline bg-card",
                     "transition-transform duration-[240ms] ease-[cubic-bezier(0.2,0,0,1)]",
                     "md:static md:z-auto md:translate-x-0",
                     sidebarOpen ? "translate-x-0" : "-translate-x-full",
@@ -271,9 +271,12 @@ export default function HomeLayout() {
                 <div className="px-4 pb-3">
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-cta py-2.5 text-[13px] font-semibold text-[color:var(--ds-accent-contrast)] outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-paper)] active:scale-[0.98]"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground py-2.5 text-[13px] font-semibold outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-paper)] active:scale-[0.98]"
                     >
-                        <Plus size={15} strokeWidth={2.5} />
+                        <Plus
+                            size={15}
+                            strokeWidth={2.5}
+                        />
                         New note
                     </button>
                 </div>
@@ -281,7 +284,10 @@ export default function HomeLayout() {
                 {/* Search */}
                 <div className="px-4 pb-3">
                     <div className="flex items-center gap-2 rounded-md border border-hairline bg-surface px-3 py-2 transition-colors duration-150 focus-within:border-[color:var(--ds-border-input)] focus-within:ring-2 focus-within:ring-[color:var(--ds-focus-ring)]">
-                        <Search size={14} className="shrink-0 text-faint" />
+                        <Search
+                            size={14}
+                            className="shrink-0 text-faint"
+                        />
                         <input
                             type="text"
                             placeholder="Search notes…"
@@ -322,7 +328,7 @@ export default function HomeLayout() {
 
                 {/* Folders header */}
                 <div className="flex items-center justify-between px-5 pb-1.5 pt-5">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-faint">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                         Folders
                     </span>
                     <button
@@ -342,7 +348,9 @@ export default function HomeLayout() {
                             <input
                                 ref={newFolderInputRef}
                                 value={newFolderName}
-                                onChange={(e) => setNewFolderName(e.target.value)}
+                                onChange={(e) =>
+                                    setNewFolderName(e.target.value)
+                                }
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter") handleCreateFolder();
                                     if (e.key === "Escape") {
@@ -393,13 +401,16 @@ export default function HomeLayout() {
                                     (n) => n.folderId === folder.id,
                                 ).length;
                                 return (
-                                    <li key={folder.id} className="group/folder">
+                                    <li
+                                        key={folder.id}
+                                        className="group/folder"
+                                    >
                                         <div
                                             className={cn(
                                                 "flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors duration-150",
                                                 active
-                                                    ? "bg-tint"
-                                                    : "hover:bg-surface",
+                                                    ? "bg-primary/20"
+                                                    : "hover:bg-muted/40",
                                             )}
                                         >
                                             <button
@@ -416,19 +427,17 @@ export default function HomeLayout() {
                                                 className="flex min-w-0 flex-1 items-center gap-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                                             >
                                                 <span
-                                                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                                                    style={{
-                                                        backgroundColor:
-                                                            color.dot,
-                                                    }}
+                                                    className={cn(
+                                                        "h-2.5 w-2.5 shrink-0 rounded-full",
+                                                        active
+                                                            ? "bg-accent"
+                                                            : "bg-muted",
+                                                    )}
                                                 />
                                                 <span
-                                                    className={cn(
-                                                        "min-w-0 flex-1 truncate text-[13px] font-medium",
-                                                        active
-                                                            ? "text-ink"
-                                                            : "text-body",
-                                                    )}
+                                                    className={
+                                                        "min-w-0 flex-1 truncate text-[13px] font-medium"
+                                                    }
                                                 >
                                                     {folder.name}
                                                 </span>

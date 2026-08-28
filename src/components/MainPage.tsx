@@ -129,7 +129,7 @@ const MainPage = ({
             </div>
             <div
                 ref={contentRef}
-                className=" flex-1 h-full overflow-y-auto bg-canvas"
+                className=" flex-1 h-full overflow-y-auto"
             >
                 <div
                     ref={noteRef}
@@ -156,7 +156,7 @@ const MainPage = ({
                                                             i,
                                                         )
                                                     }
-                                                    className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-surface px-4 py-1 text-[12px] font-medium text-brand-cta shadow-sm outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                                    className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-card px-4 py-1 text-[12px] font-medium text-primary shadow-sm outline-none transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                                                 >
                                                     <PlusIcon size={18} />
                                                     <span>Add Block</span>
@@ -191,7 +191,7 @@ const MainPage = ({
                                 );
                             })}
                         {isGenerating && (
-                            <div className="my-5 flex h-40 w-full animate-pulse items-center justify-center gap-3 rounded-xl border border-hairline bg-paper text-muted-ink">
+                            <div className="my-5 flex h-40 w-full animate-pulse items-center justify-center gap-3 rounded-xl border border-muted bg-card text-muted-foreground">
                                 <Loader className="animate-spin" />
                                 <p className="text-[13px] font-medium">
                                     Generating…
@@ -217,9 +217,9 @@ const MainPage = ({
                                             type: "block",
                                         })
                                     }
-                                    className="group flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-strong bg-paper px-4 py-5 outline-none transition-colors duration-150 hover:border-[color:var(--ds-accent)] hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                    className="group flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-strong bg-card px-4 py-5 outline-none transition-colors duration-150 hover:border-accent hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                                 >
-                                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-tint text-brand-cta transition-colors duration-150 group-hover:bg-brand-soft">
+                                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/20 text-primary transition-colors duration-150 group-hover:bg-brand-soft">
                                         <Plus size={18} />
                                     </div>
                                     <p className="text-center text-[13px] font-semibold text-ink">
@@ -231,7 +231,7 @@ const MainPage = ({
                                     type="button"
                                     disabled={isGenerating}
                                     onClick={() => openAiModel()}
-                                    className={`${isGenerating ? "cursor-not-allowed opacity-70" : ""} flex flex-1 flex-col items-center justify-center gap-3 rounded-xl bg-brand-cta px-4 py-5 text-[color:var(--ds-accent-contrast)] shadow-sm outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-canvas)] active:scale-[0.99]`}
+                                    className={`${isGenerating ? "cursor-not-allowed opacity-70" : ""} flex flex-1 flex-col items-center justify-center gap-3 rounded-xl bg-primary px-4 py-5 text-primary-foreground shadow-sm outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-canvas)] active:scale-[0.99]`}
                                 >
                                     <div
                                         className="grid h-9 w-9 shrink-0 place-items-center rounded-lg"

@@ -21,7 +21,7 @@ const MainContent = ({ blocks }: { blocks: BlockType[] }) => {
             id="pdf-root"
             data-pdf-root
             className="pdf-export w-full bg-white"
-            style={{ fontFamily: "'Inter', sans-serif", display: "block" }}
+            style={{ fontFamily: "var(--font-sans)", display: "block" }}
         >
             <div className="mx-auto max-w-5xl px-10 py-10">
                 <div className="flex flex-col gap-3">

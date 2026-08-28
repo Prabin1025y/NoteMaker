@@ -125,7 +125,11 @@ const HomePage = ({
     }, [searched, view]);
 
     const pinned = useMemo(
-        () => sortNotes(scoped.filter((n) => n.isPinned), sort),
+        () =>
+            sortNotes(
+                scoped.filter((n) => n.isPinned),
+                sort,
+            ),
         [scoped, sort],
     );
 
@@ -133,10 +137,19 @@ const HomePage = ({
     // of the main list. In scoped views they float to the top instead.
     const mainList = useMemo(() => {
         if (view.kind === "all") {
-            return sortNotes(scoped.filter((n) => !n.isPinned), sort);
+            return sortNotes(
+                scoped.filter((n) => !n.isPinned),
+                sort,
+            );
         }
-        const p = sortNotes(scoped.filter((n) => n.isPinned), sort);
-        const rest = sortNotes(scoped.filter((n) => !n.isPinned), sort);
+        const p = sortNotes(
+            scoped.filter((n) => n.isPinned),
+            sort,
+        );
+        const rest = sortNotes(
+            scoped.filter((n) => !n.isPinned),
+            sort,
+        );
         return [...p, ...rest];
     }, [scoped, sort, view]);
 
@@ -225,7 +238,7 @@ const HomePage = ({
                 active
                     ? cn("opacity-100", activeClass)
                     : cn(
-                          "text-faint hover:bg-paper hover:text-ink",
+                          "text-faint hover:bg-border hover:text-ink",
                           alwaysVisible
                               ? "opacity-100"
                               : "opacity-100 md:opacity-0 md:group-hover:opacity-100",
@@ -237,11 +250,15 @@ const HomePage = ({
     );
 
     const NoteActions = ({ note }: { note: NoteType }) => (
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 text-muted-foreground">
             <IconButton
-                label={note.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                label={
+                    note.isFavorite
+                        ? "Remove from favorites"
+                        : "Add to favorites"
+                }
                 active={note.isFavorite}
-                activeClass="text-brand hover:bg-brand-soft"
+                activeClass="text-primary hover:bg-primary/20"
                 onClick={() => toggleNoteFavorite(note.id)}
             >
                 <Star
@@ -252,7 +269,7 @@ const HomePage = ({
             <IconButton
                 label={note.isPinned ? "Unpin note" : "Pin note"}
                 active={note.isPinned}
-                activeClass="text-brand hover:bg-brand-soft"
+                activeClass="text-primary hover:bg-primary/20"
                 onClick={() => toggleNotePin(note.id)}
             >
                 <Pin
@@ -284,7 +301,7 @@ const HomePage = ({
                     e.stopPropagation();
                     setView({ kind: "folder", folderId });
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-paper px-2 py-0.5 text-[11px] font-medium text-muted-ink outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
             >
                 <span
                     className="h-2 w-2 shrink-0 rounded-full"
@@ -302,7 +319,7 @@ const HomePage = ({
             return (
                 <div
                     className={cn(
-                        "group relative flex items-center gap-4 rounded-xl border border-hairline bg-surface px-4 py-3 transition-colors duration-150 hover:border-strong",
+                        "group relative flex items-center gap-4 rounded-xl border border-border bg-card/60 px-4 py-3 transition-colors duration-150 hover:border-accent/40",
                         isDeleting && "pointer-events-none opacity-50",
                     )}
                 >
@@ -311,23 +328,23 @@ const HomePage = ({
                         prefetch={false}
                         className="flex min-w-0 flex-1 items-center gap-3 outline-none"
                     >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-paper text-muted-ink">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-background text-muted-foreground">
                             <FileText size={16} />
                         </span>
                         <span className="min-w-0 flex-1">
                             <span className="block truncate text-[14px] font-semibold text-ink">
                                 {note.title || "Untitled"}
                             </span>
-                            <span className="block truncate text-[12px] text-muted-ink">
+                            <span className="block truncate text-[12px] text-muted-foreground">
                                 {note.description || "No description yet"}
                             </span>
                         </span>
                     </Link>
-                    <span className="hidden shrink-0 items-center gap-1.5 text-[11px] text-faint tabular-nums sm:flex">
+                    <span className="hidden shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground tabular-nums sm:flex">
                         <LayoutList size={12} />
                         {note.blocksCount ?? 0}
                     </span>
-                    <span className="hidden shrink-0 text-[11px] text-faint tabular-nums md:block">
+                    <span className="hidden shrink-0 text-[11px] text-muted-foreground tabular-nums md:block">
                         {formatDate(note.updatedAt)}
                     </span>
                     {view.kind !== "folder" && (
@@ -343,12 +360,12 @@ const HomePage = ({
         return (
             <div
                 className={cn(
-                    "group relative flex flex-col rounded-xl border border-hairline bg-surface p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong",
+                    "group relative flex flex-col rounded-xl border border-hairline bg-card/60 p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong",
                     isDeleting && "pointer-events-none opacity-50",
                 )}
             >
                 <div className="mb-2 flex items-start justify-between gap-2">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-paper text-muted-ink">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-background text-muted-foreground">
                         <FileText size={16} />
                     </span>
                     <div className="-mr-1.5 -mt-1">
@@ -361,17 +378,17 @@ const HomePage = ({
                     prefetch={false}
                     className="outline-none"
                 >
-                    <h3 className="text-[15px] font-semibold leading-snug text-ink transition-colors duration-150 group-hover:text-brand-cta">
+                    <h3 className="text-[15px] font-semibold leading-snug text-ink transition-colors duration-150 group-hover:text-primary">
                         {note.title || "Untitled"}
                     </h3>
                 </Link>
 
-                <p className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-[13px] leading-relaxed text-muted-ink">
+                <p className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-[13px] leading-relaxed text-muted-foreground">
                     {note.description || "No description has been added yet."}
                 </p>
 
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-hairline pt-3">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-faint tabular-nums">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground tabular-nums">
                         <LayoutList size={12} />
                         {note.blocksCount ?? 0}{" "}
                         {(note.blocksCount ?? 0) === 1 ? "block" : "blocks"}
@@ -379,7 +396,7 @@ const HomePage = ({
                     {view.kind !== "folder" ? (
                         <FolderChip folderId={note.folderId} />
                     ) : (
-                        <span className="text-[11px] text-faint tabular-nums">
+                        <span className="text-[11px] text-muted-foreground tabular-nums">
                             {formatDate(note.updatedAt)}
                         </span>
                     )}
@@ -396,7 +413,7 @@ const HomePage = ({
             <button
                 type="button"
                 onClick={() => setView({ kind: "folder", folderId: folder.id })}
-                className="group flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3 text-left outline-none transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="group flex items-center gap-3 rounded-xl border border-hairline bg-card/60 p-3 text-left outline-none transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
             >
                 <span
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-lg"
@@ -405,13 +422,16 @@ const HomePage = ({
                         border: `1px solid ${color.ring}`,
                     }}
                 >
-                    <FolderOpen size={18} style={{ color: color.dot }} />
+                    <FolderOpen
+                        size={18}
+                        style={{ color: color.dot }}
+                    />
                 </span>
                 <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-semibold text-ink">
                         {folder.name}
                     </span>
-                    <span className="block text-[11px] text-muted-ink tabular-nums">
+                    <span className="block text-[11px] text-muted-foreground tabular-nums">
                         {count} {count === 1 ? "note" : "notes"}
                     </span>
                 </span>
@@ -433,7 +453,10 @@ const HomePage = ({
             )}
         >
             {list.map((note) => (
-                <NoteCard key={note.id} note={note} />
+                <NoteCard
+                    key={note.id}
+                    note={note}
+                />
             ))}
         </div>
     );
@@ -447,7 +470,7 @@ const HomePage = ({
     }) => (
         <div className="mb-3 flex items-center gap-2">
             {icon}
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-ink">
+            <h2 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 {children}
             </h2>
         </div>
@@ -477,11 +500,11 @@ const HomePage = ({
                         <button
                             type="button"
                             onClick={() => setView({ kind: "all" })}
-                            className="mb-4 inline-flex items-center gap-1 text-[12px] font-medium text-muted-ink outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            className="mb-4 inline-flex items-center gap-1 text-[12px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                         >
                             All notes
                             <ChevronRight size={13} />
-                            <span className="text-ink">{meta.title}</span>
+                            <span className="text-foreground">{meta.title}</span>
                         </button>
                     )}
 
@@ -489,14 +512,14 @@ const HomePage = ({
                     <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
                         <div className="min-w-0">
                             {meta.eyebrow && (
-                                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-brand-cta">
+                                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
                                     {meta.eyebrow}
                                 </p>
                             )}
                             <h1 className="text-[26px] font-semibold tracking-tight text-ink text-balance">
                                 {meta.title}
                             </h1>
-                            <p className="mt-1 text-[13px] text-muted-ink">
+                            <p className="mt-1 text-[13px] text-muted-foreground">
                                 {searchQuery.trim()
                                     ? `${scoped.length} ${scoped.length === 1 ? "result" : "results"} for “${searchQuery.trim()}”`
                                     : meta.subtitle}
@@ -521,7 +544,10 @@ const HomePage = ({
                                         </span>
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-44"
+                                >
                                     {SORT_OPTIONS.map((option) => (
                                         <DropdownMenuItem
                                             key={option.key}
@@ -542,8 +568,16 @@ const HomePage = ({
                             <div className="flex items-center rounded-lg border border-hairline bg-surface p-0.5">
                                 {(
                                     [
-                                        { key: "grid", icon: LayoutGrid, label: "Grid view" },
-                                        { key: "list", icon: List, label: "List view" },
+                                        {
+                                            key: "grid",
+                                            icon: LayoutGrid,
+                                            label: "Grid view",
+                                        },
+                                        {
+                                            key: "list",
+                                            icon: List,
+                                            label: "List view",
+                                        },
                                     ] as const
                                 ).map(({ key, icon: Icon, label }) => (
                                     <button
@@ -554,9 +588,8 @@ const HomePage = ({
                                         onClick={() => setLayout(key)}
                                         className={cn(
                                             "grid h-8 w-8 place-items-center rounded-[6px] outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
-                                            layout === key
-                                                ? "bg-tint text-brand-cta"
-                                                : "text-faint hover:text-ink",
+                                            layout === key &&
+                                                "bg-primary/20 text-primary",
                                         )}
                                     >
                                         <Icon size={16} />
@@ -576,7 +609,7 @@ const HomePage = ({
                     ) : notes.length === 0 ? (
                         /* Empty: no notes at all */
                         <div className="flex flex-col items-center rounded-2xl border border-dashed border-strong bg-paper px-6 py-16 text-center">
-                            <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-tint text-brand-cta">
+                            <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-background text-muted-foreground">
                                 <FileText size={24} />
                             </span>
                             <h3 className="text-[16px] font-semibold text-ink">
@@ -591,7 +624,10 @@ const HomePage = ({
                                 onClick={onCreateNote}
                                 className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-brand-cta px-4 py-2.5 text-[13px] font-semibold text-[color:var(--ds-accent-contrast)] outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 active:scale-[0.98]"
                             >
-                                <Plus size={16} strokeWidth={2.5} />
+                                <Plus
+                                    size={16}
+                                    strokeWidth={2.5}
+                                />
                                 New note
                             </button>
                         </div>
@@ -602,16 +638,19 @@ const HomePage = ({
                                 <button
                                     type="button"
                                     onClick={onCreateNote}
-                                    className="group flex items-center gap-3 rounded-xl border border-dashed border-strong bg-paper px-4 py-3.5 text-left outline-none transition-colors duration-150 hover:border-[color:var(--ds-accent)] hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                    className="group flex items-center gap-3 rounded-xl border border-dashed border-strong bg-card/50 px-4 py-3.5 text-left outline-none transition-colors duration-150 hover:border-primary hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                                 >
-                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-tint text-brand-cta transition-colors duration-150 group-hover:bg-brand-soft">
-                                        <Plus size={18} strokeWidth={2.5} />
+                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/20 text-primary transition-colors duration-150 group-hover:bg-primary/40">
+                                        <Plus
+                                            size={18}
+                                            strokeWidth={2.5}
+                                        />
                                     </span>
                                     <span>
                                         <span className="block text-[13px] font-semibold text-ink">
                                             Start a new note
                                         </span>
-                                        <span className="block text-[12px] text-muted-ink">
+                                        <span className="block text-[12px] text-muted-foreground">
                                             Capture an idea, a lecture, or a
                                             plan.
                                         </span>
@@ -628,7 +667,7 @@ const HomePage = ({
                                             icon={
                                                 <FolderOpen
                                                     size={14}
-                                                    className="text-muted-ink"
+                                                    className="text-muted-foreground"
                                                 />
                                             }
                                         >
@@ -669,7 +708,7 @@ const HomePage = ({
                                         icon={
                                             <FileText
                                                 size={14}
-                                                className="text-muted-ink"
+                                                className="text-muted-foreground"
                                             />
                                         }
                                     >
@@ -683,7 +722,7 @@ const HomePage = ({
                                     <NoteCollection list={mainList} />
                                 ) : (
                                     <div className="flex flex-col items-center rounded-2xl border border-dashed border-strong bg-paper px-6 py-14 text-center">
-                                        <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-tint text-brand-cta">
+                                        <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-primary/20 text-primary">
                                             {searchQuery.trim() ? (
                                                 <SearchIcon size={20} />
                                             ) : view.kind === "favorites" ? (
@@ -699,7 +738,7 @@ const HomePage = ({
                                                   ? "No favorites yet"
                                                   : "This folder is empty"}
                                         </h3>
-                                        <p className="mt-1 max-w-xs text-[13px] text-muted-ink text-pretty">
+                                        <p className="mt-1 max-w-xs text-[13px] text-muted-foreground text-pretty">
                                             {searchQuery.trim()
                                                 ? "Try a different search term."
                                                 : view.kind === "favorites"

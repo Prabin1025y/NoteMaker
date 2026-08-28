@@ -17,7 +17,7 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
     const designUnavailable = !supportsDesign(state.currentType);
 
     return (
-        <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-hairline bg-paper px-6 py-6">
+        <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-hairline bg-background/80 px-6 py-6">
             <div className="space-y-6">
                 <BlockTypeSelector
                     currentBlock={currentBlock}
@@ -29,7 +29,7 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
                         2. Apply Design
                     </label>
                     <Switch
-                        className="data-checked:bg-brand-cta data-unchecked:bg-strong cursor-pointer"
+                        className="data-checked:bg-primary data-unchecked:bg-muted-foreground cursor-pointer"
                         id="design-switch"
                         checked={state.designEnabled}
                         onCheckedChange={(checked) => dispatch({ type: "setDesignEnabled", payload: checked })}

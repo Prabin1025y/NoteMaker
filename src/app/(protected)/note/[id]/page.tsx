@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Inter } from "next/font/google";
 import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
 import RightAside from "@/components/RightAside";
@@ -23,11 +22,6 @@ import { fetchBlocks, fetchNotes, fetchNoteById } from "@/services/noteService";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
-
-const inter = Inter({
-    subsets: ["latin"],
-    display: "swap",
-});
 
 export default function NotePage() {
     const params = useParams();
@@ -446,7 +440,7 @@ export default function NotePage() {
 
     return (
         <div
-            className={`${inter.className} h-screen w-screen flex flex-col overflow-hidden bg-white`}
+            className="h-screen w-screen flex flex-col overflow-hidden bg-background"
         >
             <NoteChromeHeader
                 searchQuery={searchQuery}

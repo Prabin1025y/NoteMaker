@@ -121,7 +121,7 @@ const BlockEditorModal = ({
             <div
                 ref={panelRef}
                 tabIndex={-1}
-                className="ds-animate-fade-up flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-hairline bg-elevated shadow-2xl outline-none"
+                className="ds-animate-fade-up flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-muted bg-card shadow-2xl outline-none"
             >
                 <BlockEditorHeader
                     action={editorData.action}

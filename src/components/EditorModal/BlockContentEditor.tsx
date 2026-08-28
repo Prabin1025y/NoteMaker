@@ -34,7 +34,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
-                                className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-[color:var(--ds-border-input)] bg-surface px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-[color:var(--ds-border-input)] bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
                             >
                                 <span className="capitalize">{state.language}</span>
                                 <ChevronDown className="h-4 w-4 text-faint" />
@@ -68,7 +68,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                     state.currentType === "canvas"
                         ? "Caption"
                         : "Title"}{" "}
-                    <span className="font-normal text-faint">(optional)</span>
+                    <span className="font-normal text-muted-foreground">(optional)</span>
                 </label>
                 <input
                     type="text"
@@ -80,7 +80,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                             ? "Enter caption"
                             : "Enter title (optional)"
                     }
-                    className="w-full rounded-md border border-[color:var(--ds-border-input)] bg-surface px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-faint focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                    className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-faint focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 />
             </div>
         );

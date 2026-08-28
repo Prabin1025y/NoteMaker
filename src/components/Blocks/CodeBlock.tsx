@@ -190,8 +190,7 @@ export default function CodeBlock({
                         }}
                         codeTagProps={{
                             style: {
-                                fontFamily:
-                                    "'Fira Code', 'Cascadia Code', monospace",
+                                fontFamily: "var(--font-mono)",
                             },
                         }}
                     >

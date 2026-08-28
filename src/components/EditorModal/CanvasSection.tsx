@@ -1,19 +1,7 @@
 "use client";
 
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import {
-    Eraser,
-    Paintbrush,
-    RotateCcw,
-    Trash2,
-    Undo2,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Eraser, Paintbrush, RotateCcw, Trash2, Undo2 } from "lucide-react";
 
 /**
  * Freehand drawing / handwriting block editor.
@@ -401,19 +389,35 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
 
     const swatches = useMemo(() => PEN_COLORS, []);
 
+    // Undo shorcut
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey && event.key === "z") {
+                event.preventDefault();
+                handleUndo();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [background]);
+
     return (
         <div className="flex flex-1 flex-col gap-3 min-h-0">
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-hairline bg-paper px-3 py-2">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-muted bg-background/70 px-3 py-2">
                 {/* Pen / Eraser */}
-                <div className="flex items-center gap-1 rounded-lg bg-surface p-1 ring-1 ring-hairline">
+                <div className="flex items-center gap-1 rounded-lg bg-surface p-1 ring-1 ring-muted">
                     <button
                         type="button"
                         onClick={() => setTool("pen")}
                         className={`${toolButtonBase} ${
                             tool === "pen"
-                                ? "bg-brand text-[color:var(--ds-accent-contrast)]"
-                                : "text-muted-ink hover:bg-tint"
+                                ? "bg-primary/20 text-foreground"
+                                : "text-muted-foreground hover:bg-primary/20"
                         }`}
                     >
                         <Paintbrush size={14} />
@@ -424,8 +428,8 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                         onClick={() => setTool("eraser")}
                         className={`${toolButtonBase} ${
                             tool === "eraser"
-                                ? "bg-brand text-[color:var(--ds-accent-contrast)]"
-                                : "text-muted-ink hover:bg-tint"
+                                ? "bg-primary/20 text-foreground"
+                                : "text-muted-foreground hover:bg-primary/20"
                         }`}
                     >
                         <Eraser size={14} />
@@ -433,7 +437,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                     </button>
                 </div>
 
-                <div className="h-6 w-px bg-hairline" />
+                <div className="h-6 w-px bg-muted" />
 
                 {/* Colors */}
                 <div className="flex items-center gap-1.5">
@@ -468,7 +472,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                     })}
                 </div>
 
-                <div className="h-6 w-px bg-hairline" />
+                <div className="h-6 w-px bg-muted" />
 
                 {/* Sizes */}
                 <div className="flex items-center gap-1">
@@ -482,15 +486,16 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                                 onClick={() => setSize(s.value)}
                                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                     active
-                                        ? "bg-brand-soft ring-1 ring-brand"
-                                        : "hover:bg-tint"
+                                        ? "bg-primary/20 ring-1 ring-brand"
+                                        : "hover:bg-primary/20"
                                 }`}
                             >
                                 <span
-                                    className="rounded-full bg-ink"
+                                    className="rounded-full"
                                     style={{
                                         width: s.dot,
                                         height: s.dot,
+                                        backgroundColor: color,
                                     }}
                                 />
                             </button>
@@ -498,7 +503,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                     })}
                 </div>
 
-                <div className="h-6 w-px bg-hairline" />
+                <div className="h-6 w-px bg-muted" />
 
                 {/* Background selector */}
                 <div className="flex items-center gap-1">
@@ -511,8 +516,8 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                                 onClick={() => changeBackground(b.key)}
                                 className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                                     active
-                                        ? "bg-ink text-white"
-                                        : "text-muted-ink hover:bg-tint"
+                                        ? "bg-primary/20 text-white"
+                                        : "text-muted-ink hover:bg-primary/20"
                                 }`}
                             >
                                 {b.label}
@@ -526,7 +531,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                         type="button"
                         onClick={handleUndo}
                         title="Undo last stroke"
-                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-muted-ink transition-colors hover:bg-tint"
+                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-muted-ink transition-colors hover:bg-primary/20"
                     >
                         <Undo2 size={14} />
                         Undo
@@ -535,7 +540,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                         type="button"
                         onClick={handleClear}
                         title="Clear canvas"
-                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-[color:var(--ds-danger)] transition-colors hover:bg-[color:var(--ds-danger)]/10"
+                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-destructive transition-colors hover:bg-destructive/10"
                     >
                         <Trash2 size={14} />
                         Clear
@@ -544,7 +549,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
             </div>
 
             {/* Drawing surface */}
-            <div className="relative flex-1 min-h-0 overflow-auto rounded-xl border border-hairline bg-[#f3f4f6] p-4">
+            <div className="relative flex-1 min-h-0 overflow-auto rounded-xl border border-muted bg-[#f3f4f6] p-4">
                 <canvas
                     ref={viewCanvasRef}
                     width={CANVAS_WIDTH}
@@ -557,16 +562,18 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                     className="mx-auto block w-full max-w-[900px] rounded-lg bg-white shadow-sm ring-1 ring-black/5"
                     style={{
                         touchAction: "none",
-                        cursor:
-                            tool === "eraser" ? "cell" : "crosshair",
+                        cursor: tool === "eraser" ? "cell" : "crosshair",
                         aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
                     }}
                 />
 
                 {isEmpty && (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2 text-faint">
-                            <RotateCcw size={22} className="opacity-40" />
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <RotateCcw
+                                size={22}
+                                className="opacity-40"
+                            />
                             <p className="text-[13px]">
                                 Draw or handwrite anything — sketches,
                                 equations, diagrams.

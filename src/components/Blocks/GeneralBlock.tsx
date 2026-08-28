@@ -59,7 +59,7 @@ export default function GeneralBlock({
                         <BlockActionButton
                             icon={
                                 <EditIcon
-                                    className={`${iconClassName} hover:text-brand-cta`}
+                                    className={`${iconClassName} hover:text-primary`}
                                 />
                             }
                             onClick={() => onEdit()}
@@ -69,7 +69,7 @@ export default function GeneralBlock({
                         <BlockActionButton
                             icon={
                                 <Trash2Icon
-                                    className={`${iconClassName} hover:text-[color:var(--ds-danger)]`}
+                                    className={`${iconClassName} hover:text-destructive`}
                                 />
                             }
                             onClick={() => onDelete()}
