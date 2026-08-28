@@ -9,7 +9,10 @@ import NoteChromeHeader from "@/components/note/NoteChromeHeader";
 import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorData } from "@/types/Editor";
-import { initialJsonForEditor } from "@/utils/UtilFunctions";
+import {
+    initialHeadingJsonContent,
+    initialJsonForEditor,
+} from "@/utils/UtilFunctions";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
@@ -17,6 +20,9 @@ import { toast } from "sonner";
 import AiBlockGenerator from "@/components/note/AiBlockGenerator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchBlocks, fetchNotes, fetchNoteById } from "@/services/noteService";
+import { allBlocks } from "@/utils/BlocksInfo";
+import { ALL_DIVIDERS } from "@/utils/Dividers";
+import { makeInitialState } from "@/components/EditorModal/TableSection";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -188,8 +194,8 @@ export default function NotePage() {
             queryKey: ["blocks", noteId],
         });
         queryClient.invalidateQueries({
-            queryKey: ['notes']
-        })
+            queryKey: ["notes"],
+        });
         setIsSyncing(false);
     }, [syncToDB, blocksToBeSynced]);
 
@@ -223,6 +229,113 @@ export default function NotePage() {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [canRedo, canUndo, handleSave, isEditorOpen, isSyncing, redo, undo]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const isAltPressed = event.altKey;
+            if (!isAltPressed || isEditorOpen) return;
+
+            const key = event.key.toLowerCase();
+            const commonData: Omit<EditorData, "content" | "type"> = {
+                id: "",
+                designId: 0,
+                colorOptionId: 1,
+                action: "add",
+                title: "",
+                order: "auto",
+            };
+
+
+            switch (key) {
+                case "b":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "block")
+                                ?.defaultContent || initialJsonForEditor,
+                        type: "block",
+                    });
+                    break;
+                case "h":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "heading")
+                                ?.defaultContent || initialHeadingJsonContent,
+                        type: "heading",
+                    });
+                    break;
+                case "w":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "canvas")
+                                ?.defaultContent || "",
+                        type: "canvas",
+                    });
+                    break;
+                case "d":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "divider")
+                                ?.defaultContent || ALL_DIVIDERS[0].name,
+                        type: "divider",
+                    });
+                    break;
+                case "c":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "code")
+                                ?.defaultContent || "// Do Something",
+                        type: "code",
+                    });
+                    break;
+                case "f":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "formula")
+                                ?.defaultContent || "E=mc^2",
+                        type: "formula",
+                    });
+                    break;
+                case "i":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "image")
+                                ?.defaultContent || "",
+                        type: "image",
+                    });
+                    break;
+                case "t":
+                    event.preventDefault();
+                    openBlockEditor({
+                        ...commonData,
+                        content:
+                            allBlocks.find((b) => b.type === "table")
+                                ?.defaultContent || JSON.stringify(makeInitialState()),
+                        type: "table",
+                    });
+                    break;
+
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isEditorOpen]);
 
     const handlePreview = () => {
         setIsPreviewMode((prev) => !prev);

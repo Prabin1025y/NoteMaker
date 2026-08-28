@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { EditorData } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { useBlockEditorState } from "./block-editor-state";
@@ -15,11 +15,17 @@ interface BlockEditorModalProps {
     editorData: EditorData;
 }
 
-const BlockEditorModal = ({ onClose, onSave, editorData }: BlockEditorModalProps) => {
+const BlockEditorModal = ({
+    onClose,
+    onSave,
+    editorData,
+}: BlockEditorModalProps) => {
     const { state, dispatch } = useBlockEditorState(editorData);
 
     const currentBlock = useMemo(
-        () => allBlocks.find((block) => block.type === state.currentType) || allBlocks[0],
+        () =>
+            allBlocks.find((block) => block.type === state.currentType) ||
+            allBlocks[0],
         [state.currentType],
     );
 
@@ -33,7 +39,7 @@ const BlockEditorModal = ({ onClose, onSave, editorData }: BlockEditorModalProps
         language: state.language,
     });
 
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         dispatch({ type: "setAdding", payload: true });
 
         let savedContent = state.content;
@@ -62,7 +68,22 @@ const BlockEditorModal = ({ onClose, onSave, editorData }: BlockEditorModalProps
         });
 
         dispatch({ type: "setAdding", payload: false });
-    };
+    }, [dispatch, editorData, onSave, state]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey && event.shiftKey && event.key === "Enter") {
+                event.preventDefault();
+                void handleSave();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [handleSave]);
 
     const handleClose = () => {
         onClose();
@@ -91,21 +112,32 @@ const BlockEditorModal = ({ onClose, onSave, editorData }: BlockEditorModalProps
             className="ds-animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
-            aria-label={editorData.action === "add" ? "New block editor" : "Edit block editor"}
+            aria-label={
+                editorData.action === "add"
+                    ? "New block editor"
+                    : "Edit block editor"
+            }
         >
             <div
                 ref={panelRef}
                 tabIndex={-1}
                 className="ds-animate-fade-up flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-hairline bg-elevated shadow-2xl outline-none"
             >
-                <BlockEditorHeader action={editorData.action} onClose={handleClose} />
+                <BlockEditorHeader
+                    action={editorData.action}
+                    onClose={handleClose}
+                />
                 <div className="flex flex-1 overflow-hidden">
                     <BlockContentEditor
                         state={state}
                         dispatch={dispatch}
                         editorData={editorData}
                     />
-                    <BlockSettingsSidebar state={state} dispatch={dispatch} currentBlock={currentBlock} />
+                    <BlockSettingsSidebar
+                        state={state}
+                        dispatch={dispatch}
+                        currentBlock={currentBlock}
+                    />
                 </div>
                 <BlockEditorFooter
                     onClose={handleClose}
