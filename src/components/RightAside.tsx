@@ -6,14 +6,20 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { move } from "@dnd-kit/helpers";
 import Sortable from "@/components/dnd-Kit/Sortable";
 import { randomBetweenExclusive } from "@/utils/UtilFunctions";
-import { PanelRightClose, PanelRightOpen } from "lucide-react";
+import {
+    PanelRightClose,
+    PanelRightOpen,
+} from "lucide-react";
 
 interface RightAsideProps {
     searchQuery?: string;
     isReadOnly?: boolean;
 }
 
-const RightAside = ({ searchQuery = "", isReadOnly = false }: RightAsideProps) => {
+const RightAside = ({
+    searchQuery = "",
+    isReadOnly = false,
+}: RightAsideProps) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const {
         blocks,

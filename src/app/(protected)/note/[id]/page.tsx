@@ -188,15 +188,39 @@ export default function NotePage() {
 
     const handleSave = useCallback(async () => {
         if (blocksToBeSynced.length === 0) return;
-        setIsSyncing(true);
-        await syncToDB();
-        queryClient.invalidateQueries({
-            queryKey: ["blocks", noteId],
-        });
-        queryClient.invalidateQueries({
-            queryKey: ["notes"],
-        });
-        setIsSyncing(false);
+        toast.promise(
+            async () => {
+                try {
+                    setIsSyncing(true);
+                    await syncToDB();
+                    queryClient.invalidateQueries({
+                        queryKey: ["blocks", noteId],
+                    });
+                    queryClient.invalidateQueries({
+                        queryKey: ["notes"],
+                    });
+                    setIsSyncing(false);
+                } catch (error) {
+                    if (process.env.NODE_ENV === "development") {
+                        console.error(error);
+                    }
+
+                    alert(
+                        error instanceof Error
+                            ? error.message
+                            : "Error while Saving!",
+                    );
+                } finally {
+                    setIsSyncing(false);
+                }
+            },
+            {
+                loading: `Saving...`,
+                success: () => `Saved!`,
+                error: "Error",
+                toasterId: "normal",
+            },
+        );
     }, [syncToDB, blocksToBeSynced]);
 
     useEffect(() => {
@@ -244,7 +268,6 @@ export default function NotePage() {
                 title: "",
                 order: "auto",
             };
-
 
             switch (key) {
                 case "b":
@@ -323,7 +346,8 @@ export default function NotePage() {
                         ...commonData,
                         content:
                             allBlocks.find((b) => b.type === "table")
-                                ?.defaultContent || JSON.stringify(makeInitialState()),
+                                ?.defaultContent ||
+                            JSON.stringify(makeInitialState()),
                         type: "table",
                     });
                     break;

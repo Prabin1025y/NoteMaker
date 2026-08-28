@@ -646,7 +646,6 @@ export const useNoteStore = create<Store>()(
                     blocksToBeSynced: [],
                     syncedBlocks: savedBlocks,
                 });
-                alert("Saved successfully");
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
 
