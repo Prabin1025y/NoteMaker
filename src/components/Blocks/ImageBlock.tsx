@@ -43,14 +43,14 @@ export default function ImageBlock({
                 <div
                     className="
                         absolute right-2 top-2 z-10
-                        hidden overflow-hidden rounded-md border border-hairline shadow-sm
+                        hidden overflow-hidden rounded-md border border-muted shadow-sm
                         group-hover:flex
                     "
                 >
                     <BlockActionButton
                         icon={
                             <EditIcon
-                                className={`${iconClassName} hover:text-brand-cta`}
+                                className={`${iconClassName} hover:text-primary`}
                             />
                         }
                         onClick={onEdit}
@@ -96,7 +96,7 @@ export default function ImageBlock({
                         text-center
                         text-sm
                         italic
-                        text-muted-ink
+                        text-muted-foreground
                     "
                 >
                     {title}

@@ -75,18 +75,18 @@ export default function CanvasBlock({
                     <img
                         src={dataUrl}
                         alt={title || "Drawing"}
-                        className="max-h-[640px] w-full max-w-4xl rounded-xl border border-hairline object-contain shadow-sm transition-[box-shadow,transform] duration-300 group-hover:shadow-md"
+                        className="max-h-[640px] w-full max-w-4xl rounded-xl border border-muted object-contain shadow-sm transition-[box-shadow,transform] duration-300 group-hover:shadow-md"
                     />
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-strong bg-paper py-12 text-muted-ink">
+                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-strong bg-background/80 py-12 text-muted-foreground">
                     <PenLine size={22} className="opacity-50" />
                     <p className="text-[13px]">Empty drawing — click Edit to sketch.</p>
                 </div>
             )}
 
             {title && title.trim() !== "" && (
-                <figcaption className="mx-auto mt-3 max-w-3xl text-center text-sm italic text-muted-ink">
+                <figcaption className="mx-auto mt-3 max-w-3xl text-center text-sm italic text-muted-foreground">
                     {title}
                 </figcaption>
             )}

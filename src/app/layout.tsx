@@ -6,6 +6,7 @@ import "./globals.css";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import QueryProvider from "@/Providers/QueryProvider";
 import ThemeProvider from "@/Providers/ThemeProvider";
+import { CustomThemeProvider } from "@/Providers/CustomThemeProvider";
 
 export const metadata: Metadata = {
     title: "Eton Note: Create notes that click.",
@@ -25,24 +26,26 @@ export default function RootLayout({
             className="h-full antialiased overflow-x-hidden"
         >
             <body className="min-h-full flex flex-col overflow-y-auto">
-                <ThemeProvider>
-                    <SessionProvider>
-                        <QueryProvider>
-                            <TooltipProvider>{children}</TooltipProvider>
-                            <ReactQueryDevtools initialIsOpen={false} />
-                        </QueryProvider>
-                        <Toaster
-                            richColors
-                            id="normal"
-                            position="top-right"
-                        />
-                        <Toaster
-                            richColors
-                            id="promise"
-                            position="bottom-right"
-                        />
-                    </SessionProvider>
-                </ThemeProvider>
+                <CustomThemeProvider>
+                    <ThemeProvider>
+                        <SessionProvider>
+                            <QueryProvider>
+                                <TooltipProvider>{children}</TooltipProvider>
+                                <ReactQueryDevtools initialIsOpen={false} />
+                            </QueryProvider>
+                            <Toaster
+                                richColors
+                                id="normal"
+                                position="top-right"
+                            />
+                            <Toaster
+                                richColors
+                                id="promise"
+                                position="bottom-right"
+                            />
+                        </SessionProvider>
+                    </ThemeProvider>
+                </CustomThemeProvider>
             </body>
         </html>
     );

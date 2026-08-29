@@ -12,6 +12,8 @@ import {
     Trash2,
     Check,
     X,
+    LogOutIcon,
+    PaletteIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,6 +34,14 @@ import { cn } from "@/lib/utils";
 import { resolveFolderColor } from "@/utils/folderColors";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { DashboardView, FolderOption } from "@/types/misc";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { CustomThemeSelector } from "./CustomThemeSelector";
 
 export default function HomeLayout() {
     const { data } = useSession();
@@ -209,14 +219,14 @@ export default function HomeLayout() {
             className={cn(
                 "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium outline-none transition-colors duration-150",
                 "focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
-                active
-                    ? "bg-primary/20"
-                    : "hover:bg-muted/40",
+                active ? "bg-primary/20" : "hover:bg-muted/40",
             )}
         >
-            <span className={cn("shrink-0", active && "text-primary")}>{icon}</span>
+            <span className={cn("shrink-0", active && "text-primary")}>
+                {icon}
+            </span>
             <span className="flex-1 text-left">{label}</span>
-            <span className="text-[11px] text-faint tabular-nums">{count}</span>
+            <span className="text-[11px] text-muted-foreground tabular-nums">{count}</span>
         </button>
     );
 
@@ -233,7 +243,7 @@ export default function HomeLayout() {
 
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 flex w-[280px] shrink-0 flex-col border-r border-hairline bg-card",
+                    "fixed inset-y-0 left-0 z-50 flex w-[280px] shrink-0 flex-col border-r border-muted bg-card",
                     "transition-transform duration-[240ms] ease-[cubic-bezier(0.2,0,0,1)]",
                     "md:static md:z-auto md:translate-x-0",
                     sidebarOpen ? "translate-x-0" : "-translate-x-full",
@@ -260,7 +270,7 @@ export default function HomeLayout() {
                             type="button"
                             aria-label="Close navigation"
                             onClick={closeSidebar}
-                            className="grid h-9 w-9 place-items-center rounded-lg text-muted-ink outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] md:hidden"
+                            className="grid h-9 w-9 place-items-center rounded-lg text-muted-foreground outline-none transition-colors duration-150 hover:bg-card/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] md:hidden"
                         >
                             <X size={16} />
                         </button>
@@ -271,7 +281,7 @@ export default function HomeLayout() {
                 <div className="px-4 pb-3">
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground py-2.5 text-[13px] font-semibold outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-paper)] active:scale-[0.98]"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground py-2.5 text-[13px] font-semibold outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2  active:scale-[0.98]"
                     >
                         <Plus
                             size={15}
@@ -283,24 +293,24 @@ export default function HomeLayout() {
 
                 {/* Search */}
                 <div className="px-4 pb-3">
-                    <div className="flex items-center gap-2 rounded-md border border-hairline bg-surface px-3 py-2 transition-colors duration-150 focus-within:border-[color:var(--ds-border-input)] focus-within:ring-2 focus-within:ring-[color:var(--ds-focus-ring)]">
+                    <div className="flex items-center gap-2 rounded-md border border-muted bg-card/80 px-3 py-2 transition-colors duration-150 focus-within:border-[color:var(--ds-border-input)] focus-within:ring-2 focus-within:ring-[color:var(--ds-focus-ring)]">
                         <Search
                             size={14}
-                            className="shrink-0 text-faint"
+                            className="shrink-0 text-muted-foreground"
                         />
                         <input
                             type="text"
                             placeholder="Search notes…"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-faint"
+                            className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-muted-foreground"
                         />
                         {searchQuery && (
                             <button
                                 type="button"
                                 aria-label="Clear search"
                                 onClick={() => setSearchQuery("")}
-                                className="shrink-0 text-faint outline-none transition-colors duration-150 hover:text-ink"
+                                className="shrink-0 text-muted-foreground outline-none transition-colors duration-150 hover:text-ink"
                             >
                                 <X size={13} />
                             </button>
@@ -335,7 +345,7 @@ export default function HomeLayout() {
                         type="button"
                         aria-label="New folder"
                         onClick={() => setIsCreatingFolder((v) => !v)}
-                        className="grid h-6 w-6 place-items-center rounded-md text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                        className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground outline-none transition-colors duration-150 hover:bg-card/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                     >
                         <FolderPlus size={14} />
                     </button>
@@ -359,14 +369,14 @@ export default function HomeLayout() {
                                     }
                                 }}
                                 placeholder="Folder name"
-                                className="min-w-0 flex-1 rounded-md border border-[color:var(--ds-border-input)] bg-surface px-2.5 py-1.5 text-[13px] text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                className="min-w-0 flex-1 rounded-md border border-[color:var(--ds-border-input)] bg-card/80 px-2.5 py-1.5 text-[13px] text-ink outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                             />
                             <button
                                 type="button"
                                 aria-label="Create folder"
                                 disabled={!newFolderName.trim() || folderBusy}
                                 onClick={handleCreateFolder}
-                                className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-[color:var(--ds-success)] outline-none transition-colors duration-150 hover:bg-surface focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] disabled:opacity-40"
+                                className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-[color:var(--ds-success)] outline-none transition-colors duration-150 hover:bg-card/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] disabled:opacity-40"
                             >
                                 <Check size={15} />
                             </button>
@@ -377,7 +387,7 @@ export default function HomeLayout() {
                                     setIsCreatingFolder(false);
                                     setNewFolderName("");
                                 }}
-                                className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted-foreground outline-none transition-colors duration-150 hover:bg-card/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                             >
                                 <X size={15} />
                             </button>
@@ -461,10 +471,10 @@ export default function HomeLayout() {
                                                         )
                                                     }
                                                     className={cn(
-                                                        "grid h-6 w-6 place-items-center rounded-md outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
+                                                        "grid h-6 w-6 place-items-center rounded-md outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
                                                         folder.isFavorite
                                                             ? "text-brand opacity-100"
-                                                            : "text-faint opacity-0 hover:text-ink focus-visible:opacity-100 group-hover/folder:opacity-100",
+                                                            : "text-muted-foreground opacity-0 hover:text-ink focus-visible:opacity-100 group-hover/folder:opacity-100",
                                                     )}
                                                 >
                                                     <Star
@@ -484,11 +494,11 @@ export default function HomeLayout() {
                                                             folder,
                                                         )
                                                     }
-                                                    className="grid h-6 w-6 place-items-center rounded-md text-faint opacity-0 outline-none transition-colors duration-150 hover:bg-paper hover:text-[color:var(--ds-danger)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] group-hover/folder:opacity-100"
+                                                    className="grid h-6 w-6 place-items-center rounded-md text-muted-foreground opacity-0 outline-none transition-colors duration-150 hover:bg-background/80 hover:text-[color:var(--ds-danger)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] group-hover/folder:opacity-100"
                                                 >
                                                     <Trash2 size={13} />
                                                 </button>
-                                                <span className="w-6 text-right text-[11px] text-faint tabular-nums">
+                                                <span className="w-6 text-right text-[11px] text-muted-foreground tabular-nums">
                                                     {count}
                                                 </span>
                                             </div>
@@ -498,17 +508,17 @@ export default function HomeLayout() {
                             })}
                         </ul>
                     ) : (
-                        <p className="px-3 pt-1 text-[12px] text-faint">
+                        <p className="px-3 pt-1 text-[12px] text-muted-foreground">
                             No folders yet.
                         </p>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-hairline px-4 py-3">
+                <div className="border-t border-muted px-4 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex min-w-0 items-center gap-2">
-                            <div className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-cta text-[11px] font-semibold text-[color:var(--ds-accent-contrast)]">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
                                 {data?.user?.image ? (
                                     <Image
                                         alt="User avatar"
@@ -526,21 +536,28 @@ export default function HomeLayout() {
                             </span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <button
-                                type="button"
-                                aria-label="Settings"
-                                className="grid h-8 w-8 place-items-center rounded-lg text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                            >
-                                <Settings size={15} />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label="Log out"
-                                onClick={handleLogout}
-                                className="grid h-8 w-8 place-items-center rounded-lg text-faint outline-none transition-colors duration-150 hover:bg-surface hover:text-[color:var(--ds-danger)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                            >
-                                <LogOut size={15} />
-                            </button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="focus-visible:outline-0">
+                                    <div
+                                        aria-label="Settings"
+                                        className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground outline-none transition-colors duration-150 hover:bg-card/80 hover:text-ink"
+                                    >
+                                        <Settings size={15} />
+                                    </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <CustomThemeSelector />
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        variant="destructive"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOutIcon />
+                                        Log out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            
                         </div>
                     </div>
                 </div>

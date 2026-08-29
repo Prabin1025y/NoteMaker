@@ -17,13 +17,13 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
     const designUnavailable = !supportsDesign(state.currentType);
 
     return (
-        <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-hairline bg-background/80 px-6 py-6">
+        <div className="flex w-85 shrink-0 flex-col overflow-y-auto border-l border-muted bg-background/80 px-6 py-6">
             <div className="space-y-6">
                 <BlockTypeSelector
                     currentBlock={currentBlock}
                     onTypeChange={(type) => dispatch({ type: "setType", payload: type })}
                 />
-                <hr className="border-hairline" />
+                <hr className="border-muted" />
                 <div className={`${designUnavailable && "saturate-0 opacity-40 pointer-events-none"} flex items-center justify-between`}>
                     <label className="text-[13px] font-semibold text-body cursor-pointer" htmlFor="design-switch">
                         2. Apply Design
@@ -35,7 +35,7 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
                         onCheckedChange={(checked) => dispatch({ type: "setDesignEnabled", payload: checked })}
                     />
                 </div>
-                <hr className="border-hairline" />
+                <hr className="border-muted" />
                 <DesignSelection
                     className={`${(!state.designEnabled || designUnavailable) && "saturate-0 opacity-40 pointer-events-none"}`}
                     currentBlock={currentBlock}
@@ -44,7 +44,7 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
                     setDesignId={(id) => dispatch({ type: "setDesignId", payload: id })}
                     setColorOptionId={(id) => dispatch({ type: "setColorOptionId", payload: id })}
                 />
-                <hr className="border-hairline" />
+                <hr className="border-muted" />
                 <div>
                     <label className="text-[13px] font-semibold text-body">5. Preview</label>
                     <BlockPreview currentBlock={currentBlock} state={state} />

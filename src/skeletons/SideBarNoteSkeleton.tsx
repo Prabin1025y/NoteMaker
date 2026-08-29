@@ -6,7 +6,7 @@ export default function SidebarNoteSkeleton() {
                 <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-strong" />
 
                 {/* Label */}
-                <div className="h-3.5 w-3/4 rounded bg-surface" />
+                <div className="h-3.5 w-3/4 rounded bg-card/80" />
             </div>
         </li>
     );

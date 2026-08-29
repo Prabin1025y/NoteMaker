@@ -44,11 +44,11 @@ const AiBlockGenerator = ({
     return (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/30 px-4 backdrop-blur-[2px]">
             <div
-                className="w-full max-w-lg rounded-lg border border-hairline bg-surface shadow-lg animate-in fade-in zoom-in-95 duration-200"
+                className="w-full max-w-lg rounded-lg border border-muted bg-card/80 shadow-lg animate-in fade-in zoom-in-95 duration-200"
                 role="dialog"
                 aria-labelledby="ai-generator-title"
             >
-                <div className="flex items-start justify-between border-b border-hairline px-5 py-4">
+                <div className="flex items-start justify-between border-b border-muted px-5 py-4">
                     <div>
                         <h2
                             id="ai-generator-title"
@@ -56,7 +56,7 @@ const AiBlockGenerator = ({
                         >
                             AI Block Generator
                         </h2>
-                        <p className="mt-1 text-[12px] text-muted-ink">
+                        <p className="mt-1 text-[12px] text-muted-foreground">
                             Describe the block you want and AI will create it.
                         </p>
                     </div>
@@ -66,7 +66,7 @@ const AiBlockGenerator = ({
                             onClose();
                             setPrompt("");
                         }}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors hover:bg-paper hover:text-ink"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background/80 hover:text-ink"
                         aria-label="Close"
                     >
                         <X size={16} />
@@ -93,14 +93,14 @@ const AiBlockGenerator = ({
                         placeholder={`"Create a comparison table."\n"Generate an example."\n"Summarize this topic."`}
                         rows={5}
                         autoFocus
-                        className="w-full resize-none rounded-lg border border-hairline bg-paper px-3 py-3 text-[13px] text-ink outline-none transition-colors placeholder:text-faint focus:border-[color:var(--ds-focus-ring)] focus:ring-2 focus:ring-[color:var(--ds-focus-ring)]"
+                        className="w-full resize-none rounded-lg border border-muted bg-background/80 px-3 py-3 text-[13px] text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-[color:var(--ds-focus-ring)] focus:ring-2 focus:ring-[color:var(--ds-focus-ring)]"
                     />
-                    <p className="mt-2 text-[11px] text-faint">
+                    <p className="mt-2 text-[11px] text-muted-foreground">
                         Press Ctrl/Cmd + Enter to generate
                     </p>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 border-t border-hairline px-5 py-4">
+                <div className="flex items-center justify-end gap-2 border-t border-muted px-5 py-4">
                     <Button
                         variant="ghost"
                         size="sm"
@@ -115,7 +115,7 @@ const AiBlockGenerator = ({
                         size="sm"
                         disabled={!prompt.trim()}
                         onClick={() => void handleGenerateBlocks()}
-                        className="bg-brand-cta text-[color:var(--ds-accent-contrast)] transition-[filter] duration-150 hover:brightness-105"
+                        className="bg-primary text-primary-foreground transition-[filter] duration-150 hover:brightness-105"
                     >
                         <>
                             <Sparkles size={14} />

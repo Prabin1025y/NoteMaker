@@ -77,18 +77,23 @@ function HeroArt() {
                 className="pointer-events-none absolute -inset-8 rounded-[2.5rem]"
                 style={{
                     background:
-                        "radial-gradient(58% 58% at 72% 18%, rgba(217,154,43,0.20), transparent 70%)",
+                        "radial-gradient(58% 58% at 72% 18%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 70%)",
                 }}
             />
 
             {/* the note page */}
-            <div className="relative rounded-2xl border border-hairline bg-surface p-5 shadow-xl shadow-black/[0.06]">
+                <div
+                    className="relative rounded-2xl border border-muted bg-card/80 p-5"
+                    style={{
+                        boxShadow: `0 20px 25px -5px color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 60%), transparent)`,
+                    }}
+                >
                 {/* window bar */}
                 <div className="mb-4 flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-strong" />
                     <span className="h-2.5 w-2.5 rounded-full bg-strong" />
                     <span className="h-2.5 w-2.5 rounded-full bg-strong" />
-                    <span className="ml-2 font-mono text-[11px] text-faint">
+                    <span className="ml-2 font-mono text-[11px] text-muted-foreground">
                         photosynthesis.md
                     </span>
                 </div>
@@ -102,7 +107,7 @@ function HeroArt() {
                         <div className="text-[15px] font-bold tracking-tight text-ink">
                             Photosynthesis
                         </div>
-                        <div className="mt-1.5 h-1 w-24 rounded-full bg-brand-cta" />
+                        <div className="mt-1.5 h-1 w-24 rounded-full bg-primary" />
                     </div>
 
                     {/* paragraph block */}
@@ -110,14 +115,14 @@ function HeroArt() {
                         className="hero-block space-y-1.5"
                         style={{ animationDelay: "240ms" }}
                     >
-                        <div className="h-2 w-full rounded-full bg-hairline" />
-                        <div className="h-2 w-11/12 rounded-full bg-hairline" />
-                        <div className="h-2 w-3/5 rounded-full bg-hairline" />
+                        <div className="h-2 w-full rounded-full bg-muted" />
+                        <div className="h-2 w-11/12 rounded-full bg-muted" />
+                        <div className="h-2 w-3/5 rounded-full bg-muted" />
                     </div>
 
                     {/* formula block */}
                     <div
-                        className="hero-block rounded-lg border border-hairline bg-tint px-3 py-2.5"
+                        className="hero-block rounded-lg border border-muted bg-tint px-3 py-2.5"
                         style={{ animationDelay: "360ms" }}
                     >
                         <span className="font-mono text-[12px] leading-none text-ink">
@@ -150,10 +155,13 @@ function HeroArt() {
 
             {/* floating: AI summary chip */}
             <div
-                className="hero-block float-slow absolute -right-3 -top-3 flex items-center gap-1.5 rounded-full border border-hairline bg-elevated px-3 py-1.5 shadow-lg shadow-black/[0.08]"
-                style={{ animationDelay: "820ms" }}
+                className="hero-block float-slow absolute -right-3 -top-3 flex items-center gap-1.5 rounded-full border border-muted bg-elevated px-3 py-1.5 shadow-lg"
+                style={{
+                    animationDelay: "820ms",
+                    boxShadow: `0 10px 15px -3px color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent)`,
+                }}
             >
-                <Sparkles className="h-3.5 w-3.5 text-brand-cta" />
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
                 <span className="text-[11px] font-medium text-ink">
                     Summary ready
                 </span>
@@ -161,10 +169,13 @@ function HeroArt() {
 
             {/* floating: pinned chip */}
             <div
-                className="hero-block absolute -bottom-3 -left-3 flex items-center gap-1.5 rounded-full border border-hairline bg-elevated px-3 py-1.5 shadow-lg shadow-black/[0.08]"
-                style={{ animationDelay: "940ms" }}
+                className="hero-block absolute -bottom-3 -left-3 flex items-center gap-1.5 rounded-full border border-muted bg-elevated px-3 py-1.5 shadow-lg"
+                style={{
+                    animationDelay: "940ms",
+                    boxShadow: `0 10px 15px -3px color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent)`,
+                }}
             >
-                <Star className="h-3.5 w-3.5 fill-current text-brand-cta" />
+                <Star className="h-3.5 w-3.5 fill-current text-primary" />
                 <span className="text-[11px] font-medium text-ink">Pinned</span>
             </div>
         </div>
@@ -178,14 +189,16 @@ export default async function LandingPage() {
     return (
         <div className="min-h-screen w-full bg-canvas text-ink">
             <style>{`
-                .hero-fade { opacity: 0; animation: heroFadeUp var(--ds-motion-enter) var(--ds-ease-out) both; }
-                .hero-block { opacity: 0; animation: heroPop var(--ds-motion-enter) var(--ds-ease-out) both; }
+                .hero-fade { opacity: 0; animation: heroFadeUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+                .hero-block { opacity: 0; animation: heroPop 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
                 @keyframes heroFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
                 @keyframes heroPop { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
-                .reveal { opacity: 0; transform: translateY(16px); transition: opacity 560ms var(--ds-ease-out), transform 560ms var(--ds-ease-out); }
+                .reveal { opacity: 0; transform: translateY(16px); transition: opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1); }
                 .reveal[data-shown="true"] { opacity: 1; transform: none; }
-                .draw-path { stroke-dasharray: 260; stroke-dashoffset: 260; animation: ds-draw 1s var(--ds-ease-out) forwards; }
-                .float-slow { animation: ds-float 6s ease-in-out infinite; }
+                .draw-path { stroke-dasharray: 260; stroke-dashoffset: 260; animation: drawPathAnim 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                @keyframes drawPathAnim { to { stroke-dashoffset: 0; } }
+                .float-slow { animation: floatAnim 6s ease-in-out infinite; }
+                @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
                 @media (prefers-reduced-motion: reduce) {
                     .hero-fade, .hero-block { animation: none !important; opacity: 1 !important; transform: none !important; }
                     .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
@@ -195,13 +208,13 @@ export default async function LandingPage() {
             `}</style>
 
             {/* NAV */}
-            <header className="sticky top-0 z-50 border-b border-hairline bg-canvas/80 backdrop-blur-md">
+            <header className="sticky top-0 z-50 border-b border-muted bg-canvas/80 backdrop-blur-md">
                 <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
                     <a
                         href="#top"
                         className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                     >
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-cta text-[color:var(--ds-accent-contrast)]">
+                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
                             <Blocks className="h-[18px] w-[18px]" />
                         </span>
                         <span className="text-[15px] font-semibold tracking-tight">
@@ -250,7 +263,7 @@ export default async function LandingPage() {
                 <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 pb-20 pt-16 md:grid-cols-2 md:gap-8 md:pb-28 md:pt-24">
                     <div>
                         <p
-                            className="hero-fade font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-brand-cta"
+                            className="hero-fade font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary"
                             style={{ animationDelay: "40ms" }}
                         >
                             Built for students
@@ -261,7 +274,7 @@ export default async function LandingPage() {
                         >
                             Notes that build
                             <br className="hidden sm:block" /> themselves,{" "}
-                            <span className="text-brand-cta">
+                            <span className="text-primary">
                                 block by block.
                             </span>
                         </h1>
@@ -283,14 +296,14 @@ export default async function LandingPage() {
                             />
                             <a
                                 href="#features"
-                                className="inline-flex h-11 items-center gap-1.5 rounded-lg px-4 text-[14px] font-medium text-body outline-none transition-colors duration-150 hover:bg-paper hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                className="inline-flex h-11 items-center gap-1.5 rounded-lg px-4 text-[14px] font-medium text-body outline-none transition-colors duration-300 hover:bg-background/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                             >
                                 See how it works
                                 <ArrowRight className="h-4 w-4" />
                             </a>
                         </div>
                         <p
-                            className="hero-fade mt-5 text-[12px] text-faint"
+                            className="hero-fade mt-5 text-[12px] text-muted-foreground"
                             style={{ animationDelay: "360ms" }}
                         >
                             Free to start · Sign in with Google · Your notes
@@ -310,11 +323,11 @@ export default async function LandingPage() {
             {/* FEATURES */}
             <section
                 id="features"
-                className="border-t border-hairline bg-paper/60 py-20 md:py-28"
+                className="border-t border-muted bg-background/80/60 py-20 md:py-28"
             >
                 <div className="mx-auto max-w-6xl px-6">
                     <Reveal className="max-w-2xl">
-                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-brand-cta">
+                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
                             Everything in one page
                         </p>
                         <h2 className="mt-3 text-[1.75rem] font-bold tracking-tight md:text-[2.25rem]">
@@ -334,9 +347,9 @@ export default async function LandingPage() {
                                 <Reveal
                                     key={feature.title}
                                     delay={i * 60}
-                                    className="group h-full rounded-xl border border-hairline bg-surface p-5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.05]"
+                                    className="group h-full rounded-xl border border-muted bg-card/80 p-5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.05]"
                                 >
-                                    <span className="grid h-10 w-10 place-items-center rounded-lg bg-tint text-brand-cta transition-colors duration-150 group-hover:bg-brand-soft">
+                                    <span className="grid h-10 w-10 place-items-center rounded-lg bg-tint text-primary transition-colors duration-150 group-hover:bg-brand-soft">
                                         <Icon className="h-5 w-5" />
                                     </span>
                                     <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-ink">
@@ -359,7 +372,7 @@ export default async function LandingPage() {
             >
                 <div className="mx-auto max-w-6xl px-6">
                     <Reveal className="max-w-2xl">
-                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-brand-cta">
+                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
                             From blank page to done
                         </p>
                         <h2 className="mt-3 text-[1.75rem] font-bold tracking-tight md:text-[2.25rem]">
@@ -374,10 +387,10 @@ export default async function LandingPage() {
                                 delay={i * 80}
                                 className="relative"
                             >
-                                <div className="font-mono text-[13px] font-semibold text-brand-cta">
+                                <div className="font-mono text-[13px] font-semibold text-primary">
                                     {step.n}
                                 </div>
-                                <div className="mt-3 h-px w-full bg-hairline" />
+                                <div className="mt-3 h-px w-full bg-muted" />
                                 <h3 className="mt-4 text-[17px] font-semibold tracking-tight text-ink">
                                     {step.title}
                                 </h3>
@@ -393,11 +406,11 @@ export default async function LandingPage() {
             {/* ABOUT */}
             <section
                 id="about"
-                className="border-t border-hairline bg-paper/60 py-20 md:py-28"
+                className="border-t border-muted bg-background/80/60 py-20 md:py-28"
             >
                 <div className="mx-auto max-w-3xl px-6">
                     <Reveal>
-                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-brand-cta">
+                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
                             About
                         </p>
                         <h2 className="mt-3 text-[1.75rem] font-bold tracking-tight md:text-[2.25rem]">
@@ -428,16 +441,16 @@ export default async function LandingPage() {
             {/* CTA */}
             <section className="py-20 md:py-28">
                 <div className="mx-auto max-w-6xl px-6">
-                    <Reveal className="relative overflow-hidden rounded-2xl border border-hairline bg-surface px-6 py-14 text-center shadow-sm md:px-10">
+                    <Reveal className="relative overflow-hidden rounded-2xl border border-muted bg-card/80 px-6 py-14 text-center shadow-sm md:px-10">
                         <div
                             className="pointer-events-none absolute inset-0"
                             style={{
                                 background:
-                                    "radial-gradient(50% 80% at 50% 0%, rgba(217,154,43,0.12), transparent 70%)",
+                                    "radial-gradient(50% 80% at 50% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%)",
                             }}
                         />
                         <div className="relative">
-                            <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-brand-cta">
+                            <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
                                 Ready when you are
                             </p>
                             <h2 className="mx-auto mt-3 max-w-xl text-[1.75rem] font-bold tracking-tight md:text-[2.4rem]">
@@ -459,17 +472,17 @@ export default async function LandingPage() {
             </section>
 
             {/* FOOTER */}
-            <footer className="border-t border-hairline">
+            <footer className="border-t border-muted">
                 <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-2.5">
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-cta text-[color:var(--ds-accent-contrast)]">
+                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
                             <Blocks className="h-[18px] w-[18px]" />
                         </span>
                         <div>
                             <div className="text-[14px] font-semibold tracking-tight text-ink">
                                 Eton Note
                             </div>
-                            <div className="text-[12px] text-muted-ink">
+                            <div className="text-[12px] text-muted-foreground">
                                 Notes that build themselves, block by block.
                             </div>
                         </div>
@@ -496,7 +509,7 @@ export default async function LandingPage() {
                         </a>
                     </nav>
 
-                    <p className="text-[12px] text-faint">© 2026 Eton Note</p>
+                    <p className="text-[12px] text-muted-foreground">© 2026 Eton Note</p>
                 </div>
             </footer>
         </div>

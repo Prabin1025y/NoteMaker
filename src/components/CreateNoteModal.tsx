@@ -23,7 +23,7 @@ interface CreateNoteModalProps {
 }
 
 const inputClass =
-    "w-full rounded-md border border-[color:var(--ds-border-input)] bg-surface px-3 py-2.5 text-[13px] text-ink outline-none transition-colors duration-150 placeholder:text-faint focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]";
+    "w-full rounded-md border border-[color:var(--ds-border-input)] bg-card/80 px-3 py-2.5 text-[13px] text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]";
 
 const labelClass = "mb-1.5 block text-[12px] font-medium text-body";
 
@@ -104,10 +104,10 @@ export default function CreateNoteModal({
                 className="ds-animate-fade-in absolute inset-0 bg-black/40"
             />
 
-            <div className="ds-animate-fade-up relative w-full max-w-[420px] overflow-hidden rounded-2xl border border-hairline bg-card shadow-2xl">
-                <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+            <div className="ds-animate-fade-up relative w-full max-w-[420px] overflow-hidden rounded-2xl border border-muted bg-card shadow-2xl">
+                <div className="flex items-center justify-between border-b border-muted px-5 py-4">
                     <div className="flex items-center gap-2.5">
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-tint text-brand-cta">
+                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-tint text-primary">
                             <FileText size={16} />
                         </span>
                         <h2
@@ -120,7 +120,7 @@ export default function CreateNoteModal({
                     <button
                         onClick={onClose}
                         aria-label="Close"
-                        className="grid h-8 w-8 place-items-center rounded-lg text-muted-ink outline-none transition-colors duration-150 hover:bg-paper hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                        className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground outline-none transition-colors duration-150 hover:bg-background/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                     >
                         <X size={15} />
                     </button>
@@ -146,7 +146,7 @@ export default function CreateNoteModal({
                     <div>
                         <label htmlFor="description" className={labelClass}>
                             Description{" "}
-                            <span className="font-normal text-faint">
+                            <span className="font-normal text-muted-foreground">
                                 (optional)
                             </span>
                         </label>
@@ -213,19 +213,19 @@ export default function CreateNoteModal({
                         </div>
                     )}
 
-                    <p className="text-[11px] text-faint">
+                    <p className="text-[11px] text-muted-foreground">
                         Tip: press{" "}
-                        <kbd className="rounded-[5px] border border-hairline bg-paper px-1.5 py-0.5 font-mono text-[10px] text-body">
+                        <kbd className="rounded-[5px] border border-muted bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-body">
                             Ctrl+Enter
                         </kbd>{" "}
                         to create instantly
                     </p>
                 </div>
 
-                <div className="flex gap-2 border-t border-hairline bg-paper px-5 py-4">
+                <div className="flex gap-2 border-t border-muted bg-background/80 px-5 py-4">
                     <button
                         onClick={onClose}
-                        className="flex-1 rounded-lg border border-hairline bg-surface py-2.5 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
+                        className="flex-1 rounded-lg border border-muted bg-card/80 py-2.5 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
                     >
                         Cancel
                     </button>

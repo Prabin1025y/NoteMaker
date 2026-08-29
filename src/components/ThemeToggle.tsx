@@ -33,9 +33,9 @@ export default function ThemeToggle({ className }: ThemeToggleProps) {
             }
             onClick={() => setTheme(isDark ? "light" : "dark")}
             className={cn(
-                "relative grid h-9 w-9 place-items-center rounded-lg border border-hairline bg-surface text-muted-ink outline-none",
-                "transition-colors duration-150 hover:bg-paper hover:text-ink",
-                "focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-1 focus-visible:ring-offset-[color:var(--ds-surface-paper)]",
+                "relative grid h-9 w-9 place-items-center rounded-lg border border-muted bg-card/80 text-muted-foreground outline-none",
+                "transition-colors duration-150 hover:bg-background/80 hover:text-ink",
+                "focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-1 focus-visible:ring-offset-card/80",
                 "active:scale-[0.96]",
                 className,
             )}

@@ -16,7 +16,7 @@ const BlockTypeSelector = ({ currentBlock, onTypeChange }: BlockTypeSelectorProp
             </label>
             <DropdownMenu>
                 <DropdownMenuTrigger className="w-full">
-                    <div className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-hairline bg-surface p-2.5 text-left outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
+                    <div className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-muted bg-card/80 p-2.5 text-left outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
                         <span
                             className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${currentBlock.bgColor} ${currentBlock.color}`}
                         >
@@ -27,7 +27,7 @@ const BlockTypeSelector = ({ currentBlock, onTypeChange }: BlockTypeSelectorProp
                                 {currentBlock.title}
                             </span>
                         </span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-faint" />
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-72 max-w-[calc(100vw-2rem)]">
@@ -50,7 +50,7 @@ const BlockTypeSelector = ({ currentBlock, onTypeChange }: BlockTypeSelectorProp
                                     <h3 className="text-[13px] font-semibold text-ink">
                                         {block.title}
                                     </h3>
-                                    <p className="truncate text-[12px] text-muted-ink">
+                                    <p className="truncate text-[12px] text-muted-foreground">
                                         {block.description}
                                     </p>
                                 </div>

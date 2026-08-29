@@ -37,7 +37,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                                 className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-[color:var(--ds-border-input)] bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
                             >
                                 <span className="capitalize">{state.language}</span>
-                                <ChevronDown className="h-4 w-4 text-faint" />
+                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="max-h-80 w-56 overflow-y-auto">
@@ -80,7 +80,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                             ? "Enter caption"
                             : "Enter title (optional)"
                     }
-                    className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-faint focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                    className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 />
             </div>
         );
@@ -107,7 +107,7 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
             case "heading":
                 return (
                     <div className="flex-1 flex flex-col min-h-0">
-                        <div className="flex-1 flex flex-col min-h-0 border border-hairline rounded-lg overflow-hidden">
+                        <div className="flex-1 flex flex-col min-h-0 border border-muted rounded-lg overflow-hidden">
                             <div className="flex-1 min-h-0 overflow-y-auto px-4">
                                 <SimpleEditor
                                     key={state.currentType}

@@ -12,8 +12,8 @@ import { Eraser, Paintbrush, RotateCcw, Trash2, Undo2 } from "lucide-react";
  * - `strokes` are kept so the drawing can be re-opened and edited losslessly.
  *
  * Rendering uses two canvases: an offscreen transparent "ink" layer (so the
- * eraser can remove ink via destination-out without touching the paper), and a
- * visible layer that paints the paper background then composites the ink on top.
+ * eraser can remove ink via destination-out without touching the background/80), and a
+ * visible layer that paints the background/80 background then composites the ink on top.
  */
 
 const CANVAS_WIDTH = 1000;
@@ -75,13 +75,13 @@ const parseDoc = (content: string): CanvasDoc | null => {
     }
 };
 
-/** Paint the chosen paper pattern onto a 2D context. */
+/** Paint the chosen background/80 pattern onto a 2D context. */
 const paintBackground = (
     ctx: CanvasRenderingContext2D,
     background: CanvasBackground,
 ) => {
     ctx.save();
-    // Paper base is always white so dark ink stays legible everywhere (incl. PDF).
+    // background/80 base is always white so dark ink stays legible everywhere (incl. PDF).
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -221,7 +221,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
         }
     }, [getInkCanvas]);
 
-    /** Composite paper + ink and serialize the whole document to the parent. */
+    /** Composite background/80 + ink and serialize the whole document to the parent. */
     const serialize = useCallback(
         (bg: CanvasBackground) => {
             const exportCanvas = document.createElement("canvas");
@@ -379,7 +379,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
 
     const changeBackground = (bg: CanvasBackground) => {
         setBackground(bg);
-        // Re-serialize so the stored dataUrl reflects the new paper.
+        // Re-serialize so the stored dataUrl reflects the new background/80.
         // redrawView happens via effect; serialize uses the ink layer + bg.
         requestAnimationFrame(() => serialize(bg));
     };
@@ -410,7 +410,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
             {/* Toolbar */}
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-muted bg-background/70 px-3 py-2">
                 {/* Pen / Eraser */}
-                <div className="flex items-center gap-1 rounded-lg bg-surface p-1 ring-1 ring-muted">
+                <div className="flex items-center gap-1 rounded-lg bg-card/80 p-1 ring-1 ring-muted">
                     <button
                         type="button"
                         onClick={() => setTool("pen")}
@@ -455,7 +455,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                                 }}
                                 className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
                                     active
-                                        ? "ring-2 ring-offset-2 ring-offset-paper"
+                                        ? "ring-2 ring-offset-2 ring-offset-background/80"
                                         : "ring-1 ring-black/10"
                                 }`}
                                 style={{
@@ -517,7 +517,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                                 className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                                     active
                                         ? "bg-primary/20 text-white"
-                                        : "text-muted-ink hover:bg-primary/20"
+                                        : "text-muted-foreground hover:bg-primary/20"
                                 }`}
                             >
                                 {b.label}
@@ -531,7 +531,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
                         type="button"
                         onClick={handleUndo}
                         title="Undo last stroke"
-                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-muted-ink transition-colors hover:bg-primary/20"
+                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-primary/20"
                     >
                         <Undo2 size={14} />
                         Undo

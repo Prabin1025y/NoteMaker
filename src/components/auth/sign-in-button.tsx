@@ -60,8 +60,8 @@ export function SignInButton({
                 className={cn(
                     "gap-2 cursor-pointer font-medium",
                     variant === "outline"
-                        ? "bg-surface border-hairline text-ink hover:bg-paper"
-                        : "bg-brand-cta text-[color:var(--ds-accent-contrast)] border-transparent transition-[transform,filter] duration-150 hover:brightness-105 active:scale-[0.98]",
+                        ? "bg-card/20 border-muted text-ink transition-all duration-500 hover:bg-background/80"
+                        : "bg-primary text-primary-foreground border-transparent transition-[transform,filter,color] duration-500 hover:brightness-105 active:scale-[0.98]",
                     fullWidth && "w-full",
                     className,
                 )}

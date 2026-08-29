@@ -38,7 +38,7 @@ export default function GeneralBlock({
         >
             <div
                 className={`
-                group relative  rounded-xl ${isDesignDisabled ? "px-3" : "ds-block-surface border-2 px-5 my-3 "}
+                group relative  rounded-xl ${isDesignDisabled ? "px-3" : " border-2 px-5 my-3 "}
                  ${!!title?.trim() && !isDesignDisabled ? "pt-6" : "pt-3"} pb-3 transition-[box-shadow,transform] duration-300
                 hover:shadow-lg
                 ${className}
@@ -46,8 +46,10 @@ export default function GeneralBlock({
                 style={
                     !isDesignDisabled
                         ? ({
-                              "--block-bg": colorOption.backgroundColorHex,
-                              "--block-border": colorOption.borderColorHex,
+                            //   "--block-bg": colorOption.backgroundColorHex,
+                            //   "--block-border": colorOption.borderColorHex,
+                              backgroundColor: colorOption.primaryColorHex + "20",
+                              borderColor: colorOption.borderColorHex + "80",
                           } as CSSProperties)
                         : {}
                 }

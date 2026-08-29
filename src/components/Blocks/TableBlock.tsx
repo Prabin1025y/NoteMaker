@@ -213,7 +213,7 @@ export default function TableBlock({
                     <BlockActionButton
                         icon={
                             <EditIcon
-                                className={`${iconClassName} hover:text-brand-cta`}
+                                className={`${iconClassName} hover:text-primary`}
                             />
                         }
                         onClick={() => onEdit()}

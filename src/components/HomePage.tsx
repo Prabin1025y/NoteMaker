@@ -238,7 +238,7 @@ const HomePage = ({
                 active
                     ? cn("opacity-100", activeClass)
                     : cn(
-                          "text-faint hover:bg-border hover:text-ink",
+                          "text-muted-foreground hover:bg-border hover:text-ink",
                           alwaysVisible
                               ? "opacity-100"
                               : "opacity-100 md:opacity-0 md:group-hover:opacity-100",
@@ -301,7 +301,7 @@ const HomePage = ({
                     e.stopPropagation();
                     setView({ kind: "folder", folderId });
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-muted bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
             >
                 <span
                     className="h-2 w-2 shrink-0 rounded-full"
@@ -360,7 +360,7 @@ const HomePage = ({
         return (
             <div
                 className={cn(
-                    "group relative flex flex-col rounded-xl border border-hairline bg-card/60 p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong",
+                    "group relative flex flex-col rounded-xl border border-muted bg-card/60 p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong",
                     isDeleting && "pointer-events-none opacity-50",
                 )}
             >
@@ -387,7 +387,7 @@ const HomePage = ({
                     {note.description || "No description has been added yet."}
                 </p>
 
-                <div className="mt-4 flex items-center justify-between gap-2 border-t border-hairline pt-3">
+                <div className="mt-4 flex items-center justify-between gap-2 border-t border-muted pt-3">
                     <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground tabular-nums">
                         <LayoutList size={12} />
                         {note.blocksCount ?? 0}{" "}
@@ -413,7 +413,7 @@ const HomePage = ({
             <button
                 type="button"
                 onClick={() => setView({ kind: "folder", folderId: folder.id })}
-                className="group flex items-center gap-3 rounded-xl border border-hairline bg-card/60 p-3 text-left outline-none transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="group flex items-center gap-3 rounded-xl border border-muted bg-card/60 p-3 text-left outline-none transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
             >
                 <span
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-lg"
@@ -437,7 +437,7 @@ const HomePage = ({
                 </span>
                 <ChevronRight
                     size={16}
-                    className="shrink-0 text-faint transition-transform duration-150 group-hover:translate-x-0.5"
+                    className="shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5"
                 />
             </button>
         );
@@ -479,12 +479,12 @@ const HomePage = ({
     return (
         <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-canvas">
             {/* Mobile top bar */}
-            <div className="flex items-center gap-3 border-b border-hairline px-4 py-3 md:hidden">
+            <div className="flex items-center gap-3 border-b border-muted px-4 py-3 md:hidden">
                 <button
                     type="button"
                     aria-label="Open navigation"
                     onClick={onOpenSidebar}
-                    className="grid h-9 w-9 place-items-center rounded-lg border border-hairline bg-surface text-ink outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.96]"
+                    className="grid h-9 w-9 place-items-center rounded-lg border border-muted bg-card/80 text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.96]"
                 >
                     <Menu size={18} />
                 </button>
@@ -532,7 +532,7 @@ const HomePage = ({
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         type="button"
-                                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-hairline bg-surface px-3 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-muted bg-card/80 px-3 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                                     >
                                         <ArrowDownUp size={14} />
                                         <span className="hidden sm:inline">
@@ -565,7 +565,7 @@ const HomePage = ({
                                 </DropdownMenuContent>
                             </DropdownMenu>
 
-                            <div className="flex items-center rounded-lg border border-hairline bg-surface p-0.5">
+                            <div className="flex items-center rounded-lg border border-muted bg-card/80 p-0.5">
                                 {(
                                     [
                                         {
@@ -608,21 +608,21 @@ const HomePage = ({
                         </div>
                     ) : notes.length === 0 ? (
                         /* Empty: no notes at all */
-                        <div className="flex flex-col items-center rounded-2xl border border-dashed border-strong bg-paper px-6 py-16 text-center">
+                        <div className="flex flex-col items-center rounded-2xl border border-dashed border-strong bg-background/80 px-6 py-16 text-center">
                             <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-background text-muted-foreground">
                                 <FileText size={24} />
                             </span>
                             <h3 className="text-[16px] font-semibold text-ink">
                                 No notes yet
                             </h3>
-                            <p className="mt-1 max-w-xs text-[13px] text-muted-ink text-pretty">
+                            <p className="mt-1 max-w-xs text-[13px] text-muted-foreground text-pretty">
                                 Create your first note and start building it
                                 block by block.
                             </p>
                             <button
                                 type="button"
                                 onClick={onCreateNote}
-                                className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-brand-cta px-4 py-2.5 text-[13px] font-semibold text-[color:var(--ds-accent-contrast)] outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 active:scale-[0.98]"
+                                className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-[13px] font-semibold text-primary-foreground outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 active:scale-[0.98]"
                             >
                                 <Plus
                                     size={16}
@@ -721,7 +721,7 @@ const HomePage = ({
                                 {mainList.length > 0 ? (
                                     <NoteCollection list={mainList} />
                                 ) : (
-                                    <div className="flex flex-col items-center rounded-2xl border border-dashed border-strong bg-paper px-6 py-14 text-center">
+                                    <div className="flex flex-col items-center rounded-2xl border border-dashed border-strong bg-background/80 px-6 py-14 text-center">
                                         <span className="mb-3 grid h-12 w-12 place-items-center rounded-xl bg-primary/20 text-primary">
                                             {searchQuery.trim() ? (
                                                 <SearchIcon size={20} />
@@ -750,7 +750,7 @@ const HomePage = ({
                                                 <button
                                                     type="button"
                                                     onClick={onCreateNote}
-                                                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink outline-none transition-colors duration-150 hover:bg-paper focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
+                                                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-muted bg-card/80 px-3.5 py-2 text-[13px] font-semibold text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
                                                 >
                                                     <Plus size={15} />
                                                     New note

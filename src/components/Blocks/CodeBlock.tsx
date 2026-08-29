@@ -110,17 +110,17 @@ export default function CodeBlock({
             >
                 {/* Action buttons (Copy always; Edit / Delete owner-only) */}
                 <div
-                    className={`hidden border border-hairline shadow-sm group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                    className={`hidden border border-muted shadow-sm group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
                     <BlockActionButton
                         icon={
                             copied ? (
                                 <CheckIcon
-                                    className={`${iconClassName} hover:text-brand-cta`}
+                                    className={`${iconClassName} hover:text-primary`}
                                 />
                             ) : (
                                 <CopyIcon
-                                    className={`${iconClassName} hover:text-brand-cta`}
+                                    className={`${iconClassName} hover:text-primary`}
                                 />
                             )
                         }
@@ -133,7 +133,7 @@ export default function CodeBlock({
                             <BlockActionButton
                                 icon={
                                     <EditIcon
-                                        className={`${iconClassName} hover:text-brand-cta`}
+                                        className={`${iconClassName} hover:text-primary`}
                                     />
                                 }
                                 onClick={() => onEdit()}

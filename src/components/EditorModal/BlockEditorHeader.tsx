@@ -18,7 +18,7 @@ const BlockEditorHeader = ({ action, onClose }: BlockEditorHeaderProps) => {
             </div>
             <button
                 onClick={onClose}
-                className="grid h-9 w-9 place-items-center rounded-lg text-muted-foreground outline-none transition-colors duration-150 hover:bg-paper hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="grid h-9 w-9 place-items-center rounded-lg text-muted-foreground outline-none transition-colors duration-150 hover:bg-background/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 aria-label="Close editor"
             >
                 <X size={20} />

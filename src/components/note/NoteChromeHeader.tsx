@@ -83,7 +83,7 @@ const NoteChromeHeader = ({
     };
 
     return (
-        <header className="shrink-0 flex items-center gap-4 px-4 h-12 bg-card/70 border-b border-hairline">
+        <header className="shrink-0 flex items-center gap-4 px-4 h-12 bg-card/70 border-b border-muted">
             {/* Left */}
             <div className="flex items-center gap-3 min-w-0 shrink-0">
                 <Button
@@ -112,14 +112,14 @@ const NoteChromeHeader = ({
                 <div className="relative w-full">
                     <Search
                         size={14}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-faint pointer-events-none"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                     />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
                         placeholder="Search blocks..."
-                        className="w-full h-8 pl-9 pr-3 text-[13px] rounded-lg border border-hairline bg-background/80 text-ink placeholder:text-faint outline-none transition-colors focus:border-[color:var(--ds-focus-ring)] focus:ring-2 focus:ring-[color:var(--ds-focus-ring)] focus:bg-surface"
+                        className="w-full h-8 pl-9 pr-3 text-[13px] rounded-lg border border-muted bg-background/80 text-ink placeholder:text-muted-foreground outline-none transition-colors focus:border-[color:var(--ds-focus-ring)] focus:ring-2 focus:ring-[color:var(--ds-focus-ring)] focus:bg-card/80"
                     />
                 </div>
             </div>
@@ -132,12 +132,12 @@ const NoteChromeHeader = ({
                             <Lock size={12} />
                             Read only
                         </span>
-                        <div className="h-4 w-px bg-hairline mx-1" />
+                        <div className="h-4 w-px bg-muted mx-1" />
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={onPreview}
-                            className={`border-hairline text-body hover:bg-paper ${isPreviewMode ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-brand-cta" : ""}`}
+                            className={`border-muted text-body hover:bg-background/80 ${isPreviewMode ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-primary" : ""}`}
                         >
                             <Eye size={14} />
                             Preview
@@ -147,7 +147,7 @@ const NoteChromeHeader = ({
                             size="sm"
                             onClick={onExport}
                             disabled={isExporting}
-                            className="border-hairline text-body hover:bg-paper disabled:opacity-60"
+                            className="border-muted text-body hover:bg-background/80 disabled:opacity-60"
                         >
                             <Upload size={14} />
                             {isExporting ? "Exporting..." : "Export"}
@@ -184,7 +184,7 @@ const NoteChromeHeader = ({
                             variant="default"
                             size="sm"
                             onClick={onPreview}
-                            className={`border-hairline text-body bg-primary/10 hover:bg-primary/20 ${isPreviewMode ? "bg-primary/60 border-[color:var(--ds-accent-soft)] text-background" : ""}`}
+                            className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPreviewMode ? "bg-primary/60 border-[color:var(--ds-accent-soft)] text-background" : ""}`}
                         >
                             <Eye size={14} />
                             Preview
@@ -197,7 +197,7 @@ const NoteChromeHeader = ({
                                 size="sm"
                                 onClick={() => setIsShareOpen((v) => !v)}
                                 disabled={!currentNote}
-                                className={`border-hairline text-body bg-primary/10 hover:bg-primary/20 ${isPublic ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-brand-cta" : ""}`}
+                                className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPublic ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-primary" : ""}`}
                             >
                                 <Share2 size={14} />
                                 Share
@@ -211,7 +211,7 @@ const NoteChromeHeader = ({
                                         onClick={() => setIsShareOpen(false)}
                                         className="fixed inset-0 z-40 cursor-default"
                                     />
-                                    <div className="absolute right-0 top-10 z-50 w-80 rounded-xl border border-hairline bg-card p-4 shadow-xl">
+                                    <div className="absolute right-0 top-10 z-50 w-80 rounded-xl border border-muted bg-card p-4 shadow-xl">
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="flex items-start gap-2.5">
                                                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
@@ -261,7 +261,7 @@ const NoteChromeHeader = ({
                                                 <Button
                                                     size="sm"
                                                     onClick={handleCopyLink}
-                                                    className="bg-primary text-[color:var(--ds-accent-contrast)] transition-[filter] duration-150 hover:brightness-105"
+                                                    className="bg-primary text-primary-foreground transition-[filter] duration-150 hover:brightness-105"
                                                 >
                                                     {copied ? (
                                                         <Check size={14} />

@@ -26,6 +26,7 @@ export interface BlockItem {
     bgColor: string;
     hoverColor: string;
     category: BlockCategory;
+    shortcut: string;
 }
 
 export const blockCategories: { id: BlockCategory; label: string }[] = [
@@ -61,10 +62,11 @@ export const allBlocks: BlockItem[] = [
         description: "Definition, Example, Notes, Tips etc.",
         defaultContent: initialJsonForEditor,
         icon: <BookOpen size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "basic",
+        shortcut: "alt + B"
     },
     {
         defaultDesignId: 1,
@@ -73,10 +75,11 @@ export const allBlocks: BlockItem[] = [
         description: "New topic heading",
         defaultContent: initialHeadingJsonContent,
         icon: <Heading size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "basic",
+        shortcut: "alt + H"
     },
     // {
     //     defaultDesignId: 2,
@@ -125,10 +128,11 @@ export const allBlocks: BlockItem[] = [
         defaultContent: "// Do Something",
         description: "Insert code snippet",
         icon: <Code size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "developer",
+        shortcut: "alt + C"
     },
     {
         defaultDesignId: 1,
@@ -137,10 +141,11 @@ export const allBlocks: BlockItem[] = [
         description: "Add a math formula",
         defaultContent: "E=mc^2",
         icon: <FlaskConical size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "content",
+        shortcut: "alt + F"
     },
     {
         defaultDesignId: 1,
@@ -149,10 +154,11 @@ export const allBlocks: BlockItem[] = [
         defaultContent: "",
         description: "Insert an image",
         icon: <ImageIcon size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "content",
+        shortcut: "alt + I"
     },
     {
         defaultDesignId: 0,
@@ -161,10 +167,11 @@ export const allBlocks: BlockItem[] = [
         defaultContent: "",
         description: "Sketch, handwrite or diagram freely",
         icon: <PenLine size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "content",
+        shortcut: "alt + W"
     },
     {
         defaultDesignId: 1,
@@ -173,10 +180,11 @@ export const allBlocks: BlockItem[] = [
         defaultContent: JSON.stringify(makeInitialState()),
         description: "Create a data table",
         icon: <Table2 size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "content",
+        shortcut: "alt + T"
     },
     // {
     // defaultDesignId: 1,
@@ -205,9 +213,10 @@ export const allBlocks: BlockItem[] = [
         defaultContent: ALL_DIVIDERS[0].name,
         description: "Add a section divider",
         icon: <Divide size={20} />,
-        color: "text-brand-cta",
+        color: "text-primary",
         bgColor: "bg-tint",
-        hoverColor: "hover:bg-paper",
+        hoverColor: "hover:bg-background/80",
         category: "basic",
+        shortcut: "alt + D"
     },
 ];

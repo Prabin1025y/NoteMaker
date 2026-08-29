@@ -128,7 +128,7 @@ const LeftAside = ({
                                                     block.defaultContent,
                                                 )
                                             }
-                                            title={block.title}
+                                            title={`${block.title} (${block.shortcut})`}
                                             className={`group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors duration-150 text-body hover:bg-primary/20 ${!isExpanded ? "justify-center px-0" : ""}`}
                                         >
                                             <span

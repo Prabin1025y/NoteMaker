@@ -103,7 +103,7 @@ export function ImageDropZone({
                                     {!!file ? file.name : editorData.title}
                                 </p>
 
-                                <p className="text-sm text-muted-ink">
+                                <p className="text-sm text-muted-foreground">
                                     {(file.size / 1024 / 1024).toFixed(2)} MB
                                 </p>
                             </div>
