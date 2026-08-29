@@ -15,6 +15,7 @@ import {
     Type,
     Undo2,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  * Freehand drawing / handwriting / shapes / text block editor.
@@ -1199,7 +1200,7 @@ const CanvasSection = ({ content, onChangeHandler }: CanvasSectionProps) => {
             </div>
 
             {/* Drawing surface */}
-            <div className="relative flex-1 min-h-0 overflow-auto rounded-xl border border-muted bg-[#f3f4f6] p-4">
+            <div className={cn("relative flex-1 min-h-0 overflow-auto rounded-xl border border-muted bg-[#f3f4f6] p-4", isFullscreen ? "zoom-[1.6]": "zoom-[0.8]")}>
                 <div
                     className="relative mx-auto w-full max-w-[900px]"
                     style={{ aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}` }}
