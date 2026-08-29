@@ -21,7 +21,7 @@ export const CustomThemeProvider = ({
     const [currentTheme, setCurrentTheme] = useState<Theme>("default");
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem("custom-theme");
+        const savedTheme = localStorage.getItem("custom-theme") || "default";
 
         if (savedTheme && savedTheme in THEMES) {
             setCurrentTheme(savedTheme as Theme);
