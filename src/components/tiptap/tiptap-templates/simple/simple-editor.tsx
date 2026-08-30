@@ -70,6 +70,7 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Styles ---
 import "@/components/tiptap/tiptap-templates/simple/simple-editor.scss";
+import { EditorShortcuts } from "../../tiptap-extension/CustomShhortcuts";
 
 export const tiptap_extensions_list = [
     StarterKit.configure({
@@ -94,6 +95,7 @@ export const tiptap_extensions_list = [
     Superscript,
     Subscript,
     Selection,
+    EditorShortcuts,
     // ImageUploadNode.configure({
     //     accept: "image/*",
     //     maxSize: MAX_FILE_SIZE,
@@ -270,6 +272,7 @@ export function SimpleEditor({
             Superscript,
             Subscript,
             Selection,
+            EditorShortcuts
             // ImageUploadNode.configure({
             //     accept: "image/*",
             //     maxSize: MAX_FILE_SIZE,
@@ -279,7 +282,6 @@ export function SimpleEditor({
             // }),
             // CustomHardBreak,
             // CustomMathDelimiters,
-            
         ],
         content: JSON.parse(initialContent),
     });

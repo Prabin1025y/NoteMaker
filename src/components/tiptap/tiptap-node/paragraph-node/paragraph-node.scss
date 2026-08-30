@@ -31,7 +31,7 @@
 .tiptap.ProseMirror {
   white-space: pre-wrap;
   outline: none;
-  caret-color: var(--tt-cursor-color);
+  caret-color: var(--secondary);
 
   // Paragraph spacing
   p:not(:first-child):not(td p):not(th p) {
@@ -44,7 +44,7 @@
   // Selection styles
   &:not(.readonly):not(.ProseMirror-hideselection) {
     ::selection {
-      background-color: var(--tt-selection-color);
+      background-color: var(--secondary);
     }
 
     .selection::selection {
