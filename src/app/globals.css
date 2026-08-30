@@ -379,7 +379,7 @@ div.tiptap.ProseMirror.simple-editor {
     display: none;
 } */
 
-.tiptap.ProseMirror[contenteditable="false"] p:last-child:has(.ProseMirror-trailingBreak) {
+.tiptap.ProseMirror[contenteditable="false"] p:last-child:has(> .ProseMirror-trailingBreak:only-child) {
     display: none;
 }
 
