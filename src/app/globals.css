@@ -375,7 +375,11 @@ div.tiptap.ProseMirror.simple-editor {
     overflow: visible !important;
 }
 
-.ProseMirror[contenteditable="false"] .ProseMirror-trailingBreak {
+/* p:last-child .ProseMirror[contenteditable="false"] .ProseMirror-trailingBreak {
+    display: none;
+} */
+
+.tiptap.ProseMirror[contenteditable="false"] p:last-child:has(.ProseMirror-trailingBreak) {
     display: none;
 }
 

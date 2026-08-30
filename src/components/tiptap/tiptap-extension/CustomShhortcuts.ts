@@ -5,6 +5,10 @@ export const EditorShortcuts = Extension.create({
 
     addKeyboardShortcuts() {
         return {
+            Tab: () => {
+                this.editor.commands.insertContent("\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0");
+                return true;
+            },
             "Mod-Alt--": () => {
                 console.log("Triggered");
                 this.editor.commands.toggleSubscript();
