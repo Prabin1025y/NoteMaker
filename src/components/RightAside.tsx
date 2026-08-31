@@ -38,11 +38,6 @@ const RightAside = ({
         );
     }, [blocks, searchQuery]);
 
-    const blockIndexMap = useMemo(
-        () => new Map(blocks.map((bl, index) => [bl.id, index])),
-        [],
-    );
-
     const handleBlockClick = (blockId: string) => {
         setActiveBlockId(blockId);
         const el = document.getElementById(`block-${blockId}`);
@@ -58,7 +53,7 @@ const RightAside = ({
                     <button
                         type="button"
                         onClick={() => setIsCollapsed(false)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/20 hover:text-primary"
+                        className="flex h-8 w-8 items-center justify-center cursor-w-resize rounded-lg text-muted-foreground transition-colors hover:bg-primary/20 hover:text-primary"
                         aria-label="Expand outline"
                     >
                         <PanelRightOpen size={16} />
@@ -81,7 +76,7 @@ const RightAside = ({
                     <button
                         type="button"
                         onClick={() => setIsCollapsed(true)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/20 hover:text-primary"
+                        className="flex h-7 w-7 items-center justify-center cursor-w-resize rounded-lg text-muted-foreground transition-colors hover:bg-primary/20 hover:text-primary"
                         aria-label="Collapse outline"
                     >
                         <PanelRightClose size={15} />
@@ -153,9 +148,10 @@ const RightAside = ({
                             }}
                         >
                             <div className="flex flex-col gap-0.5">
-                                {filteredBlocks.map((block) => {
-                                    const index =
-                                        blockIndexMap.get(block.id) || -1;
+                                {filteredBlocks.map((block, ind) => {
+                                    // const index = blocks.findIndex(
+                                    //     (b) => b.id === block.id,
+                                    // );
                                     const isActive =
                                         activeBlockId === block.id ||
                                         draggingBlockId === block.id;
@@ -164,9 +160,9 @@ const RightAside = ({
                                         <Sortable
                                             key={block.id}
                                             id={block.id}
-                                            index={index}
+                                            index={ind}
                                             isActive={isActive}
-                                            disabled={isReadOnly}
+                                            disabled={isReadOnly || filteredBlocks.length !== blocks.length}
                                             onClick={() =>
                                                 handleBlockClick(block.id)
                                             }

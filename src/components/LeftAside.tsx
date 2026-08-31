@@ -74,7 +74,7 @@ const LeftAside = ({
                                     type="button"
                                     onClick={() => setIsExpanded(false)}
                                     title="Close Left Panel"
-                                    className="h-9 w-9 flex items-center justify-center rounded-full text-primary transition-colors hover:bg-tint"
+                                    className="h-9 w-9 flex cursor-w-resize items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/20"
                                 >
                                     <PanelLeftCloseIcon size={18} />
                                 </button>
@@ -93,7 +93,7 @@ const LeftAside = ({
                                     type="button"
                                     onClick={() => setIsExpanded(true)}
                                     title="Open Left Panel"
-                                    className="hidden group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-tint"
+                                    className="hidden cursor-w-resize group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/20"
                                 >
                                     <PanelRightCloseIcon size={18} />
                                 </button>

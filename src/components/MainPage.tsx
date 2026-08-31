@@ -44,11 +44,6 @@ const MainPage = ({
         if (!contentDiv) return;
 
         const handleScroll = () => {
-            console.log(
-                contentDiv.scrollTop,
-                contentDiv.scrollHeight - contentDiv.scrollTop,
-            );
-
             if (contentDiv.scrollTop > 100)
                 setShowScrollTopBottom((prev) => [true, prev[1]]);
             else setShowScrollTopBottom((prev) => [false, prev[1]]);
@@ -69,13 +64,13 @@ const MainPage = ({
         if (direction === "top") {
             const firstContentElement: HTMLElement | null =
                 document.getElementById(`block-${blocks[0].id}`);
-            firstContentElement?.scrollIntoView({behavior: "smooth"});
+            firstContentElement?.scrollIntoView({ behavior: "smooth" });
         } else {
             const lastContentElement: HTMLElement | null =
                 document.getElementById(
                     `block-${blocks[blocks.length - 1].id}`,
                 );
-            lastContentElement?.scrollIntoView({behavior: "smooth"});
+            lastContentElement?.scrollIntoView({ behavior: "smooth" });
         }
     };
 
