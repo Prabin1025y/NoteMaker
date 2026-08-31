@@ -60,7 +60,7 @@ function Sortable({
                       }
                     : {}
             }
-            className={`w-full text-left border flex items-center gap-2 rounded-lg px-2 py-2 transition-[background-color,box-shadow,transform] duration-150 cursor-pointer group hover:bg-primary/10 ${isDragging ? "shadow-md ring-1 ring-[color:var(--ds-accent-soft)] bg-card/80 scale-[1.02]" : ""}`}
+            className={`w-full text-left border flex items-center gap-2 rounded-lg px-2 py-2 transition-[background-color,box-shadow,transform] duration-150 cursor-pointer group hover:bg-primary/10 ${isDragging ? "shadow-md ring-1 ring-primary/30 bg-card/80 scale-[1.02]" : ""}`}
         >
             {!disabled && (
                 <div
