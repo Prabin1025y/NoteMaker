@@ -8,6 +8,76 @@ import BlockContentEditor from "./BlockContentEditor";
 import BlockSettingsSidebar from "./BlockSettingsSidebar";
 import BlockEditorFooter from "./BlockEditorFooter";
 import { getBlockTypeConfig } from "./block-editor-config";
+import {
+    getBlobImageFile,
+    removeBlobImageFile,
+} from "@/lib/tiptap-utils";
+
+type TiptapJsonNode = {
+    type?: string;
+    attrs?: Record<string, unknown>;
+    content?: TiptapJsonNode[];
+};
+
+const uploadBlobImages = async (content: string): Promise<string> => {
+    const document = JSON.parse(content) as TiptapJsonNode;
+    const blobUrls: string[] = [];
+
+    const visit = (node: TiptapJsonNode) => {
+        if (node.type === "image" && typeof node.attrs?.src === "string") {
+            const src = node.attrs.src;
+            if (src.startsWith("blob:") && getBlobImageFile(src)) {
+                blobUrls.push(src);
+            }
+        }
+
+        node.content?.forEach(visit);
+    };
+
+    visit(document);
+
+    if (blobUrls.length === 0) {
+        return content;
+    }
+
+    const formData = new FormData();
+    blobUrls.forEach((url) => {
+        const file = getBlobImageFile(url);
+        if (file) {
+            formData.append("images", file);
+        }
+    });
+
+    const response = await fetch("/api/upload-images", {
+        method: "POST",
+        body: formData,
+    });
+    const data = (await response.json()) as {
+        images?: Array<{ url: string }>;
+        error?: string;
+    };
+
+    if (!response.ok || !data.images || data.images.length !== blobUrls.length) {
+        throw new Error(data.error || "Failed to upload images");
+    }
+
+    let imageIndex = 0;
+    const replaceUrls = (node: TiptapJsonNode) => {
+        if (node.type === "image" && typeof node.attrs?.src === "string") {
+            const src = node.attrs.src;
+            if (src === blobUrls[imageIndex]) {
+                node.attrs.src = data.images![imageIndex].url;
+                removeBlobImageFile(src);
+                imageIndex += 1;
+            }
+        }
+
+        node.content?.forEach(replaceUrls);
+    };
+
+    replaceUrls(document);
+    return JSON.stringify(document);
+};
 
 interface BlockEditorModalProps {
     onClose: () => void;
@@ -54,7 +124,12 @@ const BlockEditorModal = ({
             });
             const data = await response.json();
             savedContent = data.url;
+        } else if (state.currentType === "block" || state.currentType === "heading") {
+            savedContent = await uploadBlobImages(state.content);
         }
+
+
+        
 
         onSave({
             id: editorData.id,

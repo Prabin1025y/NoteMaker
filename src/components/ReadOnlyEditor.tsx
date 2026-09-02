@@ -17,6 +17,7 @@ import "@/components/tiptap/tiptap-node/horizontal-rule-node/horizontal-rule-nod
 import "@/components/tiptap/tiptap-node/heading-node/heading-node.scss";
 import "@/components/tiptap/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap/tiptap-node/paragraph-node/paragraph-node.scss";
+import Image from "@tiptap/extension-image";
 
 export default function ReadOnlyEditor({
     content,
@@ -57,6 +58,7 @@ export default function ReadOnlyEditor({
             Superscript,
             Subscript,
             Selection,
+            Image
         ],
         content: JSON.parse(content),
         editable: false,

@@ -107,7 +107,7 @@ const MainPage = ({
                     <button
                         onClick={() => handleQuickScroll("top")}
                         title="Scroll to Top"
-                        className="absolute top-5 border w-10 h-10 rounded-md grid place-items-center cursor-pointer hover:bg-primary/50 transition-colors duration-500"
+                        className="absolute top-5 w-10 h-10 rounded-md grid place-items-center cursor-pointer text-background bg-secondary hover:bg-primary transition-colors duration-500"
                     >
                         <ChevronUp size={24} />
                     </button>
@@ -116,7 +116,7 @@ const MainPage = ({
                     <button
                         onClick={() => handleQuickScroll("bottom")}
                         title="Scroll to Bottom"
-                        className="absolute bottom-5 border w-10 h-10 rounded-md grid place-items-center cursor-pointer hover:bg-primary/50 transition-colors duration-500"
+                        className="absolute bottom-5 w-10 h-10 rounded-md grid place-items-center cursor-pointer text-background bg-secondary hover:bg-primary transition-colors duration-500"
                     >
                         <ChevronDown size={24} />
                     </button>

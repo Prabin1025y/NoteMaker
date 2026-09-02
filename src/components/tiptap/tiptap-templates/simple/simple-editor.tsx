@@ -13,6 +13,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
+import Image from "@tiptap/extension-image"
 import Mathematics from "@tiptap/extension-mathematics";
 
 // --- UI Primitives ---
@@ -71,6 +72,9 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 // --- Styles ---
 import "@/components/tiptap/tiptap-templates/simple/simple-editor.scss";
 import { EditorShortcuts } from "../../tiptap-extension/CustomShhortcuts";
+import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node";
+import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import { ImageUploadButton } from "../../tiptap-ui/image-upload-button";
 
 export const tiptap_extensions_list = [
     StarterKit.configure({
@@ -158,6 +162,9 @@ const MainToolbarContent = ({
                 ) : (
                     <LinkButton onClick={onLinkClick} />
                 )}
+            </ToolbarGroup>
+            <ToolbarGroup>
+                <ImageUploadButton text="Add" />
             </ToolbarGroup>
 
             <ToolbarSeparator />
@@ -272,14 +279,15 @@ export function SimpleEditor({
             Superscript,
             Subscript,
             Selection,
-            EditorShortcuts
-            // ImageUploadNode.configure({
-            //     accept: "image/*",
-            //     maxSize: MAX_FILE_SIZE,
-            //     limit: 3,
-            //     upload: handleImageUpload,
-            //     onError: (error) => console.error("Upload failed:", error),
-            // }),
+            EditorShortcuts,
+            ImageUploadNode.configure({
+                accept: "image/*",
+                maxSize: MAX_FILE_SIZE,
+                limit: 3,
+                upload: handleImageUpload,
+                onError: (error) => console.error("Upload failed:", error),
+            }),
+            Image
             // CustomHardBreak,
             // CustomMathDelimiters,
         ],
