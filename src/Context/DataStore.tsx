@@ -603,9 +603,13 @@ export const useNoteStore = create<Store>()(
         },
 
         syncToDB: async () => {
+            const backupBlocksToBeSynced = structuredClone(
+                get().blocksToBeSynced,
+            );
             try {
                 if (get().isReadOnly) return;
                 if (get().blocksToBeSynced.length === 0) return;
+                set({ blocksToBeSynced: [] });
 
                 const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
@@ -643,11 +647,14 @@ export const useNoteStore = create<Store>()(
 
                 set({
                     blocks: savedBlocks,
-                    blocksToBeSynced: [],
                     syncedBlocks: savedBlocks,
                 });
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
+                //TODO: bug of duplicate entry
+                set({
+                    blocksToBeSynced: get().blocksToBeSynced.concat(backupBlocksToBeSynced)
+                })
 
                 alert(
                     error instanceof Error

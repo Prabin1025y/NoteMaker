@@ -12,8 +12,8 @@ import { Typography } from "@tiptap/extension-typography";
 import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
-import { Selection } from "@tiptap/extensions";
-import Image from "@tiptap/extension-image"
+import { Dropcursor, Selection } from "@tiptap/extensions";
+import Image from "@tiptap/extension-image";
 import Mathematics from "@tiptap/extension-mathematics";
 
 // --- UI Primitives ---
@@ -287,7 +287,16 @@ export function SimpleEditor({
                 upload: handleImageUpload,
                 onError: (error) => console.error("Upload failed:", error),
             }),
-            Image
+            Dropcursor,
+            Image.configure({
+                resize: {
+                    enabled: true,
+                    directions: ["top", "bottom", "left", "right"], // can be any direction or diagonal combination
+                    minWidth: 50,
+                    minHeight: 50,
+                    alwaysPreserveAspectRatio: true,
+                },
+            }),
             // CustomHardBreak,
             // CustomMathDelimiters,
         ],

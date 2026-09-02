@@ -89,7 +89,8 @@ export default function NotePage() {
     const resolvedNoteIdRef = useRef<string | null>(null);
     const pendingSaveRef = useRef(false);
     const savingRef = useRef(false);
-    const savingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const handleSaveRef = useRef<() => Promise<void>>(() => Promise.resolve());
+    const savingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         if (!notesData) return;
@@ -139,22 +140,18 @@ export default function NotePage() {
     }, [blocks]);
 
     useEffect(() => {
-        pendingSaveRef.current = true;
-
-        if (savingTimerRef.current) {
-            clearTimeout(savingTimerRef.current);
-        }
-
-        savingTimerRef.current = setTimeout(() => {
-            handleSave();
-        }, 500);
+        savingTimerRef.current = setInterval(() => {
+            if (isSyncing) return;
+            pendingSaveRef.current = true;
+            void handleSaveRef.current();
+        }, 30_000);
 
         return () => {
             if (savingTimerRef.current) {
-                clearTimeout(savingTimerRef.current);
+                clearInterval(savingTimerRef.current);
             }
         };
-    }, [blocksToBeSynced]);
+    }, []);
 
     useEffect(() => {
         document.body.style.overflow = isEditorOpen ? "hidden" : "";
@@ -239,7 +236,9 @@ export default function NotePage() {
             if (pendingSaveRef.current) handleSave();
             setIsSyncing(false);
         }
-    }, [syncToDB, blocksToBeSynced]);
+    }, [syncToDB, blocksToBeSynced, pendingSaveRef.current]);
+
+    handleSaveRef.current = handleSave;
 
     // Shortcuts for undo redo and save
     useEffect(() => {
@@ -252,6 +251,7 @@ export default function NotePage() {
             if (key === "s") {
                 event.preventDefault();
                 if (!isSyncing) {
+                    pendingSaveRef.current = true;
                     void handleSave();
                 }
                 return;
@@ -470,7 +470,10 @@ export default function NotePage() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 onHomeClick={handleHomeClick}
-                onSave={() => void handleSave()}
+                onSave={() => {
+                    pendingSaveRef.current = true;
+                    void handleSave();
+                }}
                 onExport={() => void handleExport()}
                 onPreview={handlePreview}
                 isSyncing={isSyncing}
