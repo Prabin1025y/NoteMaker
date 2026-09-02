@@ -87,6 +87,9 @@ export default function NotePage() {
     // (e.g. syncLocally bumping blocksCount while editing) never re-runs
     // loadNote and wipes unsaved sync/history state.
     const resolvedNoteIdRef = useRef<string | null>(null);
+    const pendingSaveRef = useRef(false);
+    const savingRef = useRef(false);
+    const savingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (!notesData) return;
@@ -136,6 +139,24 @@ export default function NotePage() {
     }, [blocks]);
 
     useEffect(() => {
+        pendingSaveRef.current = true;
+
+        if (savingTimerRef.current) {
+            clearTimeout(savingTimerRef.current);
+        }
+
+        savingTimerRef.current = setTimeout(() => {
+            handleSave();
+        }, 500);
+
+        return () => {
+            if (savingTimerRef.current) {
+                clearTimeout(savingTimerRef.current);
+            }
+        };
+    }, [blocksToBeSynced]);
+
+    useEffect(() => {
         document.body.style.overflow = isEditorOpen ? "hidden" : "";
         return () => {
             document.body.style.overflow = "";
@@ -163,6 +184,7 @@ export default function NotePage() {
         });
     };
 
+    // add or save a new block after editing.
     const handleSaveBlock = (data: EditorData) => {
         addSaveBlock(data);
         closeBlockEditor();
@@ -181,42 +203,45 @@ export default function NotePage() {
     };
 
     const handleSave = useCallback(async () => {
-        if (blocksToBeSynced.length === 0) return;
-        toast.promise(
-            async () => {
-                try {
-                    setIsSyncing(true);
-                    await syncToDB();
-                    queryClient.invalidateQueries({
-                        queryKey: ["blocks", noteId],
-                    });
-                    queryClient.invalidateQueries({
-                        queryKey: ["notes"],
-                    });
-                    setIsSyncing(false);
-                } catch (error) {
-                    if (process.env.NODE_ENV === "development") {
-                        console.error(error);
-                    }
+        if (
+            blocksToBeSynced.length === 0 ||
+            !pendingSaveRef.current ||
+            savingRef.current
+        )
+            return;
 
-                    alert(
-                        error instanceof Error
-                            ? error.message
-                            : "Error while Saving!",
-                    );
-                } finally {
-                    setIsSyncing(false);
-                }
-            },
-            {
-                loading: `Saving...`,
-                success: () => `Saved!`,
-                error: "Error",
-                toasterId: "normal",
-            },
-        );
+        savingRef.current = true;
+        pendingSaveRef.current = false;
+
+        try {
+            setIsSyncing(true);
+            await syncToDB();
+            queryClient.invalidateQueries({
+                queryKey: ["blocks", noteId],
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["notes"],
+            });
+            setIsSyncing(false);
+        } catch (error) {
+            if (process.env.NODE_ENV === "development") {
+                console.error(error);
+            }
+
+            pendingSaveRef.current = true;
+
+            alert(
+                error instanceof Error ? error.message : "Error while Saving!",
+            );
+        } finally {
+            savingRef.current = false;
+
+            if (pendingSaveRef.current) handleSave();
+            setIsSyncing(false);
+        }
     }, [syncToDB, blocksToBeSynced]);
 
+    // Shortcuts for undo redo and save
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             const isModifierPressed = event.metaKey || event.ctrlKey;
@@ -248,6 +273,7 @@ export default function NotePage() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [canRedo, canUndo, handleSave, isEditorOpen, isSyncing, redo, undo]);
 
+    // Shortcuts to add blocks
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             const isAltPressed = event.altKey;
@@ -439,9 +465,7 @@ export default function NotePage() {
     const hasUnsaved = blocksToBeSynced.length > 0;
 
     return (
-        <div
-            className="h-screen w-screen flex flex-col overflow-hidden bg-background"
-        >
+        <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
             <NoteChromeHeader
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}

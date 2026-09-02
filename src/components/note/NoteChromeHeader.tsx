@@ -286,7 +286,7 @@ const NoteChromeHeader = ({
                             <Save size={14} />
                             {isSyncing ? "Saving..." : "Save"}
                             {hasUnsaved && (
-                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[color:var(--ds-danger)] rounded-full border-2 border-surface" />
+                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-secondary rounded-full border border-background" />
                             )}
                         </Button>
                         <Button
