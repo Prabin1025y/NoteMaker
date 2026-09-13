@@ -615,7 +615,7 @@ export const useNoteStore = create<Store>()(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
                     {
                         method: "POST",
-                        body: JSON.stringify(get().blocksToBeSynced),
+                        body: JSON.stringify(backupBlocksToBeSynced),
                     },
                 );
 
