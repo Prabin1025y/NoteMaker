@@ -5,13 +5,14 @@ import { EditorData } from "@/types/Editor";
 import { apiFetch } from "@/lib/api-client";
 import { createNote, updateNote } from "@/services/noteService";
 import { isEqual } from "lodash";
+import { queryClient } from "@/lib/query-client";
 import {
     AddBlockType,
     BlockSyncType,
     BlockType,
     EditBlockType,
-    NoteType,
 } from "@/types/dataSotoreTypes";
+import { NoteType } from "@/types/custom/notes";
 
 const BLOCK_SYNC_COMPARE_KEYS = [
     "order",
@@ -90,6 +91,10 @@ const buildBlockSyncDiff = (
     return syncDiffs;
 };
 
+type NoteDetailsPatch = Partial<
+    Pick<NoteType, "title" | "description" | "folderId">
+>;
+
 type Store = {
     currentNote: NoteType | null;
     blocks: BlockType[];
@@ -110,22 +115,13 @@ type Store = {
     setNotes: (notes: NoteType[]) => void;
     setReadOnly: (value: boolean) => void;
 
-    createNote: (
-        title?: string,
-        description?: string,
-        folderOptions?: {
-            isNewFolder: boolean;
-            folderId?: string;
-            folderName?: string;
-        },
-    ) => Promise<NoteType>;
-    deleteNote: (id: string) => void;
     toggleNoteFavorite: (id: string) => Promise<void>;
     toggleNotePin: (id: string) => Promise<void>;
     toggleNotePublic: (id: string) => Promise<void>;
     loadNote: (id: string) => Promise<void>;
     loadPublicNote: (note: NoteType, isOwner: boolean) => void;
     updateNoteTitle: (title: string) => void;
+    updateNoteDetails: (id: string, patch: NoteDetailsPatch) => Promise<void>;
     initializeSyncedBlocks: () => void;
 
     addSaveBlock: (editorData: EditorData) => void;
@@ -230,42 +226,6 @@ export const useNoteStore = create<Store>()(
             get().syncLocally();
         },
 
-        createNote: async (
-            title = "Untitled Note",
-            description = "",
-            folderOptions,
-        ) => {
-            const { note, authorName, folderId } = await createNote(
-                title,
-                description,
-                folderOptions,
-            );
-            const newNote: NoteType = {
-                id: note.id,
-                folderId,
-                authorName: authorName,
-                description: note.description,
-                title: note.title,
-                blocksCount: note._count.blocks,
-                createdAt: note.createdAt,
-                updatedAt: note.updatedAt,
-                authorId: note.authorId,
-                isFavorite: Boolean(note.isFavorite),
-                isPinned: Boolean(note.isPinned),
-                isPublic: Boolean(note.isPublic),
-            };
-            set({
-                notes: [...get().notes, newNote],
-            });
-            get().syncLocally();
-            get().loadNote(newNote.id);
-            return newNote;
-        },
-
-        deleteNote: (id) => {
-            set({ notes: get().notes.filter((note) => note.id !== id) });
-        },
-
         toggleNoteFavorite: async (id) => {
             const note = get().notes.find((n) => n.id === id);
             if (!note) return;
@@ -280,7 +240,7 @@ export const useNoteStore = create<Store>()(
             });
 
             try {
-                await updateNote(id, { isFavorite: nextValue });
+                await updateNote({ id, patch: { isFavorite: nextValue } });
             } catch (error) {
                 // Roll back on failure.
                 set({
@@ -306,7 +266,7 @@ export const useNoteStore = create<Store>()(
             });
 
             try {
-                await updateNote(id, { isPinned: nextValue });
+                await updateNote({ id, patch: { isPinned: nextValue } });
             } catch (error) {
                 // Roll back on failure.
                 set({
@@ -339,7 +299,7 @@ export const useNoteStore = create<Store>()(
             });
 
             try {
-                await updateNote(id, { isPublic: nextValue });
+                await updateNote({ id, patch: { isPublic: nextValue } });
             } catch (error) {
                 // Roll back on failure.
                 const rolledBackCurrent = get().currentNote;
@@ -395,6 +355,68 @@ export const useNoteStore = create<Store>()(
                     : note,
             );
             set({ notes: updatedNotes });
+        },
+
+        updateNoteDetails: async (id, patch) => {
+            const details: NoteDetailsPatch = {};
+            if (patch.title !== undefined) {
+                if (typeof patch.title !== "string" || !patch.title.trim())
+                    throw new Error("Title can't be empty");
+                details.title = patch.title.trim();
+            }
+            if (patch.description !== undefined) {
+                if (typeof patch.description !== "string")
+                    throw new Error("Description must be text");
+                details.description = patch.description;
+            }
+            if (patch.folderId !== undefined) {
+                if (
+                    typeof patch.folderId !== "string" ||
+                    !patch.folderId.trim()
+                )
+                    throw new Error("Folder is required");
+                details.folderId = patch.folderId.trim();
+            }
+
+            const current = get().currentNote;
+            const note =
+                get().notes.find((item) => item.id === id) ??
+                (current?.id === id && !get().isReadOnly ? current : null);
+            if (!note) throw new Error("Note not found");
+            if (
+                (details.title === undefined || details.title === note.title) &&
+                (details.description === undefined ||
+                    details.description === note.description) &&
+                (details.folderId === undefined ||
+                    details.folderId === note.folderId)
+            )
+                return;
+
+            const saved = await updateNote({ id, patch: details });
+            const savedDetails = {
+                ...details,
+                updatedAt: saved.updatedAt,
+            };
+            set((state) => ({
+                notes: state.notes.map((item) =>
+                    item.id === id ? { ...item, ...savedDetails } : item,
+                ),
+                currentNote:
+                    state.currentNote?.id === id
+                        ? { ...state.currentNote, ...savedDetails }
+                        : state.currentNote,
+                title:
+                    state.currentNote?.id === id && details.title !== undefined
+                        ? details.title
+                        : state.title,
+            }));
+            queryClient.setQueryData<NoteType[]>(
+                ["notes"],
+                (cached) =>
+                    cached?.map((item) =>
+                        item.id === id ? { ...item, ...savedDetails } : item,
+                    ) ?? cached,
+            );
         },
 
         addSaveBlock: (editorData) => {
@@ -653,8 +675,10 @@ export const useNoteStore = create<Store>()(
                 if (process.env.NODE_ENV === "development") console.log(error);
                 //TODO: bug of duplicate entry
                 set({
-                    blocksToBeSynced: get().blocksToBeSynced.concat(backupBlocksToBeSynced)
-                })
+                    blocksToBeSynced: get().blocksToBeSynced.concat(
+                        backupBlocksToBeSynced,
+                    ),
+                });
 
                 alert(
                     error instanceof Error

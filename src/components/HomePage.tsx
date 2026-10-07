@@ -19,8 +19,6 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { NoteCardSkeleton } from "@/skeletons/NoteCardSkeleton";
-import { apiFetch } from "@/lib/api-client";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { resolveFolderColor } from "@/utils/folderColors";
 import type {
@@ -29,20 +27,22 @@ import type {
     NoteLayout,
     NoteSortKey,
 } from "@/types/misc";
-import type { NoteType } from "@/types/dataSotoreTypes";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useDeleteNote, useUpdateNote } from "@/hooks/custom/useNotes";
+import { NoteType } from "@/types/custom/notes";
 
 interface HomePageProps {
     view: DashboardView;
     setView: (view: DashboardView) => void;
     folders: FolderOption[];
     searchQuery: string;
-    fetching: boolean;
+    notes: NoteType[];
+    isNotesLoading: boolean;
     onCreateNote: () => void;
     onOpenSidebar: () => void;
 }
@@ -84,16 +84,17 @@ const HomePage = ({
     view,
     setView,
     folders,
+    notes,
+    isNotesLoading,
     searchQuery,
-    fetching,
     onCreateNote,
     onOpenSidebar,
 }: HomePageProps) => {
-    const { notes, deleteNote, toggleNoteFavorite, toggleNotePin } =
-        useNoteStore();
     const [sort, setSort] = useState<NoteSortKey>("updated");
     const [layout, setLayout] = useState<NoteLayout>("grid");
-    const [deleting, setDeleting] = useState<string | null>(null);
+
+    const deleteNote = useDeleteNote();
+    const updateNote = useUpdateNote();
 
     const folderMap = useMemo(() => {
         const map = new Map<string, FolderOption>();
@@ -159,24 +160,24 @@ const HomePage = ({
         );
         if (!confirmed) return;
 
-        try {
-            setDeleting(note.id);
-            const res = await apiFetch(
-                `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/${note.id}`,
-                { method: "DELETE" },
-            );
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message);
-            deleteNote(note.id);
-            toast.success("Note deleted", { toasterId: "normal" });
-        } catch (error) {
-            toast.error(
-                error instanceof Error ? error.message : "Couldn't delete note",
-                { toasterId: "normal" },
-            );
-        } finally {
-            setDeleting(null);
-        }
+        await deleteNote.mutateAsync(note.id);
+    };
+
+    const toggleNoteFavorite = async (
+        noteId: string,
+        currentValue: boolean,
+    ) => {
+        await updateNote.mutateAsync({
+            id: noteId,
+            patch: { isFavorite: !currentValue },
+        });
+    };
+
+    const toggleNotePin = async (noteId: string, currentValue: boolean) => {
+        await updateNote.mutateAsync({
+            id: noteId,
+            patch: { isPinned: !currentValue },
+        });
     };
 
     const headerMeta = () => {
@@ -233,7 +234,7 @@ const HomePage = ({
             }}
             className={cn(
                 "grid h-8 w-8 place-items-center rounded-lg outline-none transition-colors duration-150",
-                "focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
+                "focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)",
                 "active:scale-[0.92]",
                 active
                     ? cn("opacity-100", activeClass)
@@ -259,7 +260,7 @@ const HomePage = ({
                 }
                 active={note.isFavorite}
                 activeClass="text-primary hover:bg-primary/20"
-                onClick={() => toggleNoteFavorite(note.id)}
+                onClick={() => toggleNoteFavorite(note.id, note.isFavorite)}
             >
                 <Star
                     size={15}
@@ -270,7 +271,7 @@ const HomePage = ({
                 label={note.isPinned ? "Unpin note" : "Pin note"}
                 active={note.isPinned}
                 activeClass="text-primary hover:bg-primary/20"
-                onClick={() => toggleNotePin(note.id)}
+                onClick={() => toggleNotePin(note.id, note.isPinned)}
             >
                 <Pin
                     size={15}
@@ -283,7 +284,7 @@ const HomePage = ({
             >
                 <Trash2
                     size={15}
-                    className="hover:text-[color:var(--ds-danger)]"
+                    className="hover:text-(--ds-danger)"
                 />
             </IconButton>
         </div>
@@ -301,7 +302,7 @@ const HomePage = ({
                     e.stopPropagation();
                     setView({ kind: "folder", folderId });
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-muted bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-muted bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
             >
                 <span
                     className="h-2 w-2 shrink-0 rounded-full"
@@ -313,14 +314,11 @@ const HomePage = ({
     };
 
     const NoteCard = ({ note }: { note: NoteType }) => {
-        const isDeleting = deleting === note.id;
-
         if (layout === "list") {
             return (
                 <div
                     className={cn(
                         "group relative flex items-center gap-4 rounded-xl border border-border bg-card/60 px-4 py-3 transition-colors duration-150 hover:border-accent/40",
-                        isDeleting && "pointer-events-none opacity-50",
                     )}
                 >
                     <Link
@@ -361,7 +359,6 @@ const HomePage = ({
             <div
                 className={cn(
                     "group relative flex flex-col rounded-xl border border-muted bg-card/60 p-4 transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong",
-                    isDeleting && "pointer-events-none opacity-50",
                 )}
             >
                 <div className="mb-2 flex items-start justify-between gap-2">
@@ -383,7 +380,7 @@ const HomePage = ({
                     </h3>
                 </Link>
 
-                <p className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-[13px] leading-relaxed text-muted-foreground">
+                <p className="mt-1.5 line-clamp-2 min-h-10 text-[13px] leading-relaxed text-muted-foreground">
                     {note.description || "No description has been added yet."}
                 </p>
 
@@ -413,7 +410,7 @@ const HomePage = ({
             <button
                 type="button"
                 onClick={() => setView({ kind: "folder", folderId: folder.id })}
-                className="group flex items-center gap-3 rounded-xl border border-muted bg-card/60 p-3 text-left outline-none transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                className="group flex items-center gap-3 rounded-xl border border-muted bg-card/60 p-3 text-left outline-none transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-strong focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
             >
                 <span
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-lg"
@@ -484,7 +481,7 @@ const HomePage = ({
                     type="button"
                     aria-label="Open navigation"
                     onClick={onOpenSidebar}
-                    className="grid h-9 w-9 place-items-center rounded-lg border border-muted bg-card/80 text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.96]"
+                    className="grid h-9 w-9 place-items-center rounded-lg border border-muted bg-card/80 text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) active:scale-[0.96]"
                 >
                     <Menu size={18} />
                 </button>
@@ -500,11 +497,13 @@ const HomePage = ({
                         <button
                             type="button"
                             onClick={() => setView({ kind: "all" })}
-                            className="mb-4 inline-flex items-center gap-1 text-[12px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                            className="mb-4 inline-flex items-center gap-1 text-[12px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
                         >
                             All notes
                             <ChevronRight size={13} />
-                            <span className="text-foreground">{meta.title}</span>
+                            <span className="text-foreground">
+                                {meta.title}
+                            </span>
                         </button>
                     )}
 
@@ -532,7 +531,7 @@ const HomePage = ({
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         type="button"
-                                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-muted bg-card/80 px-3 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-muted bg-card/80 px-3 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
                                     >
                                         <ArrowDownUp size={14} />
                                         <span className="hidden sm:inline">
@@ -587,7 +586,7 @@ const HomePage = ({
                                         aria-pressed={layout === key}
                                         onClick={() => setLayout(key)}
                                         className={cn(
-                                            "grid h-8 w-8 place-items-center rounded-[6px] outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]",
+                                            "grid h-8 w-8 place-items-center rounded-[6px] outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)",
                                             layout === key &&
                                                 "bg-primary/20 text-primary",
                                         )}
@@ -600,7 +599,7 @@ const HomePage = ({
                     </header>
 
                     {/* Loading */}
-                    {fetching ? (
+                    {isNotesLoading ? (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                             {Array.from({ length: 6 }).map((_, i) => (
                                 <NoteCardSkeleton key={i} />
@@ -622,7 +621,7 @@ const HomePage = ({
                             <button
                                 type="button"
                                 onClick={onCreateNote}
-                                className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-[13px] font-semibold text-primary-foreground outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 active:scale-[0.98]"
+                                className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-[13px] font-semibold text-primary-foreground outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) focus-visible:ring-offset-2 active:scale-[0.98]"
                             >
                                 <Plus
                                     size={16}
@@ -638,7 +637,7 @@ const HomePage = ({
                                 <button
                                     type="button"
                                     onClick={onCreateNote}
-                                    className="group flex items-center gap-3 rounded-xl border border-dashed border-strong bg-card/50 px-4 py-3.5 text-left outline-none transition-colors duration-150 hover:border-primary hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                    className="group flex items-center gap-3 rounded-xl border border-dashed border-strong bg-card/50 px-4 py-3.5 text-left outline-none transition-colors duration-150 hover:border-primary hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
                                 >
                                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/20 text-primary transition-colors duration-150 group-hover:bg-primary/40">
                                         <Plus
@@ -750,7 +749,7 @@ const HomePage = ({
                                                 <button
                                                     type="button"
                                                     onClick={onCreateNote}
-                                                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-muted bg-card/80 px-3.5 py-2 text-[13px] font-semibold text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
+                                                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-muted bg-card/80 px-3.5 py-2 text-[13px] font-semibold text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) active:scale-[0.98]"
                                                 >
                                                     <Plus size={15} />
                                                     New note

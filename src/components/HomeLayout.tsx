@@ -7,13 +7,11 @@ import {
     Settings,
     Star,
     FileText,
-    LogOut,
     FolderPlus,
     Trash2,
     Check,
     X,
     LogOutIcon,
-    PaletteIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -23,7 +21,6 @@ import {
     createFolder,
     deleteFolder,
     fetchFolders,
-    fetchNotes,
     updateFolder,
 } from "@/services/noteService";
 import Image from "next/image";
@@ -42,10 +39,10 @@ import {
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { CustomThemeSelector } from "./CustomThemeSelector";
+import { useCreateNote, useGetAllNotes } from "@/hooks/custom/useNotes";
 
 export default function HomeLayout() {
     const { data } = useSession();
-    const { notes, createNote: createNoteInStore, setNotes } = useNoteStore();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [view, setView] = useState<DashboardView>({ kind: "all" });
@@ -60,21 +57,14 @@ export default function HomeLayout() {
     const menuTriggerRef = useRef<HTMLButtonElement>(null);
     const newFolderInputRef = useRef<HTMLInputElement>(null);
 
-    const { data: notesData, isLoading } = useQuery({
-        queryKey: ["notes"],
-        queryFn: fetchNotes,
-        staleTime: 60 * 60 * 1000,
-    });
+    const { data: notes = [], isLoading: isNotesLoading } = useGetAllNotes();
+    const createNewNote = useCreateNote();
 
     const { data: folders = [] } = useQuery<FolderOption[]>({
         queryKey: ["folders"],
         queryFn: fetchFolders,
         staleTime: 60 * 60 * 1000,
     });
-
-    useEffect(() => {
-        if (notesData) setNotes(notesData);
-    }, [notesData, setNotes]);
 
     // Lock background scroll + close on Escape while the mobile drawer is open.
     useEffect(() => {
@@ -114,17 +104,12 @@ export default function HomeLayout() {
             folderName?: string;
         },
     ) => {
-        const newNote = await createNoteInStore(
+        const newNote = await createNewNote.mutateAsync({
             title,
             description,
-            folderDetails,
-        );
-        setIsCreateModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ["notes"] });
-        if (folderDetails?.isNewFolder) {
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-        }
-        router.push(`/note/${newNote.id}`);
+            folderOptions: folderDetails,
+        });
+        router.push(`/note/${newNote.noteId}`);
     };
 
     const handleCreateFolder = async () => {
@@ -226,7 +211,9 @@ export default function HomeLayout() {
                 {icon}
             </span>
             <span className="flex-1 text-left">{label}</span>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{count}</span>
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+                {count}
+            </span>
         </button>
     );
 
@@ -394,7 +381,7 @@ export default function HomeLayout() {
                         </div>
                     )}
 
-                    {isLoading ? (
+                    {isNotesLoading ? (
                         <ul>
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <SidebarNoteSkeleton key={i} />
@@ -557,7 +544,6 @@ export default function HomeLayout() {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            
                         </div>
                     </div>
                 </div>
@@ -566,9 +552,10 @@ export default function HomeLayout() {
             <HomePage
                 view={view}
                 setView={setView}
+                notes={notes}
+                isNotesLoading={isNotesLoading}
                 folders={folders}
                 searchQuery={searchQuery}
-                fetching={isLoading}
                 onCreateNote={() => setIsCreateModalOpen(true)}
                 onOpenSidebar={() => setSidebarOpen(true)}
             />

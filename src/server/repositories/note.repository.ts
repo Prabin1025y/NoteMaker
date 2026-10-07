@@ -162,11 +162,6 @@ export async function updateNoteMetaForAuthor(
 
     return prisma.note.findFirst({
         where: { id, authorId },
-        include: {
-            _count: {
-                select: { blocks: true },
-            },
-        },
     });
 }
 
