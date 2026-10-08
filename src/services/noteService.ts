@@ -33,29 +33,6 @@ export const createNote = async (
     return data;
 };
 
-export const fetchFolders = async () => {
-    try {
-        const response = await apiFetch(
-            `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/folders`,
-            {
-                method: "GET",
-            },
-        );
-
-        const { folders } = await response.json();
-
-        return folders;
-    } catch (error) {
-        if (process.env.NODE_ENV === "development") console.log(error);
-
-        alert(
-            error instanceof Error
-                ? error.message
-                : "Unable to fetch your folders",
-        );
-    }
-};
-
 export const fetchNotes = async () => {
     const response = await apiFetch(
         `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes`,

@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { X, FileText } from "lucide-react";
+import { X, FileText, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolveFolderColor } from "@/utils/folderColors";
-import { FolderOption } from "@/types/misc";
+import { useDashboardStore } from "@/Context/DashboardStore";
+import { useGetAllFolders } from "@/hooks/custom/useFolders";
 
 type FolderSelection = {
     isNewFolder: boolean;
@@ -12,14 +13,12 @@ type FolderSelection = {
 };
 
 interface CreateNoteModalProps {
-    isOpen: boolean;
-    onClose: () => void;
+    isCreatingNote: boolean;
     onCreateNote: (
         title: string,
         description: string,
         folderDetails?: FolderSelection,
-    ) => void;
-    folders: FolderOption[];
+    ) => Promise<void>;
 }
 
 const inputClass =
@@ -28,10 +27,8 @@ const inputClass =
 const labelClass = "mb-1.5 block text-[12px] font-medium text-body";
 
 export default function CreateNoteModal({
-    isOpen,
-    onClose,
+    isCreatingNote,
     onCreateNote,
-    folders,
 }: CreateNoteModalProps) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -39,6 +36,13 @@ export default function CreateNoteModal({
     const [selectedFolderId, setSelectedFolderId] = useState("");
     const [newFolderName, setNewFolderName] = useState("");
     const titleRef = useRef<HTMLInputElement>(null);
+
+    const { data: folders = [] } = useGetAllFolders();
+
+    const { isCreateModalOpen: isOpen, setIsCreateModalOpen } =
+        useDashboardStore();
+
+    const onClose = () => setIsCreateModalOpen(false);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -65,12 +69,12 @@ export default function CreateNoteModal({
         return () => window.removeEventListener("keydown", onKey);
     }, [isOpen, onClose]);
 
-    const handleCreate = () => {
+    const handleCreate = async () => {
         const folderDetails: FolderSelection = isNewFolder
             ? { isNewFolder: true, folderName: newFolderName.trim() }
             : { isNewFolder: false, folderId: selectedFolderId };
 
-        onCreateNote(title || "Untitled", description, folderDetails);
+        await onCreateNote(title || "Untitled", description, folderDetails);
         setTitle("");
         setDescription("");
         setSelectedFolderId(folders[0]?.id || "");
@@ -119,6 +123,7 @@ export default function CreateNoteModal({
                     </div>
                     <button
                         onClick={onClose}
+                        disabled={isCreatingNote}
                         aria-label="Close"
                         className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground outline-none transition-colors duration-150 hover:bg-background/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                     >
@@ -128,12 +133,16 @@ export default function CreateNoteModal({
 
                 <div className="flex flex-col gap-4 px-5 py-5">
                     <div>
-                        <label htmlFor="title" className={labelClass}>
+                        <label
+                            htmlFor="title"
+                            className={labelClass}
+                        >
                             Note title
                         </label>
                         <input
                             id="title"
                             ref={titleRef}
+                            disabled={isCreatingNote}
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
@@ -144,7 +153,10 @@ export default function CreateNoteModal({
                     </div>
 
                     <div>
-                        <label htmlFor="description" className={labelClass}>
+                        <label
+                            htmlFor="description"
+                            className={labelClass}
+                        >
                             Description{" "}
                             <span className="font-normal text-muted-foreground">
                                 (optional)
@@ -152,6 +164,7 @@ export default function CreateNoteModal({
                         </label>
                         <textarea
                             id="description"
+                            disabled={isCreatingNote}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             onKeyDown={handleKeyDown}
@@ -162,7 +175,10 @@ export default function CreateNoteModal({
                     </div>
 
                     <div>
-                        <label htmlFor="folder" className={labelClass}>
+                        <label
+                            htmlFor="folder"
+                            className={labelClass}
+                        >
                             Folder
                         </label>
                         <div className="relative">
@@ -172,6 +188,7 @@ export default function CreateNoteModal({
                             />
                             <select
                                 id="folder"
+                                disabled={isCreatingNote}
                                 value={isNewFolder ? "new" : selectedFolderId}
                                 onChange={(e) => {
                                     if (e.target.value === "new") {
@@ -182,25 +199,41 @@ export default function CreateNoteModal({
                                     setIsNewFolder(false);
                                     setSelectedFolderId(e.target.value);
                                 }}
-                                className={cn(inputClass, "appearance-none pl-7")}
+                                className={cn(
+                                    inputClass,
+                                    "appearance-none pl-7",
+                                )}
                             >
                                 {folders.map((folder) => (
-                                    <option className="bg-card" key={folder.id} value={folder.id}>
+                                    <option
+                                        className="bg-card"
+                                        key={folder.id}
+                                        value={folder.id}
+                                    >
                                         {folder.name}
                                     </option>
                                 ))}
-                                <option value="new" className="bg-card">+ New folder</option>
+                                <option
+                                    value="new"
+                                    className="bg-card"
+                                >
+                                    + New folder
+                                </option>
                             </select>
                         </div>
                     </div>
 
                     {isNewFolder && (
                         <div>
-                            <label htmlFor="newFolder" className={labelClass}>
+                            <label
+                                htmlFor="newFolder"
+                                className={labelClass}
+                            >
                                 New folder name
                             </label>
                             <input
                                 id="newFolder"
+                                disabled={isCreatingNote}
                                 type="text"
                                 value={newFolderName}
                                 onChange={(e) =>
@@ -225,16 +258,26 @@ export default function CreateNoteModal({
                 <div className="flex gap-2 border-t border-muted bg-background/80 px-5 py-4">
                     <button
                         onClick={onClose}
-                        className="flex-1 rounded-lg border border-muted bg-card/80 py-2.5 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]"
+                        disabled={isCreatingNote}
+                        className={cn(
+                            isCreatingNote
+                                ? "cursor-not-allowed text-foreground/50"
+                                : "hover:bg-background/80",
+                            "flex-1 rounded-lg border border-muted bg-card/80 py-2.5 text-[13px] font-medium  outline-none transition-colors duration-150  focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] active:scale-[0.98]",
+                        )}
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleCreate}
-                        disabled={!canCreate}
-                        className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-[13px] font-semibold  outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
+                        disabled={!canCreate || isCreatingNote}
+                        className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-[13px] font-semibold  outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98] flex items-center justify-center"
                     >
-                        Create note
+                        {isCreatingNote ? (
+                            <Loader className="animate-spin" />
+                        ) : (
+                            "Create note"
+                        )}
                     </button>
                 </div>
             </div>

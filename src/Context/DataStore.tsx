@@ -3,9 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
 import { apiFetch } from "@/lib/api-client";
-import { createNote, updateNote } from "@/services/noteService";
 import { isEqual } from "lodash";
-import { queryClient } from "@/lib/query-client";
 import {
     AddBlockType,
     BlockSyncType,
@@ -115,13 +113,9 @@ type Store = {
     setNotes: (notes: NoteType[]) => void;
     setReadOnly: (value: boolean) => void;
 
-    toggleNoteFavorite: (id: string) => Promise<void>;
-    toggleNotePin: (id: string) => Promise<void>;
-    toggleNotePublic: (id: string) => Promise<void>;
     loadNote: (id: string) => Promise<void>;
     loadPublicNote: (note: NoteType, isOwner: boolean) => void;
     updateNoteTitle: (title: string) => void;
-    updateNoteDetails: (id: string, patch: NoteDetailsPatch) => Promise<void>;
     initializeSyncedBlocks: () => void;
 
     addSaveBlock: (editorData: EditorData) => void;
@@ -226,95 +220,6 @@ export const useNoteStore = create<Store>()(
             get().syncLocally();
         },
 
-        toggleNoteFavorite: async (id) => {
-            const note = get().notes.find((n) => n.id === id);
-            if (!note) return;
-
-            const nextValue = !note.isFavorite;
-
-            // Optimistic update.
-            set({
-                notes: get().notes.map((n) =>
-                    n.id === id ? { ...n, isFavorite: nextValue } : n,
-                ),
-            });
-
-            try {
-                await updateNote({ id, patch: { isFavorite: nextValue } });
-            } catch (error) {
-                // Roll back on failure.
-                set({
-                    notes: get().notes.map((n) =>
-                        n.id === id ? { ...n, isFavorite: !nextValue } : n,
-                    ),
-                });
-                if (process.env.NODE_ENV === "development") console.log(error);
-            }
-        },
-
-        toggleNotePin: async (id) => {
-            const note = get().notes.find((n) => n.id === id);
-            if (!note) return;
-
-            const nextValue = !note.isPinned;
-
-            // Optimistic update.
-            set({
-                notes: get().notes.map((n) =>
-                    n.id === id ? { ...n, isPinned: nextValue } : n,
-                ),
-            });
-
-            try {
-                await updateNote({ id, patch: { isPinned: nextValue } });
-            } catch (error) {
-                // Roll back on failure.
-                set({
-                    notes: get().notes.map((n) =>
-                        n.id === id ? { ...n, isPinned: !nextValue } : n,
-                    ),
-                });
-                if (process.env.NODE_ENV === "development") console.log(error);
-            }
-        },
-
-        toggleNotePublic: async (id) => {
-            const current = get().currentNote;
-            const note =
-                get().notes.find((n) => n.id === id) ??
-                (current?.id === id ? current : undefined);
-            if (!note) return;
-
-            const nextValue = !note.isPublic;
-
-            // Optimistic update of both the notes list and the open note.
-            set({
-                notes: get().notes.map((n) =>
-                    n.id === id ? { ...n, isPublic: nextValue } : n,
-                ),
-                currentNote:
-                    current && current.id === id
-                        ? { ...current, isPublic: nextValue }
-                        : current,
-            });
-
-            try {
-                await updateNote({ id, patch: { isPublic: nextValue } });
-            } catch (error) {
-                // Roll back on failure.
-                const rolledBackCurrent = get().currentNote;
-                set({
-                    notes: get().notes.map((n) =>
-                        n.id === id ? { ...n, isPublic: !nextValue } : n,
-                    ),
-                    currentNote:
-                        rolledBackCurrent && rolledBackCurrent.id === id
-                            ? { ...rolledBackCurrent, isPublic: !nextValue }
-                            : rolledBackCurrent,
-                });
-                if (process.env.NODE_ENV === "development") console.log(error);
-            }
-        },
 
         loadNote: async (id) => {
             const note = get().notes.find((note) => note.id === id);
@@ -355,68 +260,6 @@ export const useNoteStore = create<Store>()(
                     : note,
             );
             set({ notes: updatedNotes });
-        },
-
-        updateNoteDetails: async (id, patch) => {
-            const details: NoteDetailsPatch = {};
-            if (patch.title !== undefined) {
-                if (typeof patch.title !== "string" || !patch.title.trim())
-                    throw new Error("Title can't be empty");
-                details.title = patch.title.trim();
-            }
-            if (patch.description !== undefined) {
-                if (typeof patch.description !== "string")
-                    throw new Error("Description must be text");
-                details.description = patch.description;
-            }
-            if (patch.folderId !== undefined) {
-                if (
-                    typeof patch.folderId !== "string" ||
-                    !patch.folderId.trim()
-                )
-                    throw new Error("Folder is required");
-                details.folderId = patch.folderId.trim();
-            }
-
-            const current = get().currentNote;
-            const note =
-                get().notes.find((item) => item.id === id) ??
-                (current?.id === id && !get().isReadOnly ? current : null);
-            if (!note) throw new Error("Note not found");
-            if (
-                (details.title === undefined || details.title === note.title) &&
-                (details.description === undefined ||
-                    details.description === note.description) &&
-                (details.folderId === undefined ||
-                    details.folderId === note.folderId)
-            )
-                return;
-
-            const saved = await updateNote({ id, patch: details });
-            const savedDetails = {
-                ...details,
-                updatedAt: saved.updatedAt,
-            };
-            set((state) => ({
-                notes: state.notes.map((item) =>
-                    item.id === id ? { ...item, ...savedDetails } : item,
-                ),
-                currentNote:
-                    state.currentNote?.id === id
-                        ? { ...state.currentNote, ...savedDetails }
-                        : state.currentNote,
-                title:
-                    state.currentNote?.id === id && details.title !== undefined
-                        ? details.title
-                        : state.title,
-            }));
-            queryClient.setQueryData<NoteType[]>(
-                ["notes"],
-                (cached) =>
-                    cached?.map((item) =>
-                        item.id === id ? { ...item, ...savedDetails } : item,
-                    ) ?? cached,
-            );
         },
 
         addSaveBlock: (editorData) => {

@@ -1,6 +1,7 @@
 import {
     createNote,
     deleteNote,
+    fetchNoteById,
     fetchNotes,
     updateNote,
 } from "@/services/noteService";
@@ -21,8 +22,8 @@ export const notesKeys = {
     lists: () => [...notesKeys.all, "list"] as const,
     allList: () => [...notesKeys.lists(), "all"] as const,
 
-    details: () => [...notesKeys.all, "detail"] as const,
-    detail: (slug: string) => [...notesKeys.details(), slug] as const,
+    noteByIds: () => [...notesKeys.all, "id"] as const,
+    noteById: (noteId: string) => [...notesKeys.noteByIds(), noteId] as const,
 };
 
 export function useGetAllNotes(
@@ -156,5 +157,20 @@ export function useDeleteNote() {
                 queryKey: notesKeys.allList(),
             });
         },
+    });
+}
+
+export function useGetNoteById(
+    noteId: string,
+    options?: Omit<
+        UseQueryOptions<Awaited<ReturnType<typeof fetchNoteById>>>,
+        "queryKey" | "queryFn"
+    >,
+) {
+    return useQuery({
+        queryKey: notesKeys.noteById(noteId),
+        queryFn: async () => await fetchNoteById(noteId),
+        staleTime: 5 * 60 * 1000,
+        ...options,
     });
 }

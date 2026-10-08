@@ -22,6 +22,7 @@ import { fetchBlocks, fetchNotes, fetchNoteById } from "@/services/noteService";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
+import { useGetNoteById } from "@/hooks/custom/useNotes";
 
 export default function NotePage() {
     const params = useParams();
@@ -55,7 +56,6 @@ export default function NotePage() {
         loadPublicNote,
         syncToDB,
         blocksToBeSynced,
-        currentNote,
         setBlocks,
         setNotes,
         initializeSyncedBlocks,
@@ -69,12 +69,10 @@ export default function NotePage() {
 
     const queryClient = useQueryClient();
 
-    const { data: notesData, isLoading: isFetchingNote } = useQuery({
-        queryKey: ["notes"],
-        queryFn: fetchNotes,
-        staleTime: 60 * 60 * 1000,
-        enabled: notes.length === 0,
-    });
+    const { data: currentNoteData, isLoading: isCurrentNoteLoading } =
+        useGetNoteById(noteId);
+
+    const currentNote = currentNoteData?.note;
 
     const { data: blocks, isLoading: isFetchingBlocks } = useQuery({
         queryKey: ["blocks", noteId],
@@ -92,17 +90,12 @@ export default function NotePage() {
     const handleSaveRef = useRef<() => Promise<void>>(() => Promise.resolve());
     const savingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    useEffect(() => {
-        if (!notesData) return;
-        setNotes(notesData);
-    }, [notesData]);
-
     // Resolve the open note exactly once: owner path when it's in the user's
     // own list, otherwise the viewer path (public link → read-only session).
     useEffect(() => {
         if (!noteId) return;
         // Wait until the owner's note list has settled before deciding.
-        if (isFetchingNote) return;
+        if (isCurrentNoteLoading) return;
         if (resolvedNoteIdRef.current === noteId) return;
 
         const owned = notes.find((n) => n.id === noteId);
@@ -124,7 +117,7 @@ export default function NotePage() {
                 router.push("/");
             }
         })();
-    }, [noteId, isFetchingNote, notes]);
+    }, [noteId, isCurrentNoteLoading, notes]);
 
     const sortedBlocks = useMemo(() => {
         if (!!!blocks || !Array.isArray(blocks)) return [];
@@ -491,7 +484,7 @@ export default function NotePage() {
                         openAiModel={() => setIsAiOpen(true)}
                     />
                 )}
-                {isFetchingBlocks || isFetchingNote ? (
+                {isFetchingBlocks || isCurrentNoteLoading ? (
                     <MainPageSkeleton />
                 ) : (
                     <MainPage

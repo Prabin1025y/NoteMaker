@@ -1,5 +1,4 @@
 "use client";
-import { useNoteStore } from "@/Context/DataStore";
 import Link from "next/link";
 import {
     Plus,
@@ -21,31 +20,21 @@ import { useMemo, useState } from "react";
 import { NoteCardSkeleton } from "@/skeletons/NoteCardSkeleton";
 import { cn } from "@/lib/utils";
 import { resolveFolderColor } from "@/utils/folderColors";
-import type {
-    DashboardView,
-    FolderOption,
-    NoteLayout,
-    NoteSortKey,
-} from "@/types/misc";
+import type { FolderOption, NoteLayout, NoteSortKey } from "@/types/misc";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useDeleteNote, useUpdateNote } from "@/hooks/custom/useNotes";
+import {
+    useDeleteNote,
+    useGetAllNotes,
+    useUpdateNote,
+} from "@/hooks/custom/useNotes";
 import { NoteType } from "@/types/custom/notes";
-
-interface HomePageProps {
-    view: DashboardView;
-    setView: (view: DashboardView) => void;
-    folders: FolderOption[];
-    searchQuery: string;
-    notes: NoteType[];
-    isNotesLoading: boolean;
-    onCreateNote: () => void;
-    onOpenSidebar: () => void;
-}
+import { useDashboardStore } from "@/Context/DashboardStore";
+import { useGetAllFolders } from "@/hooks/custom/useFolders";
 
 const SORT_OPTIONS: { key: NoteSortKey; label: string }[] = [
     { key: "updated", label: "Last edited" },
@@ -80,21 +69,17 @@ const greeting = () => {
     return "Good evening";
 };
 
-const HomePage = ({
-    view,
-    setView,
-    folders,
-    notes,
-    isNotesLoading,
-    searchQuery,
-    onCreateNote,
-    onOpenSidebar,
-}: HomePageProps) => {
+const HomePage = () => {
     const [sort, setSort] = useState<NoteSortKey>("updated");
     const [layout, setLayout] = useState<NoteLayout>("grid");
 
     const deleteNote = useDeleteNote();
     const updateNote = useUpdateNote();
+    const { data: notes = [], isLoading: isNotesLoading } = useGetAllNotes();
+    const { data: folders = [] } = useGetAllFolders();
+
+    const { searchQuery, view, setView, setIsCreateModalOpen, setSidebarOpen } =
+        useDashboardStore();
 
     const folderMap = useMemo(() => {
         const map = new Map<string, FolderOption>();
@@ -178,6 +163,10 @@ const HomePage = ({
             id: noteId,
             patch: { isPinned: !currentValue },
         });
+    };
+
+    const onCreateNote = () => {
+        setIsCreateModalOpen(true);
     };
 
     const headerMeta = () => {
@@ -480,7 +469,7 @@ const HomePage = ({
                 <button
                     type="button"
                     aria-label="Open navigation"
-                    onClick={onOpenSidebar}
+                    onClick={() => setSidebarOpen(true)}
                     className="grid h-9 w-9 place-items-center rounded-lg border border-muted bg-card/80 text-ink outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) active:scale-[0.96]"
                 >
                     <Menu size={18} />
