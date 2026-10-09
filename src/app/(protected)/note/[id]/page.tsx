@@ -89,7 +89,6 @@ export default function NotePage() {
 
         const owned = notes.find((n) => n.id === noteId);
         if (owned) {
-            
             resolvedNoteIdRef.current = noteId;
             loadNote(owned, blocks);
             return;
@@ -465,6 +464,7 @@ export default function NotePage() {
         <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
             <NoteChromeHeader
                 onHomeClick={handleHomeClick}
+                isLoading={isCurrentNoteLoading || isFetchingBlocks}
                 onSave={() => {
                     pendingSaveRef.current = true;
                     void handleSave();

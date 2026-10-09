@@ -38,10 +38,12 @@ interface NoteChromeHeaderProps {
     onExport: () => void;
     onPreview: () => void;
     hasUnsaved: boolean;
+    isLoading: boolean;
 }
 
 const NoteChromeHeader = ({
     onHomeClick,
+    isLoading,
     onSave,
     onExport,
     onPreview,
@@ -68,9 +70,8 @@ const NoteChromeHeader = ({
 
     const updateNote = useUpdateNote();
     const router = useRouter();
-    const { data: folderNotes = [] } = useGetNotesInFolderOfNote(
-        currentNote?.id ?? "",
-    );
+    const { data: folderNotes = [], isLoading: isFolderNotesLoading } =
+        useGetNotesInFolderOfNote(currentNote?.id ?? "");
     const otherFolderNotes = folderNotes.filter(
         (note) => note.id !== currentNote?.id,
     );
@@ -114,53 +115,63 @@ const NoteChromeHeader = ({
                 </Button>
                 <div className="h-4 w-px bg-muted-foreground/30" />
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <div className="min-w-0">
-                            <button
-                                type="button"
-                                className="flex max-w-50 items-center gap-1 text-left text-[14px] font-semibold tracking-tight text-ink outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) lg:max-w-70"
-                                aria-label="Choose another note in this folder"
-                            >
-                                <span className="truncate">
-                                    {currentNote?.title || "Untitled"}
-                                </span>
-                                {otherFolderNotes.length > 0 && (
-                                    <ChevronDown
-                                        size={14}
-                                        className="shrink-0 text-muted-foreground"
-                                    />
-                                )}
-                            </button>
-                            <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
-                                {blocks?.length ?? 0}{" "}
-                                {(blocks?.length ?? 0) === 1
-                                    ? "block"
-                                    : "blocks"}
-                            </p>
-                        </div>
-                    </DropdownMenuTrigger>
-                    {otherFolderNotes.length > 0 && (
-                        <DropdownMenuContent
-                            align="start"
-                            className="w-64"
+                {isLoading ? (
+                    <div className="min-w-0 w-20">
+                        <div className="flex max-w-50 items-center gap-1 w-24 h-4 bg-foreground/60 animate-pulse lg:max-w-70"></div>
+                        <div className="bg-muted-foreground/60 animate-pulse h-2 w-10 mt-0.5"></div>
+                    </div>
+                ) : (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger
+                            disabled={isFolderNotesLoading || isLoading}
+                            asChild
                         >
-                            {otherFolderNotes.map((note) => (
-                                <DropdownMenuItem
-                                    key={note.id}
-                                    onSelect={() =>
-                                        router.push(`/note/${note.id}`)
-                                    }
-                                    className="cursor-pointer"
+                            <div className="min-w-0">
+                                <button
+                                    type="button"
+                                    className="flex max-w-50 items-center gap-1 text-left text-[14px] font-semibold tracking-tight text-ink outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) lg:max-w-70"
+                                    aria-label="Choose another note in this folder"
                                 >
-                                    <span className="min-w-0 flex-1 truncate">
-                                        {note.title || "Untitled"}
+                                    <span className="truncate">
+                                        {currentNote?.title || "Untitled"}
                                     </span>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    )}
-                </DropdownMenu>
+                                    {otherFolderNotes.length > 0 && (
+                                        <ChevronDown
+                                            size={14}
+                                            className="shrink-0 text-muted-foreground"
+                                        />
+                                    )}
+                                </button>
+                                <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
+                                    {blocks?.length ?? 0}{" "}
+                                    {(blocks?.length ?? 0) === 1
+                                        ? "block"
+                                        : "blocks"}
+                                </p>
+                            </div>
+                        </DropdownMenuTrigger>
+                        {otherFolderNotes.length > 0 && (
+                            <DropdownMenuContent
+                                align="start"
+                                className="w-64"
+                            >
+                                {otherFolderNotes.map((note) => (
+                                    <DropdownMenuItem
+                                        key={note.id}
+                                        onSelect={() =>
+                                            router.push(`/note/${note.id}`)
+                                        }
+                                        className="cursor-pointer"
+                                    >
+                                        <span className="min-w-0 flex-1 truncate">
+                                            {note.title || "Untitled"}
+                                        </span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        )}
+                    </DropdownMenu>
+                )}
                 {/* <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
                         {blocks?.length ?? 0}{" "}
                         {(blocks?.length ?? 0) === 1 ? "block" : "blocks"}
