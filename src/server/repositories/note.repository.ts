@@ -184,3 +184,27 @@ export async function findByIdForViewer(id: string, userId: string) {
         },
     });
 }
+
+export async function findFolderNotesForViewer(
+    noteId: string,
+    userId: string,
+) {
+    const note = await findByIdForViewer(noteId, userId);
+    if (!note) return null;
+
+    return prisma.note.findMany({
+        where: {
+            folderId: note.folderId,
+            OR: [{ authorId: userId }, { isPublic: true }],
+        },
+        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
+        include: {
+            _count: {
+                select: { blocks: true },
+            },
+            author: {
+                select: { name: true },
+            },
+        },
+    });
+}

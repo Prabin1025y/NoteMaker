@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
@@ -45,22 +45,15 @@ export default function NotePage() {
         isReadOnly,
 
         isSyncing,
-        isExporting,
         isPreviewMode,
-        isGenerating,
         isEditorOpen,
         doSaveImmediately,
-        editorData,
-        searchQuery,
-
-        setIsAiOpen,
         setIsSyncing,
         setDoSaveImmediately,
         setIsExporting,
         setIsEditorOpen,
         setIsPreviewMode,
         setEditorData,
-        setSearchQuery,
     } = useNoteStore();
 
     const queryClient = useQueryClient();
@@ -96,6 +89,7 @@ export default function NotePage() {
 
         const owned = notes.find((n) => n.id === noteId);
         if (owned) {
+            
             resolvedNoteIdRef.current = noteId;
             loadNote(owned, blocks);
             return;

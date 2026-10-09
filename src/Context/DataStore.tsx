@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
 import { apiFetch } from "@/lib/api-client";
-import { isEqual, isSymbol } from "lodash";
+import { isEqual } from "lodash";
 import {
     AddBlockType,
     BlockSyncType,
@@ -12,6 +12,8 @@ import {
 } from "@/types/dataSotoreTypes";
 import { NoteType } from "@/types/custom/notes";
 import { initialJsonForEditor } from "@/utils/UtilFunctions";
+import { queryClient } from "@/lib/query-client";
+import { notesKeys } from "@/hooks/custom/useNotes";
 
 const BLOCK_SYNC_COMPARE_KEYS = [
     "order",
@@ -94,7 +96,6 @@ type Store = {
     blocks: BlockType[];
     syncedBlocks: BlockType[];
     title: string;
-    notes: NoteType[];
     draggingBlockId: string | null;
     activeBlockId: string | null;
     blocksToBeSynced: BlockSyncType[];
@@ -117,7 +118,6 @@ type Store = {
     setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
     setActiveBlockId: (id: string | null) => void;
-    setNotes: (notes: NoteType[]) => void;
     setSearchQuery: (query: string) => void;
     setEditorData: (data: EditorData) => void;
 
@@ -155,7 +155,6 @@ export const useNoteStore = create<Store>()(
     devtools((set, get) => ({
         blocks: [],
         title: "Untitled Note",
-        notes: [],
         draggingBlockId: null,
         activeBlockId: null,
         blocksToBeSynced: [],
@@ -204,7 +203,6 @@ export const useNoteStore = create<Store>()(
         },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
         setActiveBlockId: (id) => set({ activeBlockId: id }),
-        setNotes: (notes) => set({ notes }),
         setReadOnly: (value) => set({ isReadOnly: value }),
 
         initializeSyncedBlocks: () => set({ syncedBlocks: get().blocks }),
@@ -265,6 +263,7 @@ export const useNoteStore = create<Store>()(
         },
 
         loadNote: async (ownedNote, blocks) => {
+            const notes = queryClient.getQueryData<NoteType[]>(notesKeys.allList());
             set({
                 title: ownedNote.title,
                 isReadOnly: false,
@@ -278,6 +277,7 @@ export const useNoteStore = create<Store>()(
         },
 
         loadPublicNote: (note, isOwner, blocks) => {
+            
             // Viewer path: the note isn't in the user's own list, so set it as
             // the current note directly. Non-owners get a read-only session.
             set({

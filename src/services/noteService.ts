@@ -59,6 +59,25 @@ export const fetchNotes = async () => {
     }));
 };
 
+export const fetchNotesInFolderOfNote = async (
+    noteId: string,
+): Promise<NoteType[]> => {
+    const response = await apiFetch(
+        `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/${encodeURIComponent(noteId)}/folder`,
+        {
+            method: "GET",
+        },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to load notes in folder");
+    }
+
+    return data.notes;
+};
+
 export const deleteNote = async (noteId: string) => {
     const res = await apiFetch(
         `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/${noteId}`,
@@ -153,4 +172,3 @@ export const updateNote = async (
 
     return data.note;
 };
-

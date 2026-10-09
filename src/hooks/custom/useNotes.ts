@@ -3,6 +3,7 @@ import {
     deleteNote,
     fetchNoteById,
     fetchNotes,
+    fetchNotesInFolderOfNote,
     updateNote,
 } from "@/services/noteService";
 import { NoteType } from "@/types/custom/notes";
@@ -21,6 +22,9 @@ export const notesKeys = {
 
     lists: () => [...notesKeys.all, "list"] as const,
     allList: () => [...notesKeys.lists(), "all"] as const,
+    folderNotes: () => [...notesKeys.lists(), "folder"] as const,
+    notesInFolderOfNote: (noteId: string) =>
+        [...notesKeys.folderNotes(), noteId] as const,
 
     noteByIds: () => [...notesKeys.all, "id"] as const,
     noteById: (noteId: string) => [...notesKeys.noteByIds(), noteId] as const,
@@ -33,6 +37,19 @@ export function useGetAllNotes(
         queryKey: notesKeys.allList(),
         queryFn: fetchNotes,
         staleTime: 5 * 60 * 1000,
+        ...options,
+    });
+}
+
+export function useGetNotesInFolderOfNote(
+    noteId: string,
+    options?: Omit<UseQueryOptions<NoteType[]>, "queryKey" | "queryFn">,
+) {
+    return useQuery({
+        queryKey: notesKeys.notesInFolderOfNote(noteId),
+        queryFn: () => fetchNotesInFolderOfNote(noteId),
+        staleTime: 5 * 60 * 1000,
+        enabled: Boolean(noteId),
         ...options,
     });
 }
@@ -54,7 +71,7 @@ export function useCreateNote() {
 
         onSuccess: (data, newNote) => {
             toast.success("Note Created. Opening the note");
-            queryClient.invalidateQueries({ queryKey: notesKeys.allList() });
+            queryClient.invalidateQueries({ queryKey: notesKeys.lists() });
             if (newNote.folderOptions?.isNewFolder)
                 queryClient.invalidateQueries({ queryKey: ["folders"] });
         },
@@ -109,7 +126,7 @@ export function useUpdateNote() {
         onSettled: () => {
             if (queryClient.isMutating() === 1)
                 queryClient.invalidateQueries({
-                    queryKey: notesKeys.allList(),
+                    queryKey: notesKeys.lists(),
                 });
         },
     });
@@ -154,7 +171,7 @@ export function useDeleteNote() {
 
         onSettled: () => {
             queryClient.invalidateQueries({
-                queryKey: notesKeys.allList(),
+                queryKey: notesKeys.lists(),
             });
         },
     });

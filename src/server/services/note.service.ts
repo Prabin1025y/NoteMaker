@@ -20,6 +20,10 @@ export async function getNoteForViewer(id: string, userId: string) {
     return noteRepository.findByIdForViewer(id, userId);
 }
 
+export async function getFolderNotesForViewer(noteId: string, userId: string) {
+    return noteRepository.findFolderNotesForViewer(noteId, userId);
+}
+
 export async function updateNoteMeta(
     id: string,
     authorId: string,
