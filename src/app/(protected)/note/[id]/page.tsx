@@ -17,12 +17,12 @@ import { apiFetch } from "@/lib/api-client";
 import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { toast } from "sonner";
 import AiBlockGenerator from "@/components/note/AiBlockGenerator";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchBlocks, fetchNotes, fetchNoteById } from "@/services/noteService";
+import { useQueryClient } from "@tanstack/react-query";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
-import { useGetNoteById } from "@/hooks/custom/useNotes";
+import { useGetBlocksByNoteId } from "@/hooks/custom/useBlocks";
+import { useGetAllNotes, useGetNoteById } from "@/hooks/custom/useNotes";
 
 export default function NotePage() {
     const params = useParams();
@@ -30,25 +30,6 @@ export default function NotePage() {
     const noteId = params?.id as string;
 
     const noteRef = useRef<HTMLDivElement>(null);
-    // const [isLoading, setIsLoading] = useState(true);
-    const [isSyncing, setIsSyncing] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
-    const [isPreviewMode, setIsPreviewMode] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-
-    const [isAiOpen, setIsAiOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [editorData, setEditorData] = useState<EditorData>({
-        id: "",
-        designId: 1,
-        order: "auto",
-        colorOptionId: 1,
-        title: "",
-        content: initialJsonForEditor,
-        type: "block",
-        action: "add",
-    });
 
     const {
         addSaveBlock,
@@ -57,29 +38,44 @@ export default function NotePage() {
         syncToDB,
         blocksToBeSynced,
         setBlocks,
-        setNotes,
-        initializeSyncedBlocks,
-        notes,
         undo,
         redo,
         canUndo,
         canRedo,
         isReadOnly,
+
+        isSyncing,
+        isExporting,
+        isPreviewMode,
+        isGenerating,
+        isEditorOpen,
+        doSaveImmediately,
+        editorData,
+        searchQuery,
+
+        setIsAiOpen,
+        setIsSyncing,
+        setDoSaveImmediately,
+        setIsExporting,
+        setIsEditorOpen,
+        setIsPreviewMode,
+        setEditorData,
+        setSearchQuery,
     } = useNoteStore();
 
     const queryClient = useQueryClient();
 
     const { data: currentNoteData, isLoading: isCurrentNoteLoading } =
         useGetNoteById(noteId);
+    const { data: notes = [] } = useGetAllNotes();
 
     const currentNote = currentNoteData?.note;
 
-    const { data: blocks, isLoading: isFetchingBlocks } = useQuery({
-        queryKey: ["blocks", noteId],
-        queryFn: () => fetchBlocks(currentNote?.id || noteId),
-        staleTime: 60 * 60 * 1000,
-        enabled: !!currentNote && currentNote.id === noteId,
-    });
+    const { data: blocks = [], isLoading: isFetchingBlocks } =
+        useGetBlocksByNoteId(noteId, {
+            staleTime: 60 * 60 * 1000,
+            enabled: !!currentNote && currentNote.id === noteId,
+        });
 
     // Tracks which note id we've already resolved, so churn in `notes`
     // (e.g. syncLocally bumping blocksCount while editing) never re-runs
@@ -95,21 +91,24 @@ export default function NotePage() {
     useEffect(() => {
         if (!noteId) return;
         // Wait until the owner's note list has settled before deciding.
-        if (isCurrentNoteLoading) return;
+        if (isCurrentNoteLoading || isFetchingBlocks) return;
         if (resolvedNoteIdRef.current === noteId) return;
 
         const owned = notes.find((n) => n.id === noteId);
         if (owned) {
             resolvedNoteIdRef.current = noteId;
-            loadNote(noteId);
+            loadNote(owned, blocks);
             return;
         }
 
         resolvedNoteIdRef.current = noteId;
-        (async () => {
-            const result = await fetchNoteById(noteId);
-            if (result) {
-                loadPublicNote(result.note, result.isOwner);
+        (() => {
+            if (currentNoteData) {
+                loadPublicNote(
+                    currentNoteData.note,
+                    currentNoteData.isOwner,
+                    blocks,
+                );
             } else {
                 toast.error(
                     "This note doesn't exist or hasn't been shared with you.",
@@ -117,7 +116,7 @@ export default function NotePage() {
                 router.push("/");
             }
         })();
-    }, [noteId, isCurrentNoteLoading, notes]);
+    }, [noteId, isCurrentNoteLoading, notes, isFetchingBlocks]);
 
     const sortedBlocks = useMemo(() => {
         if (!!!blocks || !Array.isArray(blocks)) return [];
@@ -129,12 +128,23 @@ export default function NotePage() {
         if (!blocks) return;
 
         setBlocks(sortedBlocks);
-        initializeSyncedBlocks();
     }, [blocks]);
 
     useEffect(() => {
+        if (!isEditorOpen && doSaveImmediately && !isSyncing) {
+            pendingSaveRef.current = true;
+            void handleSaveRef.current();
+            setDoSaveImmediately(false);
+        }
+    }, [isEditorOpen, doSaveImmediately, isSyncing]);
+
+    useEffect(() => {
         savingTimerRef.current = setInterval(() => {
-            if (isSyncing) return;
+            if (isSyncing || doSaveImmediately) return;
+            if (isEditorOpen) {
+                setDoSaveImmediately(true);
+                return;
+            }
             pendingSaveRef.current = true;
             void handleSaveRef.current();
         }, 30_000);
@@ -375,7 +385,7 @@ export default function NotePage() {
     }, [isEditorOpen]);
 
     const handlePreview = () => {
-        setIsPreviewMode((prev) => !prev);
+        setIsPreviewMode(!isPreviewMode);
         if (!isPreviewMode) {
             toast.info("Preview mode — sidebars hidden", { duration: 2000 });
         }
@@ -460,8 +470,6 @@ export default function NotePage() {
     return (
         <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
             <NoteChromeHeader
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
                 onHomeClick={handleHomeClick}
                 onSave={() => {
                     pendingSaveRef.current = true;
@@ -469,53 +477,27 @@ export default function NotePage() {
                 }}
                 onExport={() => void handleExport()}
                 onPreview={handlePreview}
-                isSyncing={isSyncing}
-                isExporting={isExporting}
                 hasUnsaved={hasUnsaved}
-                isPreviewMode={isPreviewMode}
-                isReadOnly={isReadOnly}
             />
 
             <div className="flex flex-1 overflow-hidden">
                 {!isPreviewMode && !isReadOnly && (
-                    <LeftAside
-                        openBlockEditor={openBlockEditor}
-                        isGenerating={isGenerating}
-                        openAiModel={() => setIsAiOpen(true)}
-                    />
+                    <LeftAside openBlockEditor={openBlockEditor} />
                 )}
                 {isFetchingBlocks || isCurrentNoteLoading ? (
                     <MainPageSkeleton />
                 ) : (
                     <MainPage
-                        isGenerating={isGenerating}
-                        openAiModel={() => setIsAiOpen(true)}
                         noteRef={noteRef}
                         openBlockEditor={openBlockEditor}
-                        isReadOnly={isReadOnly}
                     />
                 )}
-                {!isPreviewMode && (
-                    <RightAside
-                        searchQuery={searchQuery}
-                        isReadOnly={isReadOnly}
-                    />
-                )}
+                {!isPreviewMode && <RightAside />}
             </div>
 
-            {isEditorOpen && (
-                <BlockEditorModal
-                    onClose={closeBlockEditor}
-                    onSave={handleSaveBlock}
-                    editorData={editorData}
-                />
-            )}
+            {isEditorOpen && <BlockEditorModal onSave={handleSaveBlock} />}
 
-            <AiBlockGenerator
-                isOpen={isAiOpen}
-                setIsGenerating={setIsGenerating}
-                onClose={() => setIsAiOpen(false)}
-            />
+            <AiBlockGenerator />
         </div>
     );
 }

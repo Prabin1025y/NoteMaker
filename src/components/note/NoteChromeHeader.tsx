@@ -19,37 +19,37 @@ import { Button } from "@/components/ui/button";
 import { useNoteStore } from "@/Context/DataStore";
 import { toast } from "sonner";
 import ThemeToggle from "../ThemeToggle";
-import { useUpdateNote } from "@/hooks/custom/useNotes";
+import { useGetNoteById, useUpdateNote } from "@/hooks/custom/useNotes";
 
 interface NoteChromeHeaderProps {
-    searchQuery: string;
-    onSearchChange: (query: string) => void;
     onHomeClick: () => void;
     onSave: () => void;
     onExport: () => void;
     onPreview: () => void;
-    isSyncing: boolean;
-    isExporting: boolean;
     hasUnsaved: boolean;
-    isPreviewMode?: boolean;
-    isReadOnly?: boolean;
 }
 
 const NoteChromeHeader = ({
-    searchQuery,
-    onSearchChange,
     onHomeClick,
     onSave,
     onExport,
     onPreview,
-    isSyncing,
-    isExporting,
     hasUnsaved,
-    isPreviewMode = false,
-    isReadOnly = false,
 }: NoteChromeHeaderProps) => {
-    const { currentNote, blocks, undo, redo, canUndo, canRedo } =
-        useNoteStore();
+    const {
+        blocks,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        isSyncing,
+        isExporting,
+        isPreviewMode,
+        isReadOnly,
+        searchQuery,
+        setSearchQuery,
+        currentNote,
+    } = useNoteStore();
 
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [isTogglingPublic, setIsTogglingPublic] = useState(false);
@@ -96,7 +96,7 @@ const NoteChromeHeader = ({
                 </Button>
                 <div className="h-4 w-px bg-muted-foreground/30" />
                 <div className="min-w-0">
-                    <h1 className="text-[14px] font-semibold text-ink tracking-tight truncate max-w-[200px] lg:max-w-[280px]">
+                    <h1 className="text-[14px] font-semibold text-ink tracking-tight truncate max-w-50 lg:max-w-70">
                         {currentNote?.title || "Untitled"}
                     </h1>
                     <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
@@ -116,9 +116,9 @@ const NoteChromeHeader = ({
                     <input
                         type="text"
                         value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search blocks..."
-                        className="w-full h-8 pl-9 pr-3 text-[13px] rounded-lg border border-muted bg-background/80 text-ink placeholder:text-muted-foreground outline-none transition-colors focus:border-[color:var(--ds-focus-ring)] focus:ring-2 focus:ring-[color:var(--ds-focus-ring)] focus:bg-card/80"
+                        className="w-full h-8 pl-9 pr-3 text-[13px] rounded-lg border border-muted bg-background/80 text-ink placeholder:text-muted-foreground outline-none transition-colors focus:border-(--ds-focus-ring) focus:ring-2 focus:ring-(--ds-focus-ring) focus:bg-card/80"
                     />
                 </div>
             </div>
@@ -136,7 +136,7 @@ const NoteChromeHeader = ({
                             variant="outline"
                             size="sm"
                             onClick={onPreview}
-                            className={`border-muted text-body hover:bg-background/80 ${isPreviewMode ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-primary" : ""}`}
+                            className={`border-muted text-body hover:bg-background/80 ${isPreviewMode ? "bg-brand-soft border-(--ds-accent-soft) text-primary" : ""}`}
                         >
                             <Eye size={14} />
                             Preview
@@ -183,7 +183,7 @@ const NoteChromeHeader = ({
                             variant="default"
                             size="sm"
                             onClick={onPreview}
-                            className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPreviewMode ? "bg-primary/60 border-[color:var(--ds-accent-soft)] text-background" : ""}`}
+                            className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPreviewMode ? "bg-primary/60 border-(--ds-accent-soft) text-background" : ""}`}
                         >
                             <Eye size={14} />
                             Preview
@@ -196,7 +196,7 @@ const NoteChromeHeader = ({
                                 size="sm"
                                 onClick={() => setIsShareOpen((v) => !v)}
                                 disabled={!currentNote}
-                                className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPublic ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-primary" : ""}`}
+                                className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPublic ? "bg-brand-soft border-(--ds-accent-soft) text-primary" : ""}`}
                             >
                                 <Share2 size={14} />
                                 Share

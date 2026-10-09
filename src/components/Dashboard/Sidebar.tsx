@@ -1,10 +1,4 @@
-import React, {
-    SetStateAction,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,19 +23,17 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "../ThemeToggle";
 import { DashboardView, FolderOption } from "@/types/misc";
-import { NoteType } from "@/types/custom/notes";
-import {
-    createFolder,
-    deleteFolder,
-    updateFolder,
-} from "@/services/noteService";
 import { toast } from "sonner";
 import { signOut, useSession } from "next-auth/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { resolveFolderColor } from "@/utils/folderColors";
 import { useDashboardStore } from "@/Context/DashboardStore";
 import { useGetAllNotes } from "@/hooks/custom/useNotes";
-import { useGetAllFolders } from "@/hooks/custom/useFolders";
+import {
+    useCreateFolder,
+    useDeleteFolder,
+    useGetAllFolders,
+} from "@/hooks/custom/useFolders";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const Sidebar = () => {
     const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -49,13 +41,15 @@ const Sidebar = () => {
     const [folderBusy, setFolderBusy] = useState(false);
 
     const newFolderInputRef = useRef<HTMLInputElement>(null);
-    const queryClient = useQueryClient();
 
     const { data: notes = [] } = useGetAllNotes();
     const { data: folders = [], isLoading: isFoldersLoading } =
         useGetAllFolders();
+    const createFolder = useCreateFolder();
+    const deleteFolder = useDeleteFolder();
 
     const { data } = useSession();
+    const router = useRouter();
     const {
         sidebarOpen,
         setSidebarOpen,
@@ -95,9 +89,7 @@ const Sidebar = () => {
         if (!name || folderBusy) return;
         try {
             setFolderBusy(true);
-            await createFolder({ name });
-            await queryClient.invalidateQueries({ queryKey: ["folders"] });
-            toast.success(`Folder “${name}” created`, { toasterId: "normal" });
+            await createFolder.mutateAsync({ name });
             setNewFolderName("");
             setIsCreatingFolder(false);
         } catch (error) {
@@ -112,41 +104,15 @@ const Sidebar = () => {
         }
     };
 
-    const handleToggleFolderFavorite = async (folder: FolderOption) => {
-        try {
-            await updateFolder(folder.id, { isFavorite: !folder.isFavorite });
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-        } catch (error) {
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Couldn't update folder",
-                { toasterId: "normal" },
-            );
-        }
-    };
-
     const handleDeleteFolder = async (folder: FolderOption) => {
         const confirmed = window.confirm(
             `Delete the folder “${folder.name}”? Notes must be moved out first.`,
         );
         if (!confirmed) return;
-        try {
-            await deleteFolder(folder.id);
-            await queryClient.invalidateQueries({ queryKey: ["folders"] });
-            if (view.kind === "folder" && view.folderId === folder.id) {
-                setView({ kind: "all" });
-            }
-            toast.success(`Folder “${folder.name}” deleted`, {
-                toasterId: "normal",
-            });
-        } catch (error) {
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Couldn't delete folder",
-                { toasterId: "normal" },
-            );
+
+        await deleteFolder.mutateAsync(folder.id);
+        if (view.kind === "folder" && view.folderId === folder.id) {
+            router.replace("/dashboard");
         }
     };
 
@@ -247,14 +213,14 @@ const Sidebar = () => {
                     icon={<FileText size={15} />}
                     label="All notes"
                     count={allCount}
-                    onClick={() => selectView({ kind: "all" })}
+                    href="/dashboard"
                 />
                 <NavItem
                     active={view.kind === "favorites"}
                     icon={<Star size={15} />}
                     label="Favorites"
                     count={favCount}
-                    onClick={() => selectView({ kind: "favorites" })}
+                    href="/dashboard/favourite"
                 />
             </nav>
 
@@ -319,7 +285,6 @@ const Sidebar = () => {
                 ) : orderedFolders.length > 0 ? (
                     <ul className="flex flex-col gap-0.5">
                         {orderedFolders.map((folder) => {
-                            const color = resolveFolderColor(folder.color);
                             const active =
                                 view.kind === "folder" &&
                                 view.folderId === folder.id;
@@ -339,14 +304,8 @@ const Sidebar = () => {
                                                 : "hover:bg-muted/40",
                                         )}
                                     >
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                selectView({
-                                                    kind: "folder",
-                                                    folderId: folder.id,
-                                                })
-                                            }
+                                        <Link
+                                            href={`/dashboard/folder/${folder.id}`}
                                             aria-current={
                                                 active ? "page" : undefined
                                             }
@@ -367,41 +326,13 @@ const Sidebar = () => {
                                             >
                                                 {folder.name}
                                             </span>
-                                        </button>
+                                        </Link>
 
                                         {/* Right cluster: count is always
                                                 present (no hover layout shift);
                                                 actions fade in but keep their
                                                 space + tab order. */}
                                         <div className="flex shrink-0 items-center">
-                                            <button
-                                                type="button"
-                                                aria-label={
-                                                    folder.isFavorite
-                                                        ? "Unfavorite folder"
-                                                        : "Favorite folder"
-                                                }
-                                                onClick={() =>
-                                                    handleToggleFolderFavorite(
-                                                        folder,
-                                                    )
-                                                }
-                                                className={cn(
-                                                    "grid h-6 w-6 place-items-center rounded-md outline-none transition-colors duration-150 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)",
-                                                    folder.isFavorite
-                                                        ? "text-brand opacity-100"
-                                                        : "text-muted-foreground opacity-0 hover:text-ink focus-visible:opacity-100 group-hover/folder:opacity-100",
-                                                )}
-                                            >
-                                                <Star
-                                                    size={13}
-                                                    className={
-                                                        folder.isFavorite
-                                                            ? "fill-current"
-                                                            : ""
-                                                    }
-                                                />
-                                            </button>
                                             <button
                                                 type="button"
                                                 aria-label="Delete folder"
@@ -485,17 +416,16 @@ const NavItem = ({
     icon,
     label,
     count,
-    onClick,
+    href,
 }: {
     active: boolean;
     icon: React.ReactNode;
     label: string;
     count: number;
-    onClick: () => void;
+    href: string;
 }) => (
-    <button
-        type="button"
-        onClick={onClick}
+    <Link
+        href={href}
         aria-current={active ? "page" : undefined}
         className={cn(
             "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium outline-none transition-colors duration-150",
@@ -508,5 +438,5 @@ const NavItem = ({
         <span className="text-[11px] text-muted-foreground tabular-nums">
             {count}
         </span>
-    </button>
+    </Link>
 );

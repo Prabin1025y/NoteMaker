@@ -1,10 +1,12 @@
+import { blockTypeOptions } from "../Editor";
+
 export interface NoteBlockType {
     id: string;
-    type: string;
+    type: blockTypeOptions;
     content: string;
     designId: number;
     colorOptionId: number;
-    title: string;
+    title: string | null;
     order: number;
     noteId: string;
     createdAt: Date;

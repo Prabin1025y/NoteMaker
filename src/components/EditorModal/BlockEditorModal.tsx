@@ -8,10 +8,8 @@ import BlockContentEditor from "./BlockContentEditor";
 import BlockSettingsSidebar from "./BlockSettingsSidebar";
 import BlockEditorFooter from "./BlockEditorFooter";
 import { getBlockTypeConfig } from "./block-editor-config";
-import {
-    getBlobImageFile,
-    removeBlobImageFile,
-} from "@/lib/tiptap-utils";
+import { getBlobImageFile, removeBlobImageFile } from "@/lib/tiptap-utils";
+import { useNoteStore } from "@/Context/DataStore";
 
 type TiptapJsonNode = {
     type?: string;
@@ -57,7 +55,11 @@ const uploadBlobImages = async (content: string): Promise<string> => {
         error?: string;
     };
 
-    if (!response.ok || !data.images || data.images.length !== blobUrls.length) {
+    if (
+        !response.ok ||
+        !data.images ||
+        data.images.length !== blobUrls.length
+    ) {
         throw new Error(data.error || "Failed to upload images");
     }
 
@@ -80,16 +82,11 @@ const uploadBlobImages = async (content: string): Promise<string> => {
 };
 
 interface BlockEditorModalProps {
-    onClose: () => void;
     onSave: (editorData: EditorData) => void;
-    editorData: EditorData;
 }
 
-const BlockEditorModal = ({
-    onClose,
-    onSave,
-    editorData,
-}: BlockEditorModalProps) => {
+const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
+    const { editorData, setIsEditorOpen } = useNoteStore();
     const { state, dispatch } = useBlockEditorState(editorData);
 
     const currentBlock = useMemo(
@@ -124,12 +121,12 @@ const BlockEditorModal = ({
             });
             const data = await response.json();
             savedContent = data.url;
-        } else if (state.currentType === "block" || state.currentType === "heading") {
+        } else if (
+            state.currentType === "block" ||
+            state.currentType === "heading"
+        ) {
             savedContent = await uploadBlobImages(state.content);
         }
-
-
-        
 
         onSave({
             id: editorData.id,
@@ -161,14 +158,14 @@ const BlockEditorModal = ({
     }, [handleSave]);
 
     const handleClose = () => {
-        onClose();
+        setIsEditorOpen(false);
     };
 
     const panelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === "Escape") onClose();
+            if (e.key === "Escape") setIsEditorOpen(false);
         };
         window.addEventListener("keydown", onKey);
         const id = window.setTimeout(() => panelRef.current?.focus(), 30);
@@ -176,7 +173,7 @@ const BlockEditorModal = ({
             window.removeEventListener("keydown", onKey);
             window.clearTimeout(id);
         };
-    }, [onClose]);
+    }, [setIsEditorOpen]);
 
     if (!currentBlock) {
         return null;

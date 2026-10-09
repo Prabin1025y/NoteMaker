@@ -8,6 +8,8 @@ import TableBlock from "@/components/Blocks/TableBlock";
 import CanvasBlock from "@/components/Blocks/CanvasBlock";
 import { apiFetch } from "@/lib/api-client";
 import { blockTypeOptions } from "@/types/Editor";
+import { NoteSortKey } from "@/types/misc";
+import { NoteType } from "@/types/custom/notes";
 
 export function isValidJson(str: string) {
     try {
@@ -20,7 +22,7 @@ export function isValidJson(str: string) {
 
 export const initialJsonForEditor = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`;
 export const editorJsonForPreview = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"This is example text for this block."}]}]}`;
-export const initialHeadingJsonContent = `{"type":"doc","content":[{"type":"heading","attrs":{"textAlign":"center","level":2},"content":[{"type":"text","text":"Heading"}]}]}`
+export const initialHeadingJsonContent = `{"type":"doc","content":[{"type":"heading","attrs":{"textAlign":"center","level":2},"content":[{"type":"text","text":"Heading"}]}]}`;
 
 export const MONACO_LANGUAGES = [
     "plaintext",
@@ -105,4 +107,37 @@ export const getBlocksFromNoteId = async (id: string) => {
                 : "Error while fetching data",
         );
     }
+};
+
+export const SORT_OPTIONS: { key: NoteSortKey; label: string }[] = [
+    { key: "updated", label: "Last edited" },
+    { key: "created", label: "Date created" },
+    { key: "title", label: "Title (A–Z)" },
+];
+
+export const formatDate = (value: Date | string) =>
+    new Date(value).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+
+export const sortNotes = (list: NoteType[], sort: NoteSortKey) => {
+    const copy = [...list];
+    if (sort === "title") {
+        return copy.sort((a, b) =>
+            (a.title || "Untitled").localeCompare(b.title || "Untitled"),
+        );
+    }
+    const field = sort === "created" ? "createdAt" : "updatedAt";
+    return copy.sort(
+        (a, b) => new Date(b[field]).getTime() - new Date(a[field]).getTime(),
+    );
+};
+
+export const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
+    return "Good evening";
 };
