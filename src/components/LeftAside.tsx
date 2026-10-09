@@ -10,22 +10,18 @@ import {
     Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNoteStore } from "@/Context/DataStore";
 
 interface LeftAsideProps {
     openBlockEditor: (editorData: EditorData) => void;
-    isGenerating: boolean;
-    openAiModel: () => void;
 }
 
 const COLLAPSED_WIDTH = "w-[52px]";
 const EXPANDED_WIDTH = "w-60";
 
-const LeftAside = ({
-    openBlockEditor,
-    isGenerating,
-    openAiModel,
-}: LeftAsideProps) => {
+const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const { isGenerating, setIsAiOpen } = useNoteStore();
 
     const handleBlockClick = (
         type: blockTypeOptions,
@@ -63,7 +59,7 @@ const LeftAside = ({
                             <div className="flex gap-2 items-center">
                                 <Button
                                     size="sm"
-                                    onClick={() => openAiModel()}
+                                    onClick={() => setIsAiOpen(true)}
                                     disabled={isGenerating}
                                     className={`${isGenerating && "cursor-not-allowed opacity-70"} flex-1 bg-primary text-primary-foreground transition-[filter] duration-150 hover:brightness-105`}
                                 >
@@ -83,7 +79,7 @@ const LeftAside = ({
                             <>
                                 <button
                                     type="button"
-                                    onClick={() => openAiModel()}
+                                    onClick={() => setIsAiOpen(true)}
                                     title="AI Block Generator"
                                     className="group-hover/aside:hidden flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-tint"
                                 >

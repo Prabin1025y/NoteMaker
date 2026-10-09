@@ -18,20 +18,18 @@ import { RefObject, useEffect, useRef, useState } from "react";
 
 interface MainPageProps {
     openBlockEditor: (editorData: EditorData) => void;
-    isGenerating: boolean;
-    openAiModel: () => void;
     noteRef: RefObject<HTMLDivElement | null>;
-    isReadOnly?: boolean;
 }
 
-const MainPage = ({
-    openBlockEditor,
-    noteRef,
-    isGenerating,
-    openAiModel,
-    isReadOnly = false,
-}: MainPageProps) => {
-    const { blocks, deleteBlock, draggingBlockId } = useNoteStore();
+const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
+    const {
+        blocks,
+        deleteBlock,
+        draggingBlockId,
+        isReadOnly,
+        isGenerating,
+        setIsAiOpen,
+    } = useNoteStore();
     const [showScrollTopBottom, setShowScrollTopBottom] = useState([
         false,
         true,
@@ -225,7 +223,7 @@ const MainPage = ({
                                 <button
                                     type="button"
                                     disabled={isGenerating}
-                                    onClick={() => openAiModel()}
+                                    onClick={() => setIsAiOpen(true)}
                                     className={`${isGenerating ? "cursor-not-allowed opacity-70" : ""} flex flex-1 flex-col items-center justify-center gap-3 rounded-xl bg-primary px-4 py-5 text-primary-foreground shadow-sm outline-none transition-[transform,filter] duration-150 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--ds-surface-canvas)] active:scale-[0.99]`}
                                 >
                                     <div

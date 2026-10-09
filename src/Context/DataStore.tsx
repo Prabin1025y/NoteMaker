@@ -3,15 +3,17 @@ import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
 import { EditorData } from "@/types/Editor";
 import { apiFetch } from "@/lib/api-client";
-import { createNote, updateNote } from "@/services/noteService";
 import { isEqual } from "lodash";
 import {
     AddBlockType,
     BlockSyncType,
     BlockType,
     EditBlockType,
-    NoteType,
 } from "@/types/dataSotoreTypes";
+import { NoteType } from "@/types/custom/notes";
+import { initialJsonForEditor } from "@/utils/UtilFunctions";
+import { queryClient } from "@/lib/query-client";
+import { notesKeys } from "@/hooks/custom/useNotes";
 
 const BLOCK_SYNC_COMPARE_KEYS = [
     "order",
@@ -91,49 +93,55 @@ const buildBlockSyncDiff = (
 };
 
 type Store = {
-    currentNote: NoteType | null;
     blocks: BlockType[];
     syncedBlocks: BlockType[];
     title: string;
-    notes: NoteType[];
     draggingBlockId: string | null;
     activeBlockId: string | null;
     blocksToBeSynced: BlockSyncType[];
     historyPast: BlockType[][];
     historyFuture: BlockType[][];
+    searchQuery: string;
+    editorData: EditorData;
+
     isReadOnly: boolean;
+    isSyncing: boolean;
+    isExporting: boolean;
+    isPreviewMode: boolean;
+    doSaveImmediately: boolean;
+    isAiOpen: boolean;
+    isGenerating: boolean;
+    isEditorOpen: boolean;
+    currentNote: NoteType | null;
 
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
     setActiveBlockId: (id: string | null) => void;
-    setNotes: (notes: NoteType[]) => void;
-    setReadOnly: (value: boolean) => void;
+    setSearchQuery: (query: string) => void;
+    setEditorData: (data: EditorData) => void;
 
-    createNote: (
-        title?: string,
-        description?: string,
-        folderOptions?: {
-            isNewFolder: boolean;
-            folderId?: string;
-            folderName?: string;
-        },
-    ) => Promise<NoteType>;
-    deleteNote: (id: string) => void;
-    toggleNoteFavorite: (id: string) => Promise<void>;
-    toggleNotePin: (id: string) => Promise<void>;
-    toggleNotePublic: (id: string) => Promise<void>;
-    loadNote: (id: string) => Promise<void>;
-    loadPublicNote: (note: NoteType, isOwner: boolean) => void;
-    updateNoteTitle: (title: string) => void;
+    setReadOnly: (value: boolean) => void;
+    setIsSyncing: (value: boolean) => void;
+    setIsExporting: (value: boolean) => void;
+    setIsPreviewMode: (value: boolean) => void;
+    setDoSaveImmediately: (value: boolean) => void;
+    setIsAiOpen: (value: boolean) => void;
+    setIsGenerating: (value: boolean) => void;
+    setIsEditorOpen: (value: boolean) => void;
+
+    loadNote: (ownedNote: NoteType, blocks: BlockType[]) => Promise<void>;
+    loadPublicNote: (
+        note: NoteType,
+        isOwner: boolean,
+        blocks: BlockType[],
+    ) => void;
     initializeSyncedBlocks: () => void;
 
     addSaveBlock: (editorData: EditorData) => void;
     deleteBlock: (id: string) => void;
-    duplicateBlock: (id: string) => void;
 
     pushToBlocksToBeSynced: (data: BlockSyncType) => void;
-    syncLocally: () => void;
     syncToDB: () => Promise<void>;
 
     undo: () => void;
@@ -145,28 +153,56 @@ type Store = {
 
 export const useNoteStore = create<Store>()(
     devtools((set, get) => ({
-        currentNote: null,
         blocks: [],
         title: "Untitled Note",
-        notes: [],
         draggingBlockId: null,
         activeBlockId: null,
         blocksToBeSynced: [],
         historyPast: [],
         historyFuture: [],
         syncedBlocks: [],
-        isReadOnly: false,
+        currentNote: null,
+
+        isReadOnly: true,
+        isSyncing: false,
+        isExporting: false,
+        isPreviewMode: false,
+        isAiOpen: false,
+        isGenerating: false,
+        isEditorOpen: false,
+        doSaveImmediately: false,
+        searchQuery: "",
+        editorData: {
+            id: "",
+            designId: 1,
+            order: "auto",
+            colorOptionId: 1,
+            title: "",
+            content: initialJsonForEditor,
+            type: "block",
+            action: "add",
+        },
+
+        setIsSyncing: (value) => set({ isSyncing: value }),
+        setIsExporting: (value) => set({ isExporting: value }),
+        setIsPreviewMode: (value) => set({ isPreviewMode: value }),
+        setDoSaveImmediately: (value) => set({ doSaveImmediately: value }),
+        setIsAiOpen: (value) => set({ isAiOpen: value }),
+        setIsGenerating: (value) => set({ isGenerating: value }),
+        setIsEditorOpen: (value) => set({ isEditorOpen: value }),
+        setEditorData: (data) => set({ editorData: data }),
+        setSearchQuery: (query) => set({ searchQuery: query }),
 
         setTitle: (title) => set({ title }),
         setBlocks: (blocks, recordHistory = true) => {
             // Setting blocks must work in read-only mode too (public viewers
             // receive fetched blocks); only history recording is skipped.
+            if (isEqual(get().blocks, blocks)) return;
             if (!get().isReadOnly && recordHistory) get().snapshotHistory();
             set({ blocks });
         },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
         setActiveBlockId: (id) => set({ activeBlockId: id }),
-        setNotes: (notes) => set({ notes }),
         setReadOnly: (value) => set({ isReadOnly: value }),
 
         initializeSyncedBlocks: () => set({ syncedBlocks: get().blocks }),
@@ -182,11 +218,11 @@ export const useNoteStore = create<Store>()(
             });
         },
 
-        canUndo: () => get().historyPast.length > 0,
-        canRedo: () => get().historyFuture.length > 0,
+        canUndo: () => get().historyPast.length > 0 && !get().isSyncing,
+        canRedo: () => get().historyFuture.length > 0 && !get().isSyncing,
 
         undo: () => {
-            if (get().isReadOnly) return;
+            if (get().isReadOnly || get().isSyncing) return;
             const past = get().historyPast;
             if (past.length === 0) return;
 
@@ -205,12 +241,10 @@ export const useNoteStore = create<Store>()(
             )) {
                 get().pushToBlocksToBeSynced(syncDiff);
             }
-
-            get().syncLocally();
         },
 
         redo: () => {
-            if (get().isReadOnly) return;
+            if (get().isReadOnly || get().isSyncing) return;
             const future = get().historyFuture;
             if (future.length === 0) return;
 
@@ -226,184 +260,47 @@ export const useNoteStore = create<Store>()(
             for (const syncDiff of buildBlockSyncDiff(currentBlocks, next)) {
                 get().pushToBlocksToBeSynced(syncDiff);
             }
-
-            get().syncLocally();
         },
 
-        createNote: async (
-            title = "Untitled Note",
-            description = "",
-            folderOptions,
-        ) => {
-            const { note, authorName, folderId } = await createNote(
-                title,
-                description,
-                folderOptions,
-            );
-            const newNote: NoteType = {
-                id: note.id,
-                folderId,
-                authorName: authorName,
-                description: note.description,
-                title: note.title,
-                blocksCount: note._count.blocks,
-                createdAt: note.createdAt,
-                updatedAt: note.updatedAt,
-                authorId: note.authorId,
-                isFavorite: Boolean(note.isFavorite),
-                isPinned: Boolean(note.isPinned),
-                isPublic: Boolean(note.isPublic),
-            };
+        loadNote: async (ownedNote, blocks) => {
+            const notes = queryClient.getQueryData<NoteType[]>(notesKeys.allList());
             set({
-                notes: [...get().notes, newNote],
-            });
-            get().syncLocally();
-            get().loadNote(newNote.id);
-            return newNote;
-        },
-
-        deleteNote: (id) => {
-            set({ notes: get().notes.filter((note) => note.id !== id) });
-        },
-
-        toggleNoteFavorite: async (id) => {
-            const note = get().notes.find((n) => n.id === id);
-            if (!note) return;
-
-            const nextValue = !note.isFavorite;
-
-            // Optimistic update.
-            set({
-                notes: get().notes.map((n) =>
-                    n.id === id ? { ...n, isFavorite: nextValue } : n,
-                ),
-            });
-
-            try {
-                await updateNote(id, { isFavorite: nextValue });
-            } catch (error) {
-                // Roll back on failure.
-                set({
-                    notes: get().notes.map((n) =>
-                        n.id === id ? { ...n, isFavorite: !nextValue } : n,
-                    ),
-                });
-                if (process.env.NODE_ENV === "development") console.log(error);
-            }
-        },
-
-        toggleNotePin: async (id) => {
-            const note = get().notes.find((n) => n.id === id);
-            if (!note) return;
-
-            const nextValue = !note.isPinned;
-
-            // Optimistic update.
-            set({
-                notes: get().notes.map((n) =>
-                    n.id === id ? { ...n, isPinned: nextValue } : n,
-                ),
-            });
-
-            try {
-                await updateNote(id, { isPinned: nextValue });
-            } catch (error) {
-                // Roll back on failure.
-                set({
-                    notes: get().notes.map((n) =>
-                        n.id === id ? { ...n, isPinned: !nextValue } : n,
-                    ),
-                });
-                if (process.env.NODE_ENV === "development") console.log(error);
-            }
-        },
-
-        toggleNotePublic: async (id) => {
-            const current = get().currentNote;
-            const note =
-                get().notes.find((n) => n.id === id) ??
-                (current?.id === id ? current : undefined);
-            if (!note) return;
-
-            const nextValue = !note.isPublic;
-
-            // Optimistic update of both the notes list and the open note.
-            set({
-                notes: get().notes.map((n) =>
-                    n.id === id ? { ...n, isPublic: nextValue } : n,
-                ),
-                currentNote:
-                    current && current.id === id
-                        ? { ...current, isPublic: nextValue }
-                        : current,
-            });
-
-            try {
-                await updateNote(id, { isPublic: nextValue });
-            } catch (error) {
-                // Roll back on failure.
-                const rolledBackCurrent = get().currentNote;
-                set({
-                    notes: get().notes.map((n) =>
-                        n.id === id ? { ...n, isPublic: !nextValue } : n,
-                    ),
-                    currentNote:
-                        rolledBackCurrent && rolledBackCurrent.id === id
-                            ? { ...rolledBackCurrent, isPublic: !nextValue }
-                            : rolledBackCurrent,
-                });
-                if (process.env.NODE_ENV === "development") console.log(error);
-            }
-        },
-
-        loadNote: async (id) => {
-            const note = get().notes.find((note) => note.id === id);
-            // Only the owner's own notes live in `notes`; if it isn't here the
-            // caller should use loadPublicNote (viewer path) instead.
-            if (!note) return;
-            set({
-                title: note.title,
-                currentNote: note,
+                title: ownedNote.title,
                 isReadOnly: false,
+                currentNote: ownedNote,
+                blocks,
+                syncedBlocks: blocks,
                 blocksToBeSynced: [],
                 historyPast: [],
                 historyFuture: [],
             });
         },
 
-        loadPublicNote: (note, isOwner) => {
+        loadPublicNote: (note, isOwner, blocks) => {
+            
             // Viewer path: the note isn't in the user's own list, so set it as
             // the current note directly. Non-owners get a read-only session.
             set({
                 title: note.title,
                 currentNote: note,
                 isReadOnly: !isOwner,
+                blocks,
+                syncedBlocks: blocks,
                 blocksToBeSynced: [],
                 historyPast: [],
                 historyFuture: [],
             });
         },
 
-        updateNoteTitle: (title) => {
-            set({ title });
-            const currentNoteId = get().currentNote?.id;
-            if (!currentNoteId) return;
-
-            const updatedNotes = get().notes.map((note) =>
-                note.id === currentNoteId
-                    ? { ...note, title, updatedAt: new Date() }
-                    : note,
-            );
-            set({ notes: updatedNotes });
-        },
-
         addSaveBlock: (editorData) => {
             if (get().isReadOnly) return;
+            const currentNote = get().currentNote;
+            if (!currentNote) return;
             get().snapshotHistory();
             if (editorData.action === "add") {
                 const lastBlockOrder = get().blocks.at(-1)?.order;
                 const publicId = uuidv4();
-                const currentNote = get().currentNote;
+
                 if (!currentNote)
                     return alert("No note is currently in session");
 
@@ -491,53 +388,13 @@ export const useNoteStore = create<Store>()(
                     data: changedBlock,
                 });
             }
-            get().syncLocally();
         },
 
         deleteBlock: (id) => {
             if (get().isReadOnly) return;
             get().snapshotHistory();
             set({ blocks: get().blocks.filter((block) => block.id !== id) });
-            get().syncLocally();
             get().pushToBlocksToBeSynced({ id, action: "delete" });
-        },
-
-        duplicateBlock: (id) => {
-            if (get().isReadOnly) return;
-            get().snapshotHistory();
-            const existingBlocks = get().blocks;
-            const blockIndex = existingBlocks.findIndex(
-                (block) => block.id === id,
-            );
-            const block = existingBlocks.find((block) => block.id === id);
-            if (!block) return;
-
-            const newBlock: BlockType = {
-                ...block,
-                id: uuidv4(),
-            };
-
-            const beforeItems = existingBlocks.slice(0, blockIndex + 1);
-            const afterItems = existingBlocks.slice(blockIndex + 1);
-            set({ blocks: [...beforeItems, newBlock, ...afterItems] });
-            get().syncLocally();
-        },
-
-        syncLocally: () => {
-            const currentNoteId = get().currentNote?.id;
-            const note = get().notes.find((note) => note.id === currentNoteId);
-            if (!note) return;
-            const updatedNote: NoteType = {
-                ...note,
-                blocksCount: get().blocks.length,
-                updatedAt: new Date(),
-            };
-
-            set({
-                notes: get().notes.map((note) =>
-                    note.id === currentNoteId ? updatedNote : note,
-                ),
-            });
         },
 
         pushToBlocksToBeSynced: (data) => {
@@ -623,6 +480,7 @@ export const useNoteStore = create<Store>()(
 
                 if (!res.ok) {
                     alert("Couldn't save!");
+                    set({ blocksToBeSynced: backupBlocksToBeSynced });
                     return;
                 }
 
@@ -653,8 +511,10 @@ export const useNoteStore = create<Store>()(
                 if (process.env.NODE_ENV === "development") console.log(error);
                 //TODO: bug of duplicate entry
                 set({
-                    blocksToBeSynced: get().blocksToBeSynced.concat(backupBlocksToBeSynced)
-                })
+                    blocksToBeSynced: get().blocksToBeSynced.concat(
+                        backupBlocksToBeSynced,
+                    ),
+                });
 
                 alert(
                     error instanceof Error

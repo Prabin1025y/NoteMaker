@@ -1,29 +1,20 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { Sparkles, X } from "lucide-react";
 import { useNoteStore } from "@/Context/DataStore";
 import { Button } from "@/components/ui/button";
 import { generateAiNote } from "@/lib/generate-note";
 
-interface AiBlockGeneratorProps {
-    isOpen: boolean;
-    setIsGenerating: Dispatch<SetStateAction<boolean>>;
-    onClose: () => void;
-}
-
-const AiBlockGenerator = ({
-    isOpen,
-    onClose,
-    setIsGenerating,
-}: AiBlockGeneratorProps) => {
-    const { addSaveBlock } = useNoteStore();
+const AiBlockGenerator = () => {
+    const { addSaveBlock, isAiOpen, setIsAiOpen, setIsGenerating } =
+        useNoteStore();
     const [prompt, setPrompt] = useState("");
 
     const handleGenerateBlocks = async () => {
         try {
             setIsGenerating(true);
-            onClose();
+            setIsAiOpen(false);
 
             await generateAiNote(prompt, addSaveBlock);
 
@@ -39,7 +30,7 @@ const AiBlockGenerator = ({
         }
     };
 
-    if (!isOpen) return null;
+    if (!isAiOpen) return null;
 
     return (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/30 px-4 backdrop-blur-[2px]">
@@ -63,7 +54,7 @@ const AiBlockGenerator = ({
                     <button
                         type="button"
                         onClick={() => {
-                            onClose();
+                            setIsAiOpen(false);
                             setPrompt("");
                         }}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background/80 hover:text-ink"
@@ -105,7 +96,7 @@ const AiBlockGenerator = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                            onClose();
+                            setIsAiOpen(false);
                             setPrompt("");
                         }}
                     >

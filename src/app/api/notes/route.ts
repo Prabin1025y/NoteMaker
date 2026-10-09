@@ -62,14 +62,10 @@ export const POST = withErrorHandling(async (req) => {
             authorId: user.id,
             folderId: f_id,
         },
-        include: {
-            _count: {
-                select: {
-                    blocks: true,
-                },
-            },
+        select: {
+            id: true,
         },
     });
 
-    return NextResponse.json({ note, authorName: user.name, folderId: f_id });
+    return NextResponse.json({ noteId: note.id });
 });

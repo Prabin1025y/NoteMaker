@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
     ArrowLeft,
+    ChevronDown,
     Check,
     Eye,
     Globe,
@@ -19,47 +20,61 @@ import { Button } from "@/components/ui/button";
 import { useNoteStore } from "@/Context/DataStore";
 import { toast } from "sonner";
 import ThemeToggle from "../ThemeToggle";
+import {
+    useGetNotesInFolderOfNote,
+    useUpdateNote,
+} from "@/hooks/custom/useNotes";
+import { useRouter } from "next/navigation";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NoteChromeHeaderProps {
-    searchQuery: string;
-    onSearchChange: (query: string) => void;
     onHomeClick: () => void;
     onSave: () => void;
     onExport: () => void;
     onPreview: () => void;
-    isSyncing: boolean;
-    isExporting: boolean;
     hasUnsaved: boolean;
-    isPreviewMode?: boolean;
-    isReadOnly?: boolean;
+    isLoading: boolean;
 }
 
 const NoteChromeHeader = ({
-    searchQuery,
-    onSearchChange,
     onHomeClick,
+    isLoading,
     onSave,
     onExport,
     onPreview,
-    isSyncing,
-    isExporting,
     hasUnsaved,
-    isPreviewMode = false,
-    isReadOnly = false,
 }: NoteChromeHeaderProps) => {
     const {
-        currentNote,
         blocks,
         undo,
         redo,
         canUndo,
         canRedo,
-        toggleNotePublic,
+        isSyncing,
+        isExporting,
+        isPreviewMode,
+        isReadOnly,
+        searchQuery,
+        setSearchQuery,
+        currentNote,
     } = useNoteStore();
 
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [isTogglingPublic, setIsTogglingPublic] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    const updateNote = useUpdateNote();
+    const router = useRouter();
+    const { data: folderNotes = [], isLoading: isFolderNotesLoading } =
+        useGetNotesInFolderOfNote(currentNote?.id ?? "");
+    const otherFolderNotes = folderNotes.filter(
+        (note) => note.id !== currentNote?.id,
+    );
 
     const isPublic = Boolean(currentNote?.isPublic);
     const shareLink = typeof window !== "undefined" ? window.location.href : "";
@@ -67,7 +82,10 @@ const NoteChromeHeader = ({
     const handleTogglePublic = async () => {
         if (!currentNote) return;
         setIsTogglingPublic(true);
-        await toggleNotePublic(currentNote.id);
+        await updateNote.mutateAsync({
+            id: currentNote.id,
+            patch: { isPublic: !isPublic },
+        });
         setIsTogglingPublic(false);
     };
 
@@ -96,15 +114,68 @@ const NoteChromeHeader = ({
                     Home
                 </Button>
                 <div className="h-4 w-px bg-muted-foreground/30" />
-                <div className="min-w-0">
-                    <h1 className="text-[14px] font-semibold text-ink tracking-tight truncate max-w-[200px] lg:max-w-[280px]">
-                        {currentNote?.title || "Untitled"}
-                    </h1>
-                    <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
+
+                {isLoading ? (
+                    <div className="min-w-0 w-20">
+                        <div className="flex max-w-50 items-center gap-1 w-24 h-4 bg-foreground/60 animate-pulse lg:max-w-70"></div>
+                        <div className="bg-muted-foreground/60 animate-pulse h-2 w-10 mt-0.5"></div>
+                    </div>
+                ) : (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger
+                            disabled={isFolderNotesLoading || isLoading}
+                            asChild
+                        >
+                            <div className="min-w-0">
+                                <button
+                                    type="button"
+                                    className="flex max-w-50 items-center gap-1 text-left text-[14px] font-semibold tracking-tight text-ink outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring) lg:max-w-70"
+                                    aria-label="Choose another note in this folder"
+                                >
+                                    <span className="truncate">
+                                        {currentNote?.title || "Untitled"}
+                                    </span>
+                                    {otherFolderNotes.length > 0 && (
+                                        <ChevronDown
+                                            size={14}
+                                            className="shrink-0 text-muted-foreground"
+                                        />
+                                    )}
+                                </button>
+                                <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
+                                    {blocks?.length ?? 0}{" "}
+                                    {(blocks?.length ?? 0) === 1
+                                        ? "block"
+                                        : "blocks"}
+                                </p>
+                            </div>
+                        </DropdownMenuTrigger>
+                        {otherFolderNotes.length > 0 && (
+                            <DropdownMenuContent
+                                align="start"
+                                className="w-64"
+                            >
+                                {otherFolderNotes.map((note) => (
+                                    <DropdownMenuItem
+                                        key={note.id}
+                                        onSelect={() =>
+                                            router.push(`/note/${note.id}`)
+                                        }
+                                        className="cursor-pointer"
+                                    >
+                                        <span className="min-w-0 flex-1 truncate">
+                                            {note.title || "Untitled"}
+                                        </span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        )}
+                    </DropdownMenu>
+                )}
+                {/* <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
                         {blocks?.length ?? 0}{" "}
                         {(blocks?.length ?? 0) === 1 ? "block" : "blocks"}
-                    </p>
-                </div>
+                    </p> */}
             </div>
 
             {/* Center — Search */}
@@ -117,9 +188,9 @@ const NoteChromeHeader = ({
                     <input
                         type="text"
                         value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search blocks..."
-                        className="w-full h-8 pl-9 pr-3 text-[13px] rounded-lg border border-muted bg-background/80 text-ink placeholder:text-muted-foreground outline-none transition-colors focus:border-[color:var(--ds-focus-ring)] focus:ring-2 focus:ring-[color:var(--ds-focus-ring)] focus:bg-card/80"
+                        className="w-full h-8 pl-9 pr-3 text-[13px] rounded-lg border border-muted bg-background/80 text-ink placeholder:text-muted-foreground outline-none transition-colors focus:border-(--ds-focus-ring) focus:ring-2 focus:ring-(--ds-focus-ring) focus:bg-card/80"
                     />
                 </div>
             </div>
@@ -133,11 +204,12 @@ const NoteChromeHeader = ({
                             Read only
                         </span>
                         <div className="h-4 w-px bg-muted mx-1" />
+                        <ThemeToggle className="h-7" />
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={onPreview}
-                            className={`border-muted text-body hover:bg-background/80 ${isPreviewMode ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-primary" : ""}`}
+                            className={`border-muted text-body hover:bg-background/80 ${isPreviewMode ? "bg-brand-soft border-(--ds-accent-soft) text-primary" : ""}`}
                         >
                             <Eye size={14} />
                             Preview
@@ -184,7 +256,7 @@ const NoteChromeHeader = ({
                             variant="default"
                             size="sm"
                             onClick={onPreview}
-                            className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPreviewMode ? "bg-primary/60 border-[color:var(--ds-accent-soft)] text-background" : ""}`}
+                            className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPreviewMode ? "bg-primary/60 border-(--ds-accent-soft) text-background" : ""}`}
                         >
                             <Eye size={14} />
                             Preview
@@ -197,7 +269,7 @@ const NoteChromeHeader = ({
                                 size="sm"
                                 onClick={() => setIsShareOpen((v) => !v)}
                                 disabled={!currentNote}
-                                className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPublic ? "bg-brand-soft border-[color:var(--ds-accent-soft)] text-primary" : ""}`}
+                                className={`border-muted text-body bg-primary/10 hover:bg-primary/20 ${isPublic ? "bg-brand-soft border-(--ds-accent-soft) text-primary" : ""}`}
                             >
                                 <Share2 size={14} />
                                 Share

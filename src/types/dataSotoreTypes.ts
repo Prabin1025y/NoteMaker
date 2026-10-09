@@ -14,21 +14,6 @@ export interface BlockType {
     order: number;
 }
 
-export interface NoteType {
-    id: string;
-    folderId: string;
-    title: string;
-    blocksCount: number;
-    createdAt: Date;
-    updatedAt: Date;
-    description: string;
-    authorName: string;
-    authorId: string;
-    isFavorite: boolean;
-    isPinned: boolean;
-    isPublic: boolean;
-}
-
 export type AddBlockType = Omit<BlockType, "id" | "updatedAt">;
 export type EditBlockType = Partial<
     Omit<BlockType, "id" | "publicId" | "createdAt" | "updatedAt" | "noteId">
