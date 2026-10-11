@@ -8,7 +8,11 @@ import {
     Heading,
     PenLine,
 } from "lucide-react";
-import { initialHeadingJsonContent, initialJsonForEditor } from "./UtilFunctions";
+import {
+    initialHeadingJsonContent,
+    initialJsonForCanvas,
+    initialJsonForEditor,
+} from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { ALL_DIVIDERS } from "./Dividers";
 import { blockTypeOptions } from "@/types/Editor";
@@ -66,7 +70,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "basic",
-        shortcut: "alt + B"
+        shortcut: "alt + B",
     },
     {
         defaultDesignId: 1,
@@ -79,7 +83,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "basic",
-        shortcut: "alt + H"
+        shortcut: "alt + H",
     },
     // {
     //     defaultDesignId: 2,
@@ -132,7 +136,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "developer",
-        shortcut: "alt + C"
+        shortcut: "alt + C",
     },
     {
         defaultDesignId: 1,
@@ -145,7 +149,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + F"
+        shortcut: "alt + F",
     },
     {
         defaultDesignId: 1,
@@ -158,20 +162,20 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + I"
+        shortcut: "alt + I",
     },
     {
         defaultDesignId: 0,
         type: "canvas",
         title: "Drawing",
-        defaultContent: "",
+        defaultContent: initialJsonForCanvas,
         description: "Sketch, handwrite or diagram freely",
         icon: <PenLine size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + W"
+        shortcut: "alt + W",
     },
     {
         defaultDesignId: 1,
@@ -184,7 +188,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + T"
+        shortcut: "alt + T",
     },
     // {
     // defaultDesignId: 1,
@@ -217,6 +221,6 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "basic",
-        shortcut: "alt + D"
+        shortcut: "alt + D",
     },
 ];

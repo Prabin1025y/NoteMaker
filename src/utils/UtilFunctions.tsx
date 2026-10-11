@@ -5,11 +5,11 @@ import GeneralBlock from "@/components/Blocks/GeneralBlock";
 import HeaderBlock from "@/components/Blocks/HeaderBlock";
 import ImageBlock from "@/components/Blocks/ImageBlock";
 import TableBlock from "@/components/Blocks/TableBlock";
-import CanvasBlock from "@/components/Blocks/CanvasBlock";
 import { apiFetch } from "@/lib/api-client";
 import { blockTypeOptions } from "@/types/Editor";
 import { NoteSortKey } from "@/types/misc";
 import { NoteType } from "@/types/custom/notes";
+import CanvasBlock from "@/components/Blocks/CanvasBlock";
 
 export function isValidJson(str: string) {
     try {
@@ -23,6 +23,7 @@ export function isValidJson(str: string) {
 export const initialJsonForEditor = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":" "}]}]}`;
 export const editorJsonForPreview = `{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"This is example text for this block."}]}]}`;
 export const initialHeadingJsonContent = `{"type":"doc","content":[{"type":"heading","attrs":{"textAlign":"center","level":2},"content":[{"type":"text","text":"Heading"}]}]}`;
+export const initialJsonForCanvas = `{data:{"document":{"store":{}}}, config:{"theme":"light", "grid":"dots"}}`;
 
 export const MONACO_LANGUAGES = [
     "plaintext",

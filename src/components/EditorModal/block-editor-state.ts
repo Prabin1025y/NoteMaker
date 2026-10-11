@@ -142,6 +142,7 @@ export const useBlockEditorState = (editorData: EditorData) => {
         if (editorData.action !== "save" || editorData.type !== "image") {
             return;
         }
+        
 
         let active = true;
         (async () => {

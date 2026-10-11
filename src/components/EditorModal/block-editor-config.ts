@@ -2,6 +2,7 @@ import { allBlocks } from "@/utils/BlocksInfo";
 import {
     editorJsonForPreview,
     initialHeadingJsonContent,
+    initialJsonForCanvas,
     initialJsonForEditor,
     isValidJson,
     MONACO_LANGUAGES,
@@ -160,18 +161,13 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         type: "canvas",
         showTitleField: true,
         supportsDesign: false,
-        initialContent: "",
+        initialContent: initialJsonForCanvas,
         titleLabel: "Caption",
         validate: ({ content }) => {
             if (!content) return false;
             try {
                 const parsed = JSON.parse(content);
-                return (
-                    Array.isArray(parsed?.strokes) &&
-                    parsed.strokes.length > 0 &&
-                    typeof parsed?.dataUrl === "string" &&
-                    parsed.dataUrl.length > 0
-                );
+                return true;
             } catch {
                 return false;
             }
