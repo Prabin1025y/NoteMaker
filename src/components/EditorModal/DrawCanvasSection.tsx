@@ -1,29 +1,16 @@
 import { Quickdraw } from "@quickdrawjs/react";
 import "@quickdrawjs/core/quickdraw.css";
 import { useRef } from "react";
-import { toast } from "sonner";
 import { CanvasEditorContentType } from "@/types/CanvasEditor";
-import { config } from "process";
 
-const parse = (content: string): CanvasEditorContentType | null => {
-    if (!content) return null;
-    try {
-        const parsed = JSON.parse(content);
-        if (typeof parsed !== "object" || parsed === null) return null;
-        return parsed;
-    } catch {
-        return null;
-    }
-};
 
 const DrawCanvasSection = ({
     content,
     onChangeHandler,
 }: {
-    content: string;
-    onChangeHandler: (value: string) => void;
+    content: CanvasEditorContentType;
+    onChangeHandler: (value: CanvasEditorContentType) => void;
 }) => {
-    const parsed = parse(content);
     const drawCanvasRef = useRef(null);
     return (
         <div className="flex flex-1 flex-col gap-3 min-h-0 bg-background relative">
@@ -32,39 +19,34 @@ const DrawCanvasSection = ({
                     ref={drawCanvasRef}
                     autoFit
                     onChange={(_diff, _source, editor) => {
-                        onChangeHandler(
-                            JSON.stringify({
-                                ...parsed,
-                                data: editor.store.getSnapshot(),
-                            }),
-                        );
+                        onChangeHandler({
+                            ...content,
+                            data: editor.store.getSnapshot(),
+                        });
                     }}
                     onGridChange={(grid) => {
-                        onChangeHandler(
-                            JSON.stringify({
-                                ...parsed,
-                                config: {
-                                    ...parsed?.config,
-                                    grid,
-                                },
-                            }),
-                        );
+                        console.log(grid)
+                        onChangeHandler({
+                            ...content,
+                            config: {
+                                ...content.config,
+                                grid,
+                            },
+                        });
                     }}
                     onThemeChange={(theme) => {
-                        onChangeHandler(
-                            JSON.stringify({
-                                ...parsed,
-                                config: {
-                                    ...parsed?.config,
-                                    theme,
-                                },
-                            }),
-                        );
+                        onChangeHandler({
+                            ...content,
+                            config: {
+                                ...content.config,
+                                theme,
+                            },
+                        });
                     }}
-                    grid={parsed?.config?.grid}
-                    theme={parsed?.config?.theme}
+                    grid={content.config.grid}
+                    theme={content.config.theme}
                     watermark={false}
-                    snapshot={parsed?.data}
+                    snapshot={content.data}
                 />
             </div>
         </div>

@@ -8,7 +8,7 @@ type CanvasBlockProps = {
     title?: string;
     designId?: number;
     colorOptionId?: number;
-    content: string;
+    content: CanvasEditorContentType;
 
     className?: string;
     readOnly?: boolean;
@@ -16,16 +16,6 @@ type CanvasBlockProps = {
     onDelete: () => void;
 };
 
-const parse = (content: string): CanvasEditorContentType | null => {
-    if (!content) return null;
-    try {
-        const parsed = JSON.parse(content);
-        if (typeof parsed !== "object" || parsed === null) return null;
-        return parsed;
-    } catch {
-        return null;
-    }
-};
 
 export default function CanvasBlock({
     content,
@@ -37,16 +27,15 @@ export default function CanvasBlock({
 }: CanvasBlockProps) {
     const iconClassName =
         "max-w-5 transition-transform group-hover/button:scale-110";
-    const parsed = parse(content);
     const canvasEditor = useRef<QuickdrawRef>(null);
 
-    if (!parsed) return;
+    if (!content) return;
 
     useEffect(() => {
         if (canvasEditor.current && content) {
-            canvasEditor.current.editor?.store.loadSnapshot(parsed.data);
-            canvasEditor.current.editor?.setGrid(parsed.config.grid);
-            canvasEditor.current.editor?.setTheme(parsed.config.theme);
+            canvasEditor.current.editor?.store.loadSnapshot(content.data);
+            canvasEditor.current.editor?.setGrid(content.config.grid);
+            canvasEditor.current.editor?.setTheme(content.config.theme);
             canvasEditor.current.editor?.fitContent({ animate: 220 });
         }
     }, [content, canvasEditor]);
@@ -79,16 +68,16 @@ export default function CanvasBlock({
                 </div>
             )}
 
-            {parsed ? (
+            {content ? (
                 <div className="w-[80%] mx-auto aspect-square">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <Quickdraw
                         ref={canvasEditor}
                         autoFit
-                        grid={parsed.config.grid}
-                        theme={parsed.config.theme}
+                        grid={content.config.grid}
+                        theme={content.config.theme}
                         readonly
-                        snapshot={parsed.data}
+                        snapshot={content.data}
                         watermark={false}
                     />
                 </div>

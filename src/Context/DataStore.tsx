@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { devtools } from "zustand/middleware";
-import { EditorData } from "@/types/Editor";
+import { EditorDataType } from "@/types/Editor";
 import { apiFetch } from "@/lib/api-client";
 import { isEqual } from "lodash";
 import {
@@ -11,7 +11,7 @@ import {
     EditBlockType,
 } from "@/types/dataSotoreTypes";
 import { NoteType } from "@/types/custom/notes";
-import { initialJsonForEditor } from "@/utils/UtilFunctions";
+import { INITIAL_EDITOR_DATA } from "@/utils/UtilFunctions";
 import { queryClient } from "@/lib/query-client";
 import { notesKeys } from "@/hooks/custom/useNotes";
 
@@ -50,6 +50,22 @@ const createAddSyncBlock = (block: BlockType): AddBlockType => ({
     order: block.order,
     title: block.title,
 });
+
+const getStoredContent = (editorData: EditorDataType): string => {
+    switch (editorData.type) {
+        case "image":
+            return editorData.url;
+        case "block":
+        case "heading":
+        case "canvas":
+        case "table":
+            return JSON.stringify(editorData.content);
+        case "code":
+        case "divider":
+        case "formula":
+            return editorData.content;
+    }
+};
 
 const buildBlockSyncDiff = (
     previousBlocks: BlockType[],
@@ -102,7 +118,7 @@ type Store = {
     historyPast: BlockType[][];
     historyFuture: BlockType[][];
     searchQuery: string;
-    editorData: EditorData;
+    editorDataState: EditorDataType;
 
     isReadOnly: boolean;
     isSyncing: boolean;
@@ -119,7 +135,7 @@ type Store = {
     setDraggingBlockId: (id: string | null) => void;
     setActiveBlockId: (id: string | null) => void;
     setSearchQuery: (query: string) => void;
-    setEditorData: (data: EditorData) => void;
+    setEditorDataState: (data: EditorDataType) => void;
 
     setReadOnly: (value: boolean) => void;
     setIsSyncing: (value: boolean) => void;
@@ -138,7 +154,7 @@ type Store = {
     ) => void;
     initializeSyncedBlocks: () => void;
 
-    addSaveBlock: (editorData: EditorData) => void;
+    addSaveBlock: (editorData: EditorDataType) => void;
     deleteBlock: (id: string) => void;
 
     pushToBlocksToBeSynced: (data: BlockSyncType) => void;
@@ -172,16 +188,7 @@ export const useNoteStore = create<Store>()(
         isEditorOpen: false,
         doSaveImmediately: false,
         searchQuery: "",
-        editorData: {
-            id: "",
-            designId: 1,
-            order: "auto",
-            colorOptionId: 1,
-            title: "",
-            content: initialJsonForEditor,
-            type: "block",
-            action: "add",
-        },
+        editorDataState: INITIAL_EDITOR_DATA,
 
         setIsSyncing: (value) => set({ isSyncing: value }),
         setIsExporting: (value) => set({ isExporting: value }),
@@ -190,7 +197,7 @@ export const useNoteStore = create<Store>()(
         setIsAiOpen: (value) => set({ isAiOpen: value }),
         setIsGenerating: (value) => set({ isGenerating: value }),
         setIsEditorOpen: (value) => set({ isEditorOpen: value }),
-        setEditorData: (data) => set({ editorData: data }),
+        setEditorDataState: (data) => set({ editorDataState: data }),
         setSearchQuery: (query) => set({ searchQuery: query }),
 
         setTitle: (title) => set({ title }),
@@ -263,7 +270,9 @@ export const useNoteStore = create<Store>()(
         },
 
         loadNote: async (ownedNote, blocks) => {
-            const notes = queryClient.getQueryData<NoteType[]>(notesKeys.allList());
+            const notes = queryClient.getQueryData<NoteType[]>(
+                notesKeys.allList(),
+            );
             set({
                 title: ownedNote.title,
                 isReadOnly: false,
@@ -277,7 +286,6 @@ export const useNoteStore = create<Store>()(
         },
 
         loadPublicNote: (note, isOwner, blocks) => {
-            
             // Viewer path: the note isn't in the user's own list, so set it as
             // the current note directly. Non-owners get a read-only session.
             set({
@@ -297,6 +305,8 @@ export const useNoteStore = create<Store>()(
             const currentNote = get().currentNote;
             if (!currentNote) return;
             get().snapshotHistory();
+            const content = getStoredContent(editorData);
+
             if (editorData.action === "add") {
                 const lastBlockOrder = get().blocks.at(-1)?.order;
                 const publicId = uuidv4();
@@ -316,7 +326,7 @@ export const useNoteStore = create<Store>()(
                     order,
                     designId: editorData.designId,
                     colorOptionId: editorData.colorOptionId,
-                    content: editorData.content,
+                    content,
                     type: editorData.type,
                     title: editorData.title,
                     createdAt: new Date(),
@@ -352,25 +362,22 @@ export const useNoteStore = create<Store>()(
                 );
                 if (!blockToBeChanged) return;
 
-                const changedBlock: EditBlockType = {};
-                const keysToCompare: Array<
-                    keyof Pick<
-                        BlockType,
-                        | "designId"
-                        | "colorOptionId"
-                        | "content"
-                        | "title"
-                        | "type"
-                    >
-                > = ["designId", "colorOptionId", "content", "title", "type"];
-
-                for (const key of keysToCompare) {
-                    const editorValue = editorData[key as keyof EditorData];
-                    if (editorValue !== blockToBeChanged[key]) {
-                        (changedBlock as Record<string, unknown>)[key] =
-                            editorValue;
-                    }
-                }
+                const changedBlock: EditBlockType = {
+                    ...(editorData.designId !== blockToBeChanged.designId && {
+                        designId: editorData.designId,
+                    }),
+                    ...(editorData.colorOptionId !==
+                        blockToBeChanged.colorOptionId && {
+                        colorOptionId: editorData.colorOptionId,
+                    }),
+                    ...(content !== blockToBeChanged.content && { content }),
+                    ...(editorData.title !== blockToBeChanged.title && {
+                        title: editorData.title,
+                    }),
+                    ...(editorData.type !== blockToBeChanged.type && {
+                        type: editorData.type,
+                    }),
+                };
 
                 set({
                     blocks: get().blocks.map((b) =>

@@ -1,11 +1,11 @@
 import type { Dispatch } from "react";
 import { Switch } from "../ui/switch";
-import { BlockEditorState, BlockEditorAction } from "./block-editor-state";
 import { BlockItem } from "@/utils/BlocksInfo";
 import BlockTypeSelector from "./BlockTypeSelector";
 import DesignSelection from "./DesignSelection";
 import BlockPreview from "./BlockPreview";
 import { getBlockTypeConfig, supportsDesign } from "./block-editor-config";
+import { BlockEditorAction, BlockEditorState } from "@/types/Editor";
 
 interface BlockSettingsSidebarProps {
     state: BlockEditorState;
@@ -44,11 +44,11 @@ const BlockSettingsSidebar = ({ state, dispatch, currentBlock }: BlockSettingsSi
                     setDesignId={(id) => dispatch({ type: "setDesignId", payload: id })}
                     setColorOptionId={(id) => dispatch({ type: "setColorOptionId", payload: id })}
                 />
-                <hr className="border-muted" />
+                {/* <hr className="border-muted" />
                 <div>
                     <label className="text-[13px] font-semibold text-body">5. Preview</label>
                     <BlockPreview currentBlock={currentBlock} state={state} />
-                </div>
+                </div> */}
             </div>
         </div>
     );

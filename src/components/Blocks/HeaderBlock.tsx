@@ -3,12 +3,13 @@ import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import { JSONContent } from "@tiptap/core";
 
 type HeaderBlockProps = {
     title?: string;
     designId: number;
     colorOptionId: number;
-    content: string;
+    content: JSONContent;
 
     className?: string;
     readOnly?: boolean;

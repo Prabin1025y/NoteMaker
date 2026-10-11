@@ -1,4 +1,4 @@
-import { EditorData } from "@/types/Editor";
+import { BaseEditorDataType } from "@/types/Editor";
 import { ImagePlus } from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useEffect } from "react";
@@ -11,7 +11,7 @@ export type PreviewFile = File & {
 interface ImageDropZoneProps {
     file: PreviewFile | null;
     setFile: (file: PreviewFile | null) => void;
-    editorData: EditorData;
+    editorData: Pick<BaseEditorDataType, "title">;
 }
 
 export function ImageDropZone({

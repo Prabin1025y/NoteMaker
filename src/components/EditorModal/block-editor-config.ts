@@ -1,19 +1,25 @@
 import { allBlocks } from "@/utils/BlocksInfo";
 import {
-    editorJsonForPreview,
-    initialHeadingJsonContent,
-    initialJsonForCanvas,
-    initialJsonForEditor,
-    isValidJson,
+    INITIAL_JSON_CANVAS,
+    INITIAL_JSON_EDITOR,
+    INITIAL_JSON_HEADING,
     MONACO_LANGUAGES,
 } from "@/utils/UtilFunctions";
-import { blockTypeOptions } from "@/types/Editor";
+import { blockTypeOptions, ContentType } from "@/types/Editor";
 import { PreviewFile } from "./../ImageUploader";
+import { JSONContent } from "@tiptap/core";
+import {
+    CanvasEditorContentSchema,
+    JSONContentSchema,
+    TableStateSchema,
+} from "@/validation/editorData";
+import { ALL_DIVIDERS } from "@/utils/Dividers";
+import { makeInitialState } from "./TableSection";
 
 export interface BlockEditorValidationContext {
     currentType: blockTypeOptions;
     title: string;
-    content: string;
+    content: ContentType;
     file: PreviewFile | null;
     language: string;
 }
@@ -22,45 +28,63 @@ export interface BlockTypeConfig {
     type: blockTypeOptions;
     showTitleField: boolean;
     supportsDesign: boolean;
-    initialContent: string;
+    initialContent: ContentType;
     titleLabel: string;
     validate: (context: BlockEditorValidationContext) => boolean;
-    previewContent: (context: BlockEditorValidationContext) => string;
+    previewContent: (
+        context: BlockEditorValidationContext,
+    ) => BlockEditorValidationContext["content"];
 }
 
 const codeLanguageFromTitle = (title: string) => {
     const normalized = title.trim().toLowerCase();
-    return MONACO_LANGUAGES.includes(normalized)
-        ? normalized
-        : "javascript";
+    return MONACO_LANGUAGES.includes(normalized) ? normalized : "javascript";
 };
 
 const previewContentForType = (
     type: blockTypeOptions,
-    content: string,
+    content: ContentType,
     file: PreviewFile | null,
-) => {
+): ContentType => {
     if (type === "image") {
-        return file?.preview || content || "";
+        return file?.preview || (typeof content === "string" ? content : "");
     }
 
     if (type === "formula") {
-        return content || "E=mc^2";
+        return typeof content === "string" && content
+            ? content
+            : "E=mc^2";
     }
 
     if (type === "code") {
-        return content || "//Your code will be here";
+        return typeof content === "string" && content
+            ? content
+            : "//Your code will be here";
     }
 
     if (type === "divider") {
-        return content;
+        return typeof content === "string" ? content : ALL_DIVIDERS[0].name;
     }
 
     if (type === "canvas") {
-        return content;
+        const result = CanvasEditorContentSchema.safeParse(content);
+        return result.success ? result.data : INITIAL_JSON_CANVAS;
     }
 
-    return content || editorJsonForPreview;
+    if (type === "table") {
+        const result = TableStateSchema.safeParse(content);
+        if (result.success) return result.data;
+
+        const initialState = allBlocks.find(
+            (block) => block.type === "table",
+        )?.defaultContent;
+        const initialResult = TableStateSchema.safeParse(initialState);
+        return initialResult.success ? initialResult.data : makeInitialState();
+    }
+
+    const result = JSONContentSchema.safeParse(content);
+    if (result.success) return result.data;
+    return type === "heading" ? INITIAL_JSON_HEADING : INITIAL_JSON_EDITOR;
 };
 
 export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
@@ -68,57 +92,55 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         type: "block",
         showTitleField: true,
         supportsDesign: true,
-        initialContent: initialJsonForEditor,
+        initialContent: INITIAL_JSON_EDITOR,
         titleLabel: "Title",
         validate: ({ content }) => {
-            if (!isValidJson(content)) return false;
-
-            try {
-                const parsed = JSON.parse(content);
-                const firstLevelContent = parsed?.content;
-
-                if (!Array.isArray(firstLevelContent)) return false;
-
-                const hasTextContent = firstLevelContent.some((item: unknown) => {
-                    if (typeof item !== "object" || item === null) return false;
-
-                    const itemContent = (
-                        item as { content?: Array<{ text?: string }> }
-                    ).content;
-
-                    if (!Array.isArray(itemContent)) return false;
-
-                    return itemContent.some(
-                        (nestedItem) =>
-                            typeof nestedItem?.text === "string" &&
-                            nestedItem.text.trim() !== "",
-                    );
-                });
-
-                return hasTextContent || firstLevelContent.length > 1;
-            } catch {
+            const result = JSONContentSchema.safeParse(content);
+            if (!result.success) {
                 return false;
             }
+
+            const document = result.data;
+
+            function hasText(node: JSONContent): boolean {
+                if (node.type === "text") {
+                    return (
+                        typeof node.text === "string" &&
+                        node.text.trim().length > 0
+                    );
+                }
+
+                return node.content?.some(hasText) ?? false;
+            }
+
+            return document.content?.some(hasText) ?? false;
         },
-        previewContent: ({ content }) => content || editorJsonForPreview,
+        previewContent: ({ content }) => content,
     },
     heading: {
         type: "heading",
         showTitleField: false,
         supportsDesign: true,
-        initialContent: initialHeadingJsonContent,
+        initialContent: INITIAL_JSON_HEADING,
         titleLabel: "Title",
-        validate: () => true,
-        previewContent: ({ content }) => content || editorJsonForPreview,
+        validate: ({ content }) => JSONContentSchema.safeParse(content).success,
+        previewContent: ({ content }) => {
+            const result = JSONContentSchema.safeParse(content);
+            return result.success ? result.data : INITIAL_JSON_HEADING;
+        },
     },
     code: {
         type: "code",
-        showTitleField: false,
+        showTitleField: true,
         supportsDesign: true,
         initialContent: "// Do Something",
-        titleLabel: "Language",
-        validate: ({ content }) => content.trim().length > 0,
-        previewContent: ({ content }) => content || "//Your code will be here",
+        titleLabel: "Title",
+        validate: ({ content }) =>
+            typeof content === "string" && content.trim().length > 0,
+        previewContent: ({ content }) =>
+            typeof content === "string" && content
+                ? content
+                : "//Your code will be here",
     },
     image: {
         type: "image",
@@ -127,26 +149,44 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         initialContent: "",
         titleLabel: "Caption",
         validate: ({ file }) => Boolean(file),
-        previewContent: ({ content, file }) =>
-            file?.preview || content || "",
+        previewContent: ({ content, file }) => file?.preview || content || "",
     },
     table: {
         type: "table",
-        showTitleField: false,
+        showTitleField: true,
         supportsDesign: true,
-        initialContent: allBlocks.find((b) => b.type === "table")?.defaultContent || "",
+        initialContent:
+            allBlocks.find((b) => b.type === "table")?.defaultContent || "",
         titleLabel: "",
-        validate: ({ content }) => Boolean(content.trim()),
-        previewContent: ({ content }) => content || editorJsonForPreview,
+        validate: ({ content }) => {
+            const result = TableStateSchema.safeParse(content);
+            if (!result.success) return false;
+            return true;
+        },
+        previewContent: ({ content }) => {
+            const result = TableStateSchema.safeParse(content);
+            if (result.success) return result.data;
+            const initialState = allBlocks.find(
+                (block) => block.type === "table",
+            )?.defaultContent;
+            const initialResult = TableStateSchema.safeParse(initialState);
+            return initialResult.success
+                ? initialResult.data
+                : makeInitialState();
+        },
     },
     divider: {
         type: "divider",
         showTitleField: false,
         supportsDesign: false,
-        initialContent: allBlocks.find((b) => b.type === "divider")?.defaultContent || "",
+        initialContent:
+            allBlocks.find((b) => b.type === "divider")?.defaultContent || "",
         titleLabel: "",
-        validate: ({ content }) => Boolean(content.trim()),
-        previewContent: ({ content }) => content,
+        validate: ({ content }) =>
+            typeof content === "string" &&
+            ALL_DIVIDERS.some((divider) => divider.name === content.trim()),
+        previewContent: ({ content }) =>
+            typeof content === "string" ? content : ALL_DIVIDERS[0].name,
     },
     formula: {
         type: "formula",
@@ -154,36 +194,38 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         supportsDesign: true,
         initialContent: "E=mc^2",
         titleLabel: "",
-        validate: ({ content }) => content.trim().length > 0,
-        previewContent: ({ content }) => content || "E=mc^2",
+        validate: ({ content }) =>
+            typeof content === "string" && content.trim().length > 0,
+        previewContent: ({ content }) =>
+            typeof content === "string" && content ? content : "E=mc^2",
     },
     canvas: {
         type: "canvas",
         showTitleField: true,
         supportsDesign: false,
-        initialContent: initialJsonForCanvas,
+        initialContent: INITIAL_JSON_CANVAS,
         titleLabel: "Caption",
         validate: ({ content }) => {
-            if (!content) return false;
-            try {
-                const parsed = JSON.parse(content);
-                return true;
-            } catch {
-                return false;
-            }
+            const result = CanvasEditorContentSchema.safeParse(content);
+            if (!result.success) return false;
+            return true;
         },
-        previewContent: ({ content }) => content,
+        previewContent: ({ content }) => {
+            const result = CanvasEditorContentSchema.safeParse(content);
+            return result.success ? result.data : INITIAL_JSON_CANVAS;
+        },
     },
 };
 
-export const getBlockTypeConfig = (type: blockTypeOptions) => blockTypeConfigs[type];
+export const getBlockTypeConfig = (type: blockTypeOptions) =>
+    blockTypeConfigs[type];
 
 export const getDefaultLanguage = (title: string) =>
     codeLanguageFromTitle(title);
 
 export const getPreviewContent = (
     type: blockTypeOptions,
-    content: string,
+    content: ContentType,
     file: PreviewFile | null,
 ) => previewContentForType(type, content, file);
 

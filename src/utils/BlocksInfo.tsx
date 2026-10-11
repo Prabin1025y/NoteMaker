@@ -9,13 +9,13 @@ import {
     PenLine,
 } from "lucide-react";
 import {
-    initialHeadingJsonContent,
-    initialJsonForCanvas,
-    initialJsonForEditor,
+    INITIAL_JSON_CANVAS,
+    INITIAL_JSON_EDITOR,
+    INITIAL_JSON_HEADING,
 } from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { ALL_DIVIDERS } from "./Dividers";
-import { blockTypeOptions } from "@/types/Editor";
+import { blockTypeOptions, ContentType } from "@/types/Editor";
 
 export type BlockCategory = "basic" | "content" | "developer";
 
@@ -25,7 +25,7 @@ export interface BlockItem {
     title: string;
     description: string;
     icon: React.ReactNode;
-    defaultContent: string;
+    defaultContent: ContentType;
     color: string;
     bgColor: string;
     hoverColor: string;
@@ -64,7 +64,7 @@ export const allBlocks: BlockItem[] = [
         type: "block",
         title: "General Block",
         description: "Definition, Example, Notes, Tips etc.",
-        defaultContent: initialJsonForEditor,
+        defaultContent: INITIAL_JSON_EDITOR,
         icon: <BookOpen size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
@@ -77,7 +77,7 @@ export const allBlocks: BlockItem[] = [
         type: "heading",
         title: "Heading Block",
         description: "New topic heading",
-        defaultContent: initialHeadingJsonContent,
+        defaultContent: INITIAL_JSON_HEADING,
         icon: <Heading size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
@@ -168,7 +168,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 0,
         type: "canvas",
         title: "Drawing",
-        defaultContent: initialJsonForCanvas,
+        defaultContent: INITIAL_JSON_CANVAS,
         description: "Sketch, handwrite or diagram freely",
         icon: <PenLine size={20} />,
         color: "text-primary",
@@ -181,7 +181,7 @@ export const allBlocks: BlockItem[] = [
         defaultDesignId: 1,
         type: "table",
         title: "Table",
-        defaultContent: JSON.stringify(makeInitialState()),
+        defaultContent: makeInitialState(),
         description: "Create a data table",
         icon: <Table2 size={20} />,
         color: "text-primary",

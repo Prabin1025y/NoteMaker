@@ -3,20 +3,22 @@ import { twMerge } from "tailwind-merge";
 import { marked } from "marked";
 import { generateJSON } from "@tiptap/core";
 import { tiptap_extensions_list } from "@/components/tiptap/tiptap-templates/simple/simple-editor";
-// import type { JSONContent } from "@tiptap/core";
+import type { JSONContent } from "@tiptap/core";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export async function markdownToTiptap(markdown: string): Promise<string> {
+export async function markdownToTiptap(
+    markdown: string,
+): Promise<JSONContent> {
     // Convert Markdown -> HTML
     const html = await marked.parse(markdown);
 
     // Convert HTML -> Tiptap JSON
     const json = generateJSON(html, tiptap_extensions_list);
 
-    return JSON.stringify(json);
+    return json;
 }
 
 type TiptapNode = {

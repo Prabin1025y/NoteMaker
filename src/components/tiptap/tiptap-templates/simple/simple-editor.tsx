@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
+import {
+    EditorContent,
+    EditorContext,
+    JSONContent,
+    useEditor,
+} from "@tiptap/react";
 import "katex/dist/katex.min.css";
 
 // --- Tiptap Core Extensions ---
@@ -75,6 +80,8 @@ import { EditorShortcuts } from "../../tiptap-extension/CustomShhortcuts";
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import { ImageUploadButton } from "../../tiptap-ui/image-upload-button";
+import { INITIAL_JSON_EDITOR } from "@/utils/UtilFunctions";
+import type { JSONContent } from "@tiptap/core";
 
 export const tiptap_extensions_list = [
     StarterKit.configure({
@@ -231,11 +238,11 @@ const MobileToolbarContent = ({
 export function SimpleEditor({
     className = "",
     onChange = (_) => {},
-    initialContent = "",
+    initialContent = INITIAL_JSON_EDITOR,
 }: {
     className?: string;
-    onChange?: (content: string) => void;
-    initialContent: string;
+    onChange?: (content: JSONContent) => void;
+    initialContent: JSONContent;
 }) {
     const isMobile = useIsBreakpoint();
     const { height } = useWindowSize();
@@ -255,7 +262,7 @@ export function SimpleEditor({
                 class: "simple-editor",
             },
         },
-        onUpdate: ({ editor }) => onChange(JSON.stringify(editor.getJSON())),
+        onUpdate: ({ editor }) => onChange(editor.getJSON()),
         extensions: [
             StarterKit.configure({
                 horizontalRule: false,
@@ -300,7 +307,7 @@ export function SimpleEditor({
             // CustomHardBreak,
             // CustomMathDelimiters,
         ],
-        content: JSON.parse(initialContent),
+        content: initialContent,
     });
 
     const rect = useCursorVisibility({

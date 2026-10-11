@@ -9,9 +9,12 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { SimpleEditor } from "../tiptap/tiptap-templates/simple/simple-editor";
-import { EditorData } from "@/types/Editor";
+import {
+    BlockEditorAction,
+    BlockEditorState,
+    EditorDataType,
+} from "@/types/Editor";
 import { MONACO_LANGUAGES } from "@/utils/UtilFunctions";
-import { BlockEditorState, BlockEditorAction } from "./block-editor-state";
 import CodeSection from "./CodeSection";
 import FormulaSection from "./FormulaSection";
 import EditableTable from "./TableSection";
@@ -19,11 +22,17 @@ import DividerSelection from "./DividerSelection";
 import { ImageDropZone, PreviewFile } from "../ImageUploader";
 import { getBlockTypeConfig } from "./block-editor-config";
 import DrawCanvasSection from "./DrawCanvasSection";
+import { TableState } from "./TableSection";
+import {
+    CanvasEditorContentSchema,
+    JSONContentSchema,
+    TableStateSchema,
+} from "@/validation/editorData";
 
 interface BlockContentEditorProps {
     state: BlockEditorState;
     dispatch: Dispatch<BlockEditorAction>;
-    editorData: EditorData;
+    editorData: EditorDataType;
 }
 
 const BlockContentEditor = ({
@@ -35,54 +44,54 @@ const BlockContentEditor = ({
     const showTitleInput = config.showTitleField;
 
     const renderTitleInput = () => {
-        if (state.currentType === "code") {
-            return (
-                <div>
-                    <label className="mb-3 block text-[13px] font-semibold text-body">
-                        Language
-                    </label>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                type="button"
-                                className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-(--ds-border-input) bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
-                            >
-                                <span className="capitalize">
-                                    {state.language}
-                                </span>
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="start"
-                            className="max-h-80 w-56 overflow-y-auto"
-                        >
-                            {MONACO_LANGUAGES.map((lang) => (
-                                <DropdownMenuItem
-                                    key={lang}
-                                    onSelect={() =>
-                                        dispatch({
-                                            type: "setLanguage",
-                                            payload: lang,
-                                        })
-                                    }
-                                    className="cursor-pointer"
-                                >
-                                    <div className="flex w-full items-center justify-between">
-                                        <span className="capitalize">
-                                            {lang}
-                                        </span>
-                                        {state.language === lang && (
-                                            <Check className="h-4 w-4" />
-                                        )}
-                                    </div>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            );
-        }
+        // if (state.currentType === "code") {
+        //     return (
+        //         <div>
+        //             <label className="mb-3 block text-[13px] font-semibold text-body">
+        //                 Language
+        //             </label>
+        //             <DropdownMenu>
+        //                 <DropdownMenuTrigger asChild>
+        //                     <button
+        //                         type="button"
+        //                         className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-(--ds-border-input) bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
+        //                     >
+        //                         <span className="capitalize">
+        //                             {state.language}
+        //                         </span>
+        //                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        //                     </button>
+        //                 </DropdownMenuTrigger>
+        //                 <DropdownMenuContent
+        //                     align="start"
+        //                     className="max-h-80 w-56 overflow-y-auto"
+        //                 >
+        //                     {MONACO_LANGUAGES.map((lang) => (
+        //                         <DropdownMenuItem
+        //                             key={lang}
+        //                             onSelect={() =>
+        //                                 dispatch({
+        //                                     type: "setLanguage",
+        //                                     payload: lang,
+        //                                 })
+        //                             }
+        //                             className="cursor-pointer"
+        //                         >
+        //                             <div className="flex w-full items-center justify-between">
+        //                                 <span className="capitalize">
+        //                                     {lang}
+        //                                 </span>
+        //                                 {state.language === lang && (
+        //                                     <Check className="h-4 w-4" />
+        //                                 )}
+        //                             </div>
+        //                         </DropdownMenuItem>
+        //                     ))}
+        //                 </DropdownMenuContent>
+        //             </DropdownMenu>
+        //         </div>
+        //     );
+        // }
 
         if (!showTitleInput) return null;
 
@@ -124,7 +133,7 @@ const BlockContentEditor = ({
     };
 
     const handleTableChange = useCallback(
-        (value: string) => dispatch({ type: "setContent", payload: value }),
+        (value: TableState) => dispatch({ type: "setContent", payload: value }),
         [dispatch],
     );
 
@@ -139,7 +148,9 @@ const BlockContentEditor = ({
                     />
                 );
             case "block":
-            case "heading":
+            case "heading": {
+                const result = JSONContentSchema.safeParse(state.content);
+                if (!result.success) return null;
                 return (
                     <div className="flex-1 flex flex-col min-h-0">
                         <div className="flex-1 flex flex-col min-h-0 border border-muted rounded-lg overflow-hidden">
@@ -147,7 +158,7 @@ const BlockContentEditor = ({
                                 <SimpleEditor
                                     key={state.currentType}
                                     className="max-w-full h-full"
-                                    initialContent={state.content}
+                                    initialContent={result.data}
                                     onChange={(content) =>
                                         dispatch({
                                             type: "setContent",
@@ -159,7 +170,9 @@ const BlockContentEditor = ({
                         </div>
                     </div>
                 );
+            }
             case "formula":
+                if (typeof state.content !== "string") return null;
                 return (
                     <FormulaSection
                         content={state.content}
@@ -169,6 +182,7 @@ const BlockContentEditor = ({
                     />
                 );
             case "code":
+                if (typeof state.content !== "string") return null;
                 return (
                     <CodeSection
                         language={state.language}
@@ -179,6 +193,9 @@ const BlockContentEditor = ({
                     />
                 );
             case "table":
+                if (!TableStateSchema.safeParse(state.content).success) {
+                    return null;
+                }
                 return (
                     <EditableTable
                         onChangeHandler={handleTableChange}
@@ -186,6 +203,7 @@ const BlockContentEditor = ({
                     />
                 );
             case "divider":
+                if (typeof state.content !== "string") return null;
                 return (
                     <DividerSelection
                         colorOptionId={state.colorOptionId}
@@ -200,20 +218,20 @@ const BlockContentEditor = ({
                     />
                 );
             case "canvas":
-                return (
-                    <DrawCanvasSection
-                        content={state.content}
-                        onChangeHandler={(value) =>
-                            dispatch({ type: "setContent", payload: value })
-                        }
-                    />
-                    // <CanvasSection
-                    //     content={state.content}
-                    //     onChangeHandler={(value) =>
-                    //         dispatch({ type: "setContent", payload: value })
-                    //     }
-                    // />
-                );
+                {
+                    const result = CanvasEditorContentSchema.safeParse(
+                        state.content,
+                    );
+                    if (!result.success) return null;
+                    return (
+                        <DrawCanvasSection
+                            content={result.data}
+                            onChangeHandler={(value) =>
+                                dispatch({ type: "setContent", payload: value })
+                            }
+                        />
+                    );
+                }
             default:
                 return null;
         }

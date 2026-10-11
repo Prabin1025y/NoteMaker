@@ -1,6 +1,6 @@
 import { editorJsonForPreview, mapTypeToElement } from "@/utils/UtilFunctions";
 import { BlockItem } from "@/utils/BlocksInfo";
-import { BlockEditorState } from "./block-editor-state";
+import { BlockEditorState } from "@/types/Editor";
 
 interface BlockPreviewProps {
     currentBlock: BlockItem;

@@ -1,11 +1,25 @@
 "use client";
 import { useNoteStore } from "@/Context/DataStore";
-import { EditorData } from "@/types/Editor";
+import { EditorDataType } from "@/types/Editor";
 import {
-    initialJsonForEditor,
-    mapTypeToElement,
+    INITIAL_JSON_EDITOR,
+    MONACO_LANGUAGES,
     randomBetweenExclusive,
 } from "@/utils/UtilFunctions";
+import GeneralBlock from "@/components/Blocks/GeneralBlock";
+import HeaderBlock from "@/components/Blocks/HeaderBlock";
+import ImageBlock from "@/components/Blocks/ImageBlock";
+import CodeBlock from "@/components/Blocks/CodeBlock";
+import DividerBlock from "@/components/Blocks/DividerBlock";
+import FormulaBlock from "@/components/Blocks/FormulaBlock";
+import TableBlock from "@/components/Blocks/TableBlock";
+import CanvasBlock from "@/components/Blocks/CanvasBlock";
+import {
+    CanvasEditorContentSchema,
+    JSONContentSchema,
+    TableStateSchema,
+} from "@/validation/editorData";
+import { ALL_DIVIDERS } from "@/utils/Dividers";
 import {
     ChevronDown,
     ChevronUp,
@@ -16,8 +30,84 @@ import {
 } from "lucide-react";
 import { RefObject, useEffect, useRef, useState } from "react";
 
+const parseStructuredContent = (content: string): unknown => {
+    try {
+        return JSON.parse(content);
+    } catch {
+        return null;
+    }
+};
+
+const getEditorDataForBlock = (
+    block: ReturnType<typeof useNoteStore.getState>["blocks"][number],
+): EditorDataType | null => {
+    const base = {
+        id: block.id,
+        title: block.title || "",
+        designId: block.designId,
+        colorOptionId: block.colorOptionId,
+        order: "auto" as const,
+        action: "save" as const,
+    };
+
+    switch (block.type) {
+        case "block":
+        case "heading": {
+            const result = JSONContentSchema.safeParse(
+                parseStructuredContent(block.content),
+            );
+            return result.success
+                ? { ...base, type: block.type, content: result.data }
+                : null;
+        }
+        case "canvas": {
+            const result = CanvasEditorContentSchema.safeParse(
+                parseStructuredContent(block.content),
+            );
+            return result.success
+                ? { ...base, type: "canvas", content: result.data }
+                : null;
+        }
+        case "code":
+            if (typeof block.content !== "string") return null;
+            return {
+                ...base,
+                type: "code",
+                content: block.content,
+                language:
+                    MONACO_LANGUAGES.find(
+                        (language) => language === base.title.toLowerCase(),
+                    ) ?? "javascript",
+            };
+        case "divider": {
+            const divider = ALL_DIVIDERS.find(
+                (item) => item.name === block.content,
+            );
+            return divider
+                ? { ...base, type: "divider", content: divider.name }
+                : null;
+        }
+        case "formula":
+            return typeof block.content === "string"
+                ? { ...base, type: "formula", content: block.content }
+                : null;
+        case "image":
+            return typeof block.content === "string"
+                ? { ...base, type: "image", url: block.content }
+                : null;
+        case "table": {
+            const result = TableStateSchema.safeParse(
+                parseStructuredContent(block.content),
+            );
+            return result.success
+                ? { ...base, type: "table", content: result.data }
+                : null;
+        }
+    }
+};
+
 interface MainPageProps {
-    openBlockEditor: (editorData: EditorData) => void;
+    openBlockEditor: (editorData: EditorDataType) => void;
     noteRef: RefObject<HTMLDivElement | null>;
 }
 
@@ -92,7 +182,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
             colorOptionId: 1,
             action: "add",
             order: newOrder,
-            content: initialJsonForEditor,
+            content: INITIAL_JSON_EDITOR,
             title: "",
             type: "block",
         });
@@ -132,8 +222,87 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                         {blocks &&
                             blocks.length > 0 &&
                             blocks.map((block, i) => {
-                                const Component = mapTypeToElement(block.type);
-                                if (!Component) return null;
+                                const editorData = getEditorDataForBlock(block);
+                                if (!editorData) return null;
+                                const commonProps = {
+                                    title: editorData.title,
+                                    designId: editorData.designId,
+                                    colorOptionId: editorData.colorOptionId,
+                                    readOnly: isReadOnly,
+                                    className: `peer ${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-[color:var(--ds-focus-ring)] ring-offset-2 ring-offset-[color:var(--ds-surface-canvas)]" : ""}`,
+                                    onEdit: () => openBlockEditor(editorData),
+                                    onDelete: () => deleteBlock(block.id),
+                                };
+                                let renderedBlock: React.ReactNode;
+
+                                switch (editorData.type) {
+                                    case "block":
+                                        renderedBlock = (
+                                            <GeneralBlock
+                                                {...commonProps}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                    case "heading":
+                                        renderedBlock = (
+                                            <HeaderBlock
+                                                {...commonProps}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                    case "image":
+                                        renderedBlock = (
+                                            <ImageBlock
+                                                {...commonProps}
+                                                content={editorData.url}
+                                            />
+                                        );
+                                        break;
+                                    case "code":
+                                        renderedBlock = (
+                                            <CodeBlock
+                                                {...commonProps}
+                                                title={editorData.language}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                    case "divider":
+                                        renderedBlock = (
+                                            <DividerBlock
+                                                {...commonProps}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                    case "formula":
+                                        renderedBlock = (
+                                            <FormulaBlock
+                                                {...commonProps}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                    case "table":
+                                        renderedBlock = (
+                                            <TableBlock
+                                                {...commonProps}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                    case "canvas":
+                                        renderedBlock = (
+                                            <CanvasBlock
+                                                {...commonProps}
+                                                content={editorData.content}
+                                            />
+                                        );
+                                        break;
+                                }
+
                                 return (
                                     <div
                                         className={`relative group/add ${block.type === "heading" && "break-after-avoid"}`}
@@ -156,30 +325,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                 </button>
                                             </div>
                                         )}
-                                        <Component
-                                            title={block.title || ""}
-                                            content={block.content}
-                                            designId={block.designId}
-                                            colorOptionId={block.colorOptionId}
-                                            readOnly={isReadOnly}
-                                            className={`peer ${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-[color:var(--ds-focus-ring)] ring-offset-2 ring-offset-[color:var(--ds-surface-canvas)]" : ""}`}
-                                            onEdit={() =>
-                                                openBlockEditor({
-                                                    id: block.id,
-                                                    designId: block.designId,
-                                                    colorOptionId:
-                                                        block.colorOptionId,
-                                                    title: block.title || "",
-                                                    order: "auto",
-                                                    content: block.content,
-                                                    type: block.type,
-                                                    action: "save",
-                                                })
-                                            }
-                                            onDelete={() =>
-                                                deleteBlock(block.id)
-                                            }
-                                        />
+                                        {renderedBlock}
                                     </div>
                                 );
                             })}
@@ -205,7 +351,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                             colorOptionId: 1,
                                             action: "add",
                                             order: "auto",
-                                            content: initialJsonForEditor,
+                                            content: INITIAL_JSON_EDITOR,
                                             title: "",
                                             type: "block",
                                         })
