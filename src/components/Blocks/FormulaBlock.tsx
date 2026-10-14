@@ -43,8 +43,8 @@ export default function FormulaBlock({
                 style={
                     !isDesignDisabled
                         ? ({
-                              "--block-bg": colorOption.backgroundColorHex,
-                              "--block-border": colorOption.borderColorHex,
+                              backgroundColor: colorOption.primaryColorHex + "20",
+                              borderColor: colorOption.borderColorHex + "80"
                           } as CSSProperties)
                         : {}
                 }

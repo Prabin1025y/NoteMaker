@@ -68,6 +68,7 @@ export async function saveBlocks({
                         note: { is: { authorId } },
                     },
                 });
+                console.log(ownedBlocks, blockIds.length)
                 if (ownedBlocks !== blockIds.length) {
                     throw new ForbiddenError(
                         "You do not have permission to modify these blocks.",
