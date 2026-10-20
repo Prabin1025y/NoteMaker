@@ -45,7 +45,7 @@ const BlockPreview = ({ currentBlock, state }: BlockPreviewProps) => {
         <div className="mt-2">
             <PreviewComponent
                 title={title ? "Title" : ""}
-                content={getPreviewContent()}
+                content={getPreviewContent() as any}
                 designId={state.designEnabled ? state.designId : 0}
                 colorOptionId={state.colorOptionId}
                 onEdit={() => {}}

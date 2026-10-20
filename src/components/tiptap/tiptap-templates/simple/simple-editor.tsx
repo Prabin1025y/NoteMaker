@@ -81,7 +81,6 @@ import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import { ImageUploadButton } from "../../tiptap-ui/image-upload-button";
 import { INITIAL_JSON_EDITOR } from "@/utils/UtilFunctions";
-import type { JSONContent } from "@tiptap/core";
 
 export const tiptap_extensions_list = [
     StarterKit.configure({

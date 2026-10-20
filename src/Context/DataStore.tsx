@@ -405,7 +405,11 @@ export const useNoteStore = create<Store>()(
         },
 
         pushToBlocksToBeSynced: (data) => {
+            console.log("inside block to be syncded");
             if (isEqual(get().blocks, get().syncedBlocks)) {
+                console.log("becomes equal");
+                console.log(get().blocks);
+                console.log(get().syncedBlocks);
                 set({ blocksToBeSynced: [] });
                 return;
             }
@@ -467,14 +471,18 @@ export const useNoteStore = create<Store>()(
         },
 
         syncToDB: async () => {
+            if (get().isReadOnly) return;
+            if (get().blocksToBeSynced.length === 0) return;
+
             const backupBlocksToBeSynced = structuredClone(
                 get().blocksToBeSynced,
             );
-            try {
-                if (get().isReadOnly) return;
-                if (get().blocksToBeSynced.length === 0) return;
-                set({ blocksToBeSynced: [] });
 
+            // Snapshot the blocks state representing what we are sending right now
+            const blocksSnapshotAtSave = structuredClone(get().blocks);
+            set({ blocksToBeSynced: [] });
+
+            try {
                 const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
                     {
@@ -487,14 +495,17 @@ export const useNoteStore = create<Store>()(
 
                 if (!res.ok) {
                     alert("Couldn't save!");
-                    set({ blocksToBeSynced: backupBlocksToBeSynced });
+                    // Merge backup items back cleanly using pushToBlocksToBeSynced to avoid duplicate/conflicting entries
+                    for (const item of backupBlocksToBeSynced) {
+                        get().pushToBlocksToBeSynced(item);
+                    }
                     return;
                 }
 
-                const savedBlocks = structuredClone(get().blocks);
-                const addedData = data.addedData;
+                const addedData = data.addedData as
+                    | Array<{ id: string; publicId: string }>
+                    | undefined;
 
-                // Update ids of newly added blocks
                 if (
                     addedData &&
                     Array.isArray(addedData) &&
@@ -504,24 +515,55 @@ export const useNoteStore = create<Store>()(
                         addedData.map((item) => [item.publicId, item.id]),
                     );
 
-                    for (const block of savedBlocks) {
+                    // 1. Update IDs in current live blocks
+                    const updatedBlocks = get().blocks.map((block) => {
                         const newId = idMap.get(block.publicId);
-                        if (newId) block.id = newId;
-                    }
-                }
+                        return newId ? { ...block, id: newId } : block;
+                    });
 
-                set({
-                    blocks: savedBlocks,
-                    syncedBlocks: savedBlocks,
-                });
+                    // 2. Update IDs in snapshot for syncedBlocks
+                    const updatedSnapshot = blocksSnapshotAtSave.map(
+                        (block) => {
+                            const newId = idMap.get(block.publicId);
+                            return newId ? { ...block, id: newId } : block;
+                        },
+                    );
+
+                    // 3. Remap IDs in any actions that were added to blocksToBeSynced while saving
+                    const updatedBlocksToBeSynced = get().blocksToBeSynced.map(
+                        (item) => {
+                            const newId = idMap.get(item.id);
+                            return newId ? { ...item, id: newId } : item;
+                        },
+                    );
+
+                    // 4. Remap IDs in historyPast and historyFuture so undo/redo doesn't resurrect stale client UUIDs
+                    const remapHistory = (history: BlockType[][]) =>
+                        history.map((snapshot) =>
+                            snapshot.map((block) => {
+                                const newId = idMap.get(block.publicId);
+                                return newId ? { ...block, id: newId } : block;
+                            }),
+                        );
+
+                    set({
+                        blocks: updatedBlocks,
+                        syncedBlocks: updatedSnapshot,
+                        blocksToBeSynced: updatedBlocksToBeSynced,
+                        historyPast: remapHistory(get().historyPast),
+                        historyFuture: remapHistory(get().historyFuture),
+                    });
+                } else {
+                    set({
+                        syncedBlocks: blocksSnapshotAtSave,
+                    });
+                }
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
-                //TODO: bug of duplicate entry
-                set({
-                    blocksToBeSynced: get().blocksToBeSynced.concat(
-                        backupBlocksToBeSynced,
-                    ),
-                });
+
+                for (const item of backupBlocksToBeSynced) {
+                    get().pushToBlocksToBeSynced(item);
+                }
 
                 alert(
                     error instanceof Error

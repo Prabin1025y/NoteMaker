@@ -55,47 +55,72 @@ export async function saveBlocks({
                 }
             }
 
-            const blockIds = [
+            const rawBlockIds = [
                 ...new Set([
                     ...deleteData,
                     ...editData.map((e) => e.id),
                 ]),
             ];
-            if (blockIds.length > 0) {
-                const ownedBlocks = await tx.block.count({
+
+            if (rawBlockIds.length > 0) {
+                // Find blocks matching either by primary key `id` OR by client-generated `publicId`.
+                // This gracefully handles cases where client-side operations (edits/deletes) were
+                // queued using the initial publicId before a prior save's ID mapping propagated.
+                const matchingBlocks = await tx.block.findMany({
                     where: {
-                        id: { in: blockIds },
+                        OR: [
+                            { id: { in: rawBlockIds } },
+                            { publicId: { in: rawBlockIds } },
+                        ],
                         note: { is: { authorId } },
                     },
+                    select: {
+                        id: true,
+                        publicId: true,
+                    },
                 });
-                console.log(ownedBlocks, blockIds.length)
-                if (ownedBlocks !== blockIds.length) {
+
+                // Build lookup maps: both id -> id and publicId -> id
+                const idLookup = new Map<string, string>();
+                for (const b of matchingBlocks) {
+                    idLookup.set(b.id, b.id);
+                    if (b.publicId) {
+                        idLookup.set(b.publicId, b.id);
+                    }
+                }
+
+                // Verify that every requested raw id/publicId successfully maps to a block owned by author
+                const allResolved = rawBlockIds.every((rawId) => idLookup.has(rawId));
+                if (!allResolved) {
                     throw new ForbiddenError(
                         "You do not have permission to modify these blocks.",
                     );
                 }
-            }
-            // ---------------------------------------------------------------
 
-            if (deleteData.length > 0) {
-                await tx.block.deleteMany({
-                    where: {
-                        id: {
-                            in: deleteData,
+                // Remap deleteData and editData to canonical database IDs
+                if (deleteData.length > 0) {
+                    const canonicalDeleteIds = [
+                        ...new Set(deleteData.map((id) => idLookup.get(id)!)),
+                    ];
+                    await tx.block.deleteMany({
+                        where: {
+                            id: {
+                                in: canonicalDeleteIds,
+                            },
                         },
-                    },
-                });
-            }
+                    });
+                }
 
-            if (editData.length > 0) {
-                await Promise.all(
-                    editData.map(({ id, ...rest }) =>
-                        tx.block.update({
-                            where: { id },
-                            data: rest,
-                        }),
-                    ),
-                );
+                if (editData.length > 0) {
+                    await Promise.all(
+                        editData.map(({ id, ...rest }) =>
+                            tx.block.update({
+                                where: { id: idLookup.get(id)! },
+                                data: rest,
+                            }),
+                        ),
+                    );
+                }
             }
 
             if (addData.length === 0) {

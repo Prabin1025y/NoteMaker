@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
@@ -24,7 +24,6 @@ import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { useGetBlocksByNoteId } from "@/hooks/custom/useBlocks";
 import { useGetAllNotes, useGetNoteById } from "@/hooks/custom/useNotes";
-import { JSONContent } from "@tiptap/core";
 
 export default function NotePage() {
     const params = useParams();
@@ -39,7 +38,6 @@ export default function NotePage() {
         loadPublicNote,
         syncToDB,
         blocksToBeSynced,
-        setBlocks,
         undo,
         redo,
         canUndo,
@@ -89,10 +87,14 @@ export default function NotePage() {
         if (isCurrentNoteLoading || isFetchingBlocks) return;
         if (resolvedNoteIdRef.current === noteId) return;
 
+        const sortedInitialBlocks = [...blocks].sort(
+            (a, b) => a.order - b.order,
+        );
+
         const owned = notes.find((n) => n.id === noteId);
         if (owned) {
             resolvedNoteIdRef.current = noteId;
-            loadNote(owned, blocks);
+            loadNote(owned, sortedInitialBlocks);
             return;
         }
 
@@ -102,7 +104,7 @@ export default function NotePage() {
                 loadPublicNote(
                     currentNoteData.note,
                     currentNoteData.isOwner,
-                    blocks,
+                    sortedInitialBlocks,
                 );
             } else {
                 toast.error(
@@ -113,17 +115,10 @@ export default function NotePage() {
         })();
     }, [noteId, isCurrentNoteLoading, notes, isFetchingBlocks]);
 
-    const sortedBlocks = useMemo(() => {
-        if (!!!blocks || !Array.isArray(blocks)) return [];
-
-        return blocks.sort((a, b) => a.order - b.order);
-    }, [blocks]);
-
-    useEffect(() => {
-        if (!blocks) return;
-
-        setBlocks(sortedBlocks);
-    }, [blocks]);
+    // NOTE: We intentionally do NOT sync query data → Zustand after initial
+    // load. The Zustand store is the single source of truth while editing.
+    // Overwriting it on every query update (e.g. after save invalidation)
+    // would clobber unsaved local changes made during the save.
 
     useEffect(() => {
         if (!isEditorOpen && doSaveImmediately && !isSyncing) {
@@ -211,9 +206,9 @@ export default function NotePage() {
         try {
             setIsSyncing(true);
             await syncToDB();
-            queryClient.invalidateQueries({
-                queryKey: ["blocks", noteId],
-            });
+            // Only invalidate the notes list (metadata like blocksCount/updatedAt).
+            // Do NOT invalidate ["blocks", noteId] — the Zustand store is the
+            // source of truth and already has the correct state after syncToDB.
             queryClient.invalidateQueries({
                 queryKey: ["notes"],
             });
