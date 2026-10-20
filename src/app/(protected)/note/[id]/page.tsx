@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
@@ -7,10 +7,11 @@ import RightAside from "@/components/RightAside";
 import NoteChromeHeader from "@/components/note/NoteChromeHeader";
 import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
-import { EditorData } from "@/types/Editor";
+import { EditorDataType } from "@/types/Editor";
 import {
-    initialHeadingJsonContent,
-    initialJsonForEditor,
+    INITIAL_JSON_CANVAS,
+    INITIAL_JSON_EDITOR,
+    INITIAL_JSON_HEADING,
 } from "@/utils/UtilFunctions";
 import MainPageSkeleton from "@/skeletons/MainPageSkeleton";
 import { apiFetch } from "@/lib/api-client";
@@ -37,7 +38,6 @@ export default function NotePage() {
         loadPublicNote,
         syncToDB,
         blocksToBeSynced,
-        setBlocks,
         undo,
         redo,
         canUndo,
@@ -53,7 +53,7 @@ export default function NotePage() {
         setIsExporting,
         setIsEditorOpen,
         setIsPreviewMode,
-        setEditorData,
+        setEditorDataState,
     } = useNoteStore();
 
     const queryClient = useQueryClient();
@@ -87,10 +87,14 @@ export default function NotePage() {
         if (isCurrentNoteLoading || isFetchingBlocks) return;
         if (resolvedNoteIdRef.current === noteId) return;
 
+        const sortedInitialBlocks = [...blocks].sort(
+            (a, b) => a.order - b.order,
+        );
+
         const owned = notes.find((n) => n.id === noteId);
         if (owned) {
             resolvedNoteIdRef.current = noteId;
-            loadNote(owned, blocks);
+            loadNote(owned, sortedInitialBlocks);
             return;
         }
 
@@ -100,7 +104,7 @@ export default function NotePage() {
                 loadPublicNote(
                     currentNoteData.note,
                     currentNoteData.isOwner,
-                    blocks,
+                    sortedInitialBlocks,
                 );
             } else {
                 toast.error(
@@ -111,17 +115,10 @@ export default function NotePage() {
         })();
     }, [noteId, isCurrentNoteLoading, notes, isFetchingBlocks]);
 
-    const sortedBlocks = useMemo(() => {
-        if (!!!blocks || !Array.isArray(blocks)) return [];
-
-        return blocks.sort((a, b) => a.order - b.order);
-    }, [blocks]);
-
-    useEffect(() => {
-        if (!blocks) return;
-
-        setBlocks(sortedBlocks);
-    }, [blocks]);
+    // NOTE: We intentionally do NOT sync query data → Zustand after initial
+    // load. The Zustand store is the single source of truth while editing.
+    // Overwriting it on every query update (e.g. after save invalidation)
+    // would clobber unsaved local changes made during the save.
 
     useEffect(() => {
         if (!isEditorOpen && doSaveImmediately && !isSyncing) {
@@ -158,16 +155,16 @@ export default function NotePage() {
 
     useUnsavedChangesWarning(blocksToBeSynced.length !== 0);
 
-    const openBlockEditor = (data: EditorData) => {
-        setEditorData(data);
+    const openBlockEditor = (data: EditorDataType) => {
+        setEditorDataState(data);
         setIsEditorOpen(true);
     };
 
     const closeBlockEditor = () => {
         setIsEditorOpen(false);
-        setEditorData({
+        setEditorDataState({
             title: "",
-            content: initialJsonForEditor,
+            content: INITIAL_JSON_EDITOR,
             type: "block",
             action: "add",
             id: "",
@@ -178,7 +175,7 @@ export default function NotePage() {
     };
 
     // add or save a new block after editing.
-    const handleSaveBlock = (data: EditorData) => {
+    const handleSaveBlock = (data: EditorDataType) => {
         addSaveBlock(data);
         closeBlockEditor();
     };
@@ -209,9 +206,9 @@ export default function NotePage() {
         try {
             setIsSyncing(true);
             await syncToDB();
-            queryClient.invalidateQueries({
-                queryKey: ["blocks", noteId],
-            });
+            // Only invalidate the notes list (metadata like blocksCount/updatedAt).
+            // Do NOT invalidate ["blocks", noteId] — the Zustand store is the
+            // source of truth and already has the correct state after syncToDB.
             queryClient.invalidateQueries({
                 queryKey: ["notes"],
             });
@@ -276,7 +273,7 @@ export default function NotePage() {
             if (!isAltPressed || isEditorOpen) return;
 
             const key = event.key.toLowerCase();
-            const commonData: Omit<EditorData, "content" | "type"> = {
+            const commonData: Omit<EditorDataType, "content" | "type"> = {
                 id: "",
                 designId: 0,
                 colorOptionId: 1,
@@ -290,9 +287,7 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "block")
-                                ?.defaultContent || initialJsonForEditor,
+                        content: INITIAL_JSON_EDITOR,
                         type: "block",
                     });
                     break;
@@ -300,9 +295,7 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "heading")
-                                ?.defaultContent || initialHeadingJsonContent,
+                        content: INITIAL_JSON_HEADING,
                         type: "heading",
                     });
                     break;
@@ -310,9 +303,7 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "canvas")
-                                ?.defaultContent || "",
+                        content: INITIAL_JSON_CANVAS,
                         type: "canvas",
                     });
                     break;
@@ -320,9 +311,7 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "divider")
-                                ?.defaultContent || ALL_DIVIDERS[0].name,
+                        content: ALL_DIVIDERS[0].name,
                         type: "divider",
                     });
                     break;
@@ -330,19 +319,16 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "code")
-                                ?.defaultContent || "// Do Something",
+                        content: "// Do Something",
                         type: "code",
+                        language: "javascript",
                     });
                     break;
                 case "f":
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "formula")
-                                ?.defaultContent || "E=mc^2",
+                        content: "E=mc^2",
                         type: "formula",
                     });
                     break;
@@ -350,9 +336,7 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "image")
-                                ?.defaultContent || "",
+                        url: "",
                         type: "image",
                     });
                     break;
@@ -360,10 +344,7 @@ export default function NotePage() {
                     event.preventDefault();
                     openBlockEditor({
                         ...commonData,
-                        content:
-                            allBlocks.find((b) => b.type === "table")
-                                ?.defaultContent ||
-                            JSON.stringify(makeInitialState()),
+                        content: makeInitialState(),
                         type: "table",
                     });
                     break;

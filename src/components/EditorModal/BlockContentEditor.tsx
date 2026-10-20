@@ -2,62 +2,96 @@
 import { useCallback } from "react";
 import type { Dispatch } from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { SimpleEditor } from "../tiptap/tiptap-templates/simple/simple-editor";
-import { EditorData } from "@/types/Editor";
+import {
+    BlockEditorAction,
+    BlockEditorState,
+    EditorDataType,
+} from "@/types/Editor";
 import { MONACO_LANGUAGES } from "@/utils/UtilFunctions";
-import { BlockEditorState, BlockEditorAction } from "./block-editor-state";
 import CodeSection from "./CodeSection";
 import FormulaSection from "./FormulaSection";
 import EditableTable from "./TableSection";
 import DividerSelection from "./DividerSelection";
-import CanvasSection from "./CanvasSection";
 import { ImageDropZone, PreviewFile } from "../ImageUploader";
 import { getBlockTypeConfig } from "./block-editor-config";
+import DrawCanvasSection from "./DrawCanvasSection";
+import { TableState } from "./TableSection";
+import {
+    CanvasEditorContentSchema,
+    JSONContentSchema,
+    TableStateSchema,
+} from "@/validation/editorData";
 
 interface BlockContentEditorProps {
     state: BlockEditorState;
     dispatch: Dispatch<BlockEditorAction>;
-    editorData: EditorData;
+    editorData: EditorDataType;
 }
 
-const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorProps) => {
+const BlockContentEditor = ({
+    state,
+    dispatch,
+    editorData,
+}: BlockContentEditorProps) => {
     const config = getBlockTypeConfig(state.currentType);
     const showTitleInput = config.showTitleField;
 
     const renderTitleInput = () => {
-        if (state.currentType === "code") {
-            return (
-                <div>
-                    <label className="mb-3 block text-[13px] font-semibold text-body">Language</label>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                type="button"
-                                className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-[color:var(--ds-border-input)] bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
-                            >
-                                <span className="capitalize">{state.language}</span>
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="max-h-80 w-56 overflow-y-auto">
-                            {MONACO_LANGUAGES.map((lang) => (
-                                <DropdownMenuItem
-                                    key={lang}
-                                    onSelect={() => dispatch({ type: "setLanguage", payload: lang })}
-                                    className="cursor-pointer"
-                                >
-                                    <div className="flex w-full items-center justify-between">
-                                        <span className="capitalize">{lang}</span>
-                                        {state.language === lang && <Check className="h-4 w-4" />}
-                                    </div>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            );
-        }
+        // if (state.currentType === "code") {
+        //     return (
+        //         <div>
+        //             <label className="mb-3 block text-[13px] font-semibold text-body">
+        //                 Language
+        //             </label>
+        //             <DropdownMenu>
+        //                 <DropdownMenuTrigger asChild>
+        //                     <button
+        //                         type="button"
+        //                         className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-(--ds-border-input) bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
+        //                     >
+        //                         <span className="capitalize">
+        //                             {state.language}
+        //                         </span>
+        //                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        //                     </button>
+        //                 </DropdownMenuTrigger>
+        //                 <DropdownMenuContent
+        //                     align="start"
+        //                     className="max-h-80 w-56 overflow-y-auto"
+        //                 >
+        //                     {MONACO_LANGUAGES.map((lang) => (
+        //                         <DropdownMenuItem
+        //                             key={lang}
+        //                             onSelect={() =>
+        //                                 dispatch({
+        //                                     type: "setLanguage",
+        //                                     payload: lang,
+        //                                 })
+        //                             }
+        //                             className="cursor-pointer"
+        //                         >
+        //                             <div className="flex w-full items-center justify-between">
+        //                                 <span className="capitalize">
+        //                                     {lang}
+        //                                 </span>
+        //                                 {state.language === lang && (
+        //                                     <Check className="h-4 w-4" />
+        //                                 )}
+        //                             </div>
+        //                         </DropdownMenuItem>
+        //                     ))}
+        //                 </DropdownMenuContent>
+        //             </DropdownMenu>
+        //         </div>
+        //     );
+        // }
 
         if (!showTitleInput) return null;
 
@@ -68,19 +102,23 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                     state.currentType === "canvas"
                         ? "Caption"
                         : "Title"}{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    <span className="font-normal text-muted-foreground">
+                        (optional)
+                    </span>
                 </label>
                 <input
                     type="text"
                     value={state.title}
-                    onChange={(e) => dispatch({ type: "setTitle", payload: e.target.value })}
+                    onChange={(e) =>
+                        dispatch({ type: "setTitle", payload: e.target.value })
+                    }
                     placeholder={
                         state.currentType === "image" ||
                         state.currentType === "canvas"
                             ? "Enter caption"
                             : "Enter title (optional)"
                     }
-                    className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                    className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-(--ds-focus-ring) focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
                 />
             </div>
         );
@@ -95,16 +133,24 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
     };
 
     const handleTableChange = useCallback(
-        (value: string) => dispatch({ type: "setContent", payload: value }),
+        (value: TableState) => dispatch({ type: "setContent", payload: value }),
         [dispatch],
     );
 
     const renderEditor = () => {
         switch (state.currentType) {
             case "image":
-                return <ImageDropZone file={state.file} setFile={updateFile} editorData={editorData} />;
+                return (
+                    <ImageDropZone
+                        file={state.file}
+                        setFile={updateFile}
+                        editorData={editorData}
+                    />
+                );
             case "block":
-            case "heading":
+            case "heading": {
+                const result = JSONContentSchema.safeParse(state.content);
+                if (!result.success) return null;
                 return (
                     <div className="flex-1 flex flex-col min-h-0">
                         <div className="flex-1 flex flex-col min-h-0 border border-muted rounded-lg overflow-hidden">
@@ -112,30 +158,80 @@ const BlockContentEditor = ({ state, dispatch, editorData }: BlockContentEditorP
                                 <SimpleEditor
                                     key={state.currentType}
                                     className="max-w-full h-full"
-                                    initialContent={state.content}
-                                    onChange={(content) => dispatch({ type: "setContent", payload: content })}
+                                    initialContent={result.data}
+                                    onChange={(content) =>
+                                        dispatch({
+                                            type: "setContent",
+                                            payload: content,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
                     </div>
                 );
+            }
             case "formula":
-                return <FormulaSection content={state.content} onChangeHandler={(value) => dispatch({ type: "setContent", payload: value })} />;
-            case "code":
-                return <CodeSection language={state.language} content={state.content} onChangeHandler={(value) => dispatch({ type: "setContent", payload: value })} />;
-            case "table":
-                return <EditableTable onChangeHandler={handleTableChange} editorData={editorData} />;
-            case "divider":
-                return <DividerSelection colorOptionId={state.colorOptionId} setColorOptionId={updateColorOptionId} content={state.content} onChangeHandler={(value) => dispatch({ type: "setContent", payload: value.trim() })} />;
-            case "canvas":
+                if (typeof state.content !== "string") return null;
                 return (
-                    <CanvasSection
+                    <FormulaSection
                         content={state.content}
                         onChangeHandler={(value) =>
                             dispatch({ type: "setContent", payload: value })
                         }
                     />
                 );
+            case "code":
+                if (typeof state.content !== "string") return null;
+                return (
+                    <CodeSection
+                        language={state.language}
+                        content={state.content}
+                        onChangeHandler={(value) =>
+                            dispatch({ type: "setContent", payload: value })
+                        }
+                    />
+                );
+            case "table":
+                if (!TableStateSchema.safeParse(state.content).success) {
+                    return null;
+                }
+                return (
+                    <EditableTable
+                        onChangeHandler={handleTableChange}
+                        editorData={editorData}
+                    />
+                );
+            case "divider":
+                if (typeof state.content !== "string") return null;
+                return (
+                    <DividerSelection
+                        colorOptionId={state.colorOptionId}
+                        setColorOptionId={updateColorOptionId}
+                        content={state.content}
+                        onChangeHandler={(value) =>
+                            dispatch({
+                                type: "setContent",
+                                payload: value.trim(),
+                            })
+                        }
+                    />
+                );
+            case "canvas":
+                {
+                    const result = CanvasEditorContentSchema.safeParse(
+                        state.content,
+                    );
+                    if (!result.success) return null;
+                    return (
+                        <DrawCanvasSection
+                            content={result.data}
+                            onChangeHandler={(value) =>
+                                dispatch({ type: "setContent", payload: value })
+                            }
+                        />
+                    );
+                }
             default:
                 return null;
         }

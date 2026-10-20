@@ -8,10 +8,14 @@ import {
     Heading,
     PenLine,
 } from "lucide-react";
-import { initialHeadingJsonContent, initialJsonForEditor } from "./UtilFunctions";
+import {
+    INITIAL_JSON_CANVAS,
+    INITIAL_JSON_EDITOR,
+    INITIAL_JSON_HEADING,
+} from "./UtilFunctions";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { ALL_DIVIDERS } from "./Dividers";
-import { blockTypeOptions } from "@/types/Editor";
+import { blockTypeOptions, ContentType } from "@/types/Editor";
 
 export type BlockCategory = "basic" | "content" | "developer";
 
@@ -21,7 +25,7 @@ export interface BlockItem {
     title: string;
     description: string;
     icon: React.ReactNode;
-    defaultContent: string;
+    defaultContent: ContentType;
     color: string;
     bgColor: string;
     hoverColor: string;
@@ -60,26 +64,26 @@ export const allBlocks: BlockItem[] = [
         type: "block",
         title: "General Block",
         description: "Definition, Example, Notes, Tips etc.",
-        defaultContent: initialJsonForEditor,
+        defaultContent: INITIAL_JSON_EDITOR,
         icon: <BookOpen size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "basic",
-        shortcut: "alt + B"
+        shortcut: "alt + B",
     },
     {
         defaultDesignId: 1,
         type: "heading",
         title: "Heading Block",
         description: "New topic heading",
-        defaultContent: initialHeadingJsonContent,
+        defaultContent: INITIAL_JSON_HEADING,
         icon: <Heading size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "basic",
-        shortcut: "alt + H"
+        shortcut: "alt + H",
     },
     // {
     //     defaultDesignId: 2,
@@ -132,7 +136,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "developer",
-        shortcut: "alt + C"
+        shortcut: "alt + C",
     },
     {
         defaultDesignId: 1,
@@ -145,7 +149,7 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + F"
+        shortcut: "alt + F",
     },
     {
         defaultDesignId: 1,
@@ -158,33 +162,33 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + I"
+        shortcut: "alt + I",
     },
     {
         defaultDesignId: 0,
         type: "canvas",
         title: "Drawing",
-        defaultContent: "",
+        defaultContent: INITIAL_JSON_CANVAS,
         description: "Sketch, handwrite or diagram freely",
         icon: <PenLine size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + W"
+        shortcut: "alt + W",
     },
     {
         defaultDesignId: 1,
         type: "table",
         title: "Table",
-        defaultContent: JSON.stringify(makeInitialState()),
+        defaultContent: makeInitialState(),
         description: "Create a data table",
         icon: <Table2 size={20} />,
         color: "text-primary",
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "content",
-        shortcut: "alt + T"
+        shortcut: "alt + T",
     },
     // {
     // defaultDesignId: 1,
@@ -217,6 +221,6 @@ export const allBlocks: BlockItem[] = [
         bgColor: "bg-tint",
         hoverColor: "hover:bg-background/80",
         category: "basic",
-        shortcut: "alt + D"
+        shortcut: "alt + D",
     },
 ];

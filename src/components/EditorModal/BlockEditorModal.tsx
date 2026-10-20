@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { EditorData } from "@/types/Editor";
+import { EditorDataType } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { useBlockEditorState } from "./block-editor-state";
 import BlockEditorHeader from "./BlockEditorHeader";
@@ -10,18 +10,18 @@ import BlockEditorFooter from "./BlockEditorFooter";
 import { getBlockTypeConfig } from "./block-editor-config";
 import { getBlobImageFile, removeBlobImageFile } from "@/lib/tiptap-utils";
 import { useNoteStore } from "@/Context/DataStore";
+import type { JSONContent } from "@tiptap/core";
+import {
+    CanvasEditorContentSchema,
+    JSONContentSchema,
+    TableStateSchema,
+} from "@/validation/editorData";
+import { ALL_DIVIDERS } from "@/utils/Dividers";
 
-type TiptapJsonNode = {
-    type?: string;
-    attrs?: Record<string, unknown>;
-    content?: TiptapJsonNode[];
-};
-
-const uploadBlobImages = async (content: string): Promise<string> => {
-    const document = JSON.parse(content) as TiptapJsonNode;
+const uploadBlobImages = async (content: JSONContent): Promise<JSONContent> => {
     const blobUrls: string[] = [];
 
-    const visit = (node: TiptapJsonNode) => {
+    const visit = (node: JSONContent) => {
         if (node.type === "image" && typeof node.attrs?.src === "string") {
             const src = node.attrs.src;
             if (src.startsWith("blob:") && getBlobImageFile(src)) {
@@ -32,7 +32,7 @@ const uploadBlobImages = async (content: string): Promise<string> => {
         node.content?.forEach(visit);
     };
 
-    visit(document);
+    visit(content);
 
     if (blobUrls.length === 0) {
         return content;
@@ -64,7 +64,7 @@ const uploadBlobImages = async (content: string): Promise<string> => {
     }
 
     let imageIndex = 0;
-    const replaceUrls = (node: TiptapJsonNode) => {
+    const replaceUrls = (node: JSONContent) => {
         if (node.type === "image" && typeof node.attrs?.src === "string") {
             const src = node.attrs.src;
             if (src === blobUrls[imageIndex]) {
@@ -77,17 +77,17 @@ const uploadBlobImages = async (content: string): Promise<string> => {
         node.content?.forEach(replaceUrls);
     };
 
-    replaceUrls(document);
-    return JSON.stringify(document);
+    replaceUrls(content);
+    return content;
 };
 
 interface BlockEditorModalProps {
-    onSave: (editorData: EditorData) => void;
+    onSave: (editorData: EditorDataType) => void;
 }
 
 const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
-    const { editorData, setIsEditorOpen } = useNoteStore();
-    const { state, dispatch } = useBlockEditorState(editorData);
+    const { editorDataState, setIsEditorOpen } = useNoteStore();
+    const { state, dispatch } = useBlockEditorState(editorDataState);
 
     const currentBlock = useMemo(
         () =>
@@ -107,40 +107,129 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
     });
 
     const handleSave = useCallback(async () => {
+        if (!isValid) return;
+
         dispatch({ type: "setAdding", payload: true });
 
-        let savedContent = state.content;
+        try {
+            const saveData = {
+                id: editorDataState.id,
+                title: state.title,
+                designId: state.designEnabled ? state.designId : 0,
+                colorOptionId: state.colorOptionId || 1,
+                order: editorDataState.order,
+                action: editorDataState.action,
+            };
 
-        if (state.currentType === "image" && state.file) {
-            const formData = new FormData();
-            formData.append("image", state.file as Blob);
+            switch (state.currentType) {
+                case "image": {
+                    if (!state.file) {
+                        throw new Error("Select an image before saving");
+                    }
 
-            const response = await fetch("/api/upload-image", {
-                method: "POST",
-                body: formData,
-            });
-            const data = await response.json();
-            savedContent = data.url;
-        } else if (
-            state.currentType === "block" ||
-            state.currentType === "heading"
-        ) {
-            savedContent = await uploadBlobImages(state.content);
+                    const formData = new FormData();
+                    formData.append("image", state.file);
+
+                    const response = await fetch("/api/upload-image", {
+                        method: "POST",
+                        body: formData,
+                    });
+                    const data = (await response.json()) as {
+                        url?: string;
+                        error?: string;
+                    };
+
+                    if (!response.ok || !data.url) {
+                        throw new Error(data.error || "Failed to upload image");
+                    }
+
+                    onSave({
+                        ...saveData,
+                        type: "image",
+                        url: data.url,
+                    });
+                    break;
+                }
+                case "block":
+                case "heading": {
+                    const result = JSONContentSchema.safeParse(state.content);
+                    if (!result.success) {
+                        throw new Error("Invalid block editor content");
+                    }
+                    const content = await uploadBlobImages(result.data);
+                    onSave({
+                        ...saveData,
+                        type: state.currentType,
+                        content,
+                    });
+                    break;
+                }
+                case "table": {
+                    const result = TableStateSchema.safeParse(state.content);
+                    if (!result.success) {
+                        throw new Error("Invalid table content");
+                    }
+                    onSave({
+                        ...saveData,
+                        type: "table",
+                        content: result.data,
+                    });
+                    break;
+                }
+                case "canvas": {
+                    const result = CanvasEditorContentSchema.safeParse(
+                        state.content,
+                    );
+                    if (!result.success) {
+                        throw new Error("Invalid canvas content");
+                    }
+                    onSave({
+                        ...saveData,
+                        type: "canvas",
+                        content: result.data,
+                    });
+                    break;
+                }
+                case "code":
+                    if (typeof state.content !== "string") {
+                        throw new Error(`Invalid ${state.currentType} content`);
+                    }
+                    onSave({
+                        ...saveData,
+                        type: "code",
+                        content: state.content,
+                        language: state.language,
+                    });
+                    break;
+                case "divider": {
+                    const divider = ALL_DIVIDERS.find(
+                        ({ name }) => name === state.content,
+                    );
+                    if (!divider) {
+                        throw new Error("Invalid divider content");
+                    }
+                    onSave({
+                        ...saveData,
+                        type: "divider",
+                        content: divider.name,
+                    });
+                    break;
+                }
+                case "formula":
+                    if (typeof state.content !== "string") {
+                        throw new Error(`Invalid ${state.currentType} content`);
+                    }
+                    onSave({
+                        ...saveData,
+                        type: "formula",
+                        content: state.content,
+                    });
+                    break;
+            }
+        } finally {
+            dispatch({ type: "setAdding", payload: false });
         }
-
-        onSave({
-            id: editorData.id,
-            type: state.currentType,
-            title: state.title,
-            content: savedContent,
-            designId: state.designEnabled ? state.designId : 0,
-            colorOptionId: state.colorOptionId || 1,
-            order: editorData.order,
-            action: editorData.action,
-        });
-
-        dispatch({ type: "setAdding", payload: false });
-    }, [dispatch, editorData, onSave, state]);
+    }, [dispatch, editorDataState, isValid, onSave, state]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -185,7 +274,7 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
             role="dialog"
             aria-modal="true"
             aria-label={
-                editorData.action === "add"
+                editorDataState.action === "add"
                     ? "New block editor"
                     : "Edit block editor"
             }
@@ -196,14 +285,14 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
                 className="ds-animate-fade-up flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-muted bg-card shadow-2xl outline-none"
             >
                 <BlockEditorHeader
-                    action={editorData.action}
+                    action={editorDataState.action}
                     onClose={handleClose}
                 />
                 <div className="flex flex-1 overflow-hidden">
                     <BlockContentEditor
                         state={state}
                         dispatch={dispatch}
-                        editorData={editorData}
+                        editorData={editorDataState}
                     />
                     <BlockSettingsSidebar
                         state={state}
@@ -216,7 +305,7 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
                     onSave={handleSave}
                     disabled={!isValid}
                     isAdding={state.isAdding}
-                    action={editorData.action}
+                    action={editorDataState.action}
                 />
             </div>
         </div>

@@ -1,52 +1,24 @@
 import { useEffect, useReducer } from "react";
-import { EditorData, blockTypeOptions } from "@/types/Editor";
+import {
+    BlockEditorAction,
+    BlockEditorState,
+    EditorDataType,
+} from "@/types/Editor";
 import { getBlockTypeConfig, getDefaultLanguage } from "./block-editor-config";
-import { PreviewFile } from "./../ImageUploader";
 
-export interface BlockEditorState {
-    currentType: blockTypeOptions;
-    title: string;
-    content: string;
-    file: PreviewFile | null;
-    language: string;
-    designEnabled: boolean;
-    designId: number;
-    colorOptionId: number;
-    isAdding: boolean;
-    isVisible: boolean;
-}
-
-export type BlockEditorAction =
-    | { type: "initialize"; payload: EditorData }
-    | { type: "setType"; payload: blockTypeOptions }
-    | { type: "setTitle"; payload: string }
-    | { type: "setContent"; payload: string }
-    | { type: "setFile"; payload: PreviewFile | null }
-    | { type: "setLanguage"; payload: string }
-    | { type: "setDesignEnabled"; payload: boolean }
-    | { type: "setDesignId"; payload: number }
-    | { type: "setColorOptionId"; payload: number }
-    | { type: "setAdding"; payload: boolean }
-    | { type: "setVisible"; payload: boolean };
-
-const getInitialState = (editorData: EditorData): BlockEditorState => {
-    const config = getBlockTypeConfig(editorData.type);
+const getInitialState = (editorData: EditorDataType): BlockEditorState => {
+    const content = "content" in editorData ? editorData.content : "";
     const language =
-        editorData.type === "code"
-            ? getDefaultLanguage(editorData.title)
-            : "javascript";
-
-    const content =
-        editorData.action === "add"
-            ? config.initialContent
-            : editorData.content;
+        editorData.type === "code" ? editorData.language : "javascript";
+    const url = editorData.type === "image" ? editorData.url : "";
 
     return {
         currentType: editorData.type,
-        title: editorData.type === "code" ? language : editorData.title,
+        title: editorData.title,
         content,
         file: null,
         language,
+        url,
         designEnabled: editorData.designId !== 0,
         designId:
             editorData.action === "add"
@@ -76,9 +48,9 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
             return {
                 ...state,
                 currentType: action.payload,
-                title: action.payload === "code" ? language : "",
                 content: config.initialContent,
                 file: action.payload === "image" ? state.file : null,
+                url: action.payload === "image" ? state.url : "",
                 language,
             };
         }
@@ -123,7 +95,7 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
     }
 };
 
-export const useBlockEditorState = (editorData: EditorData) => {
+export const useBlockEditorState = (editorData: EditorDataType) => {
     const [state, dispatch] = useReducer(reducer, editorData, getInitialState);
 
     useEffect(() => {
@@ -146,7 +118,7 @@ export const useBlockEditorState = (editorData: EditorData) => {
         let active = true;
         (async () => {
             try {
-                const response = await fetch(editorData.content);
+                const response = await fetch(editorData.url);
                 const blob = await response.blob();
                 const newFile = new File([blob], editorData.title, {
                     type: blob.type,

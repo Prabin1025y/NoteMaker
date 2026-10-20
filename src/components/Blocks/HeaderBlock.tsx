@@ -3,12 +3,13 @@ import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import { JSONContent } from "@tiptap/core";
 
 type HeaderBlockProps = {
     title?: string;
     designId: number;
     colorOptionId: number;
-    content: string;
+    content: JSONContent;
 
     className?: string;
     readOnly?: boolean;
@@ -26,7 +27,8 @@ export default function HeaderBlock({
     onEdit,
     onDelete,
 }: HeaderBlockProps) {
-    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
+    const iconClassName =
+        "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
 
@@ -45,8 +47,9 @@ export default function HeaderBlock({
                 style={
                     !isDesignDisabled
                         ? ({
-                              "--block-bg": colorOption.backgroundColorHex,
-                              "--block-border": colorOption.borderColorHex,
+                              backgroundColor:
+                                  colorOption.primaryColorHex + "20",
+                              borderColor: colorOption.borderColorHex + "80",
                           } as CSSProperties)
                         : {}
                 }

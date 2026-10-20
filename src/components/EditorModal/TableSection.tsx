@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Plus, X, Trash2, Check } from "lucide-react";
-import { EditorData } from "@/types/Editor";
+import { EditorDataType } from "@/types/Editor";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -80,8 +80,8 @@ function ToolbarButton({ onClick, icon, label, danger }: ToolbarButtonProps) {
 }
 
 interface EditableTableProps {
-    onChangeHandler: (content: string) => void;
-    editorData: EditorData;
+    onChangeHandler: (content: TableState) => void;
+    editorData: EditorDataType;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -92,8 +92,8 @@ export default function EditableTable({
 }: EditableTableProps) {
     const [state, setState] = useState<TableState>(
         editorData.action === "add" || editorData.type !== "table"
-            ? makeInitialState
-            : JSON.parse(editorData.content),
+            ? makeInitialState()
+            : editorData.content,
     );
     // const [pendingFocus, setPendingFocus] = useState<FocusTarget>(null);
     const [confirmClear, setConfirmClear] = useState(false);
@@ -298,7 +298,7 @@ export default function EditableTable({
     const { cols, rows, headers, data } = state;
 
     useEffect(() => {
-        onChangeHandler(JSON.stringify(state));
+        onChangeHandler(state);
     }, [state, onChangeHandler]);
 
     return (

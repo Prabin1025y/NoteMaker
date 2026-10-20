@@ -8,7 +8,7 @@ type TableBlockProps = {
     title?: string;
     designId: number;
     colorOptionId: number;
-    content: string;
+    content: TableState;
 
     className?: string;
     readOnly?: boolean;
@@ -93,7 +93,9 @@ function ReadOnlyTable({
                                 <div className="h-10 flex items-center px-3">
                                     <span
                                         className="text-sm font-bold truncate"
-                                        style={{ color: "var(--tbl-header-text)" }}
+                                        style={{
+                                            color: "var(--tbl-header-text)",
+                                        }}
                                     >
                                         {headers[colId]?.trim() ? (
                                             headers[colId]
@@ -112,7 +114,10 @@ function ReadOnlyTable({
                 {/* Body */}
                 <tbody>
                     {rows.map((rowId, ri) => (
-                        <tr key={rowId} className="break-inside-avoid">
+                        <tr
+                            key={rowId}
+                            className="break-inside-avoid"
+                        >
                             {/* Row number */}
                             <td
                                 className="border-t text-center font-bold text-xs"
@@ -160,23 +165,6 @@ function ReadOnlyTable({
     );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function isTableContent(content: string): boolean {
-    try {
-        const parsed = JSON.parse(content);
-        return (
-            parsed &&
-            Array.isArray(parsed.cols) &&
-            Array.isArray(parsed.rows) &&
-            typeof parsed.headers === "object" &&
-            typeof parsed.data === "object"
-        );
-    } catch {
-        return false;
-    }
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function TableBlock({
@@ -189,13 +177,12 @@ export default function TableBlock({
     onEdit,
     onDelete,
 }: TableBlockProps) {
-    const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
+    const iconClassName =
+        "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
 
     const isDesignDisabled = designId === 0;
-    const isTable = isTableContent(content);
-
     return (
         <figure
             className={`
@@ -248,19 +235,17 @@ export default function TableBlock({
             )}
 
             {/* Content: table or rich text */}
-            {isTable ? (
+            {
                 <div className={isDesignDisabled ? "pt-2" : ""}>
                     <ReadOnlyTable
-                        state={JSON.parse(content) as TableState}
+                        state={content}
                         borderColor={colorOption.borderColorHex}
                         headerBg={colorOption.primaryColorHex + "33"} // 20% opacity tint
                         headerText="#000000"
                         cellFocusBg="transparent"
                     />
                 </div>
-            ) : (
-                <div>Corrupted Table</div>
-            )}
+            }
         </figure>
     );
 }

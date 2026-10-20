@@ -1,9 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { blockTypeOptions, EditorData } from "@/types/Editor";
-import { allBlocks, blockCategories } from "@/utils/BlocksInfo";
-import { initialJsonForEditor } from "@/utils/UtilFunctions";
+import { EditorDataType } from "@/types/Editor";
+import { allBlocks, blockCategories, BlockItem } from "@/utils/BlocksInfo";
+import {
+    INITIAL_JSON_CANVAS,
+    INITIAL_JSON_EDITOR,
+    INITIAL_JSON_HEADING,
+} from "@/utils/UtilFunctions";
+import {
+    CanvasEditorContentSchema,
+    JSONContentSchema,
+    TableStateSchema,
+} from "@/validation/editorData";
+import { ALL_DIVIDERS } from "@/utils/Dividers";
+import { makeInitialState } from "@/components/EditorModal/TableSection";
 import {
     PanelLeftCloseIcon,
     PanelRightCloseIcon,
@@ -13,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useNoteStore } from "@/Context/DataStore";
 
 interface LeftAsideProps {
-    openBlockEditor: (editorData: EditorData) => void;
+    openBlockEditor: (editorData: EditorDataType) => void;
 }
 
 const COLLAPSED_WIDTH = "w-[52px]";
@@ -23,20 +34,106 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const { isGenerating, setIsAiOpen } = useNoteStore();
 
-    const handleBlockClick = (
-        type: blockTypeOptions,
-        content: string = initialJsonForEditor,
-    ) => {
-        openBlockEditor({
+    const handleBlockClick = (block: BlockItem) => {
+        const base = {
             id: "",
-            designId: 0,
+            designId: block.defaultDesignId,
             colorOptionId: 1,
-            action: "add",
-            content,
+            action: "add" as const,
             title: "",
-            type,
-            order: "auto",
-        });
+            order: "auto" as const,
+        };
+
+        switch (block.type) {
+            case "block": {
+                const result = JSONContentSchema.safeParse(
+                    block.defaultContent,
+                );
+                openBlockEditor({
+                    ...base,
+                    type: "block",
+                    content: result.success ? result.data : INITIAL_JSON_EDITOR,
+                });
+                break;
+            }
+            case "heading": {
+                const result = JSONContentSchema.safeParse(
+                    block.defaultContent,
+                );
+                openBlockEditor({
+                    ...base,
+                    type: "heading",
+                    content: result.success
+                        ? result.data
+                        : INITIAL_JSON_HEADING,
+                });
+                break;
+            }
+            case "canvas": {
+                const result = CanvasEditorContentSchema.safeParse(
+                    block.defaultContent,
+                );
+                openBlockEditor({
+                    ...base,
+                    type: "canvas",
+                    content: result.success
+                        ? result.data
+                        : INITIAL_JSON_CANVAS,
+                });
+                break;
+            }
+            case "code":
+                openBlockEditor({
+                    ...base,
+                    type: "code",
+                    content:
+                        typeof block.defaultContent === "string"
+                            ? block.defaultContent
+                            : "// Do Something",
+                    language: "javascript",
+                });
+                break;
+            case "divider": {
+                const divider = ALL_DIVIDERS.find(
+                    ({ name }) => name === block.defaultContent,
+                );
+                openBlockEditor({
+                    ...base,
+                    type: "divider",
+                    content: divider?.name ?? ALL_DIVIDERS[0].name,
+                });
+                break;
+            }
+            case "formula":
+                openBlockEditor({
+                    ...base,
+                    type: "formula",
+                    content:
+                        typeof block.defaultContent === "string"
+                            ? block.defaultContent
+                            : "E=mc^2",
+                });
+                break;
+            case "image":
+                openBlockEditor({
+                    ...base,
+                    type: "image",
+                    url:
+                        typeof block.defaultContent === "string"
+                            ? block.defaultContent
+                            : "",
+                });
+                break;
+            case "table": {
+                const result = TableStateSchema.safeParse(block.defaultContent);
+                openBlockEditor({
+                    ...base,
+                    type: "table",
+                    content: result.success ? result.data : makeInitialState(),
+                });
+                break;
+            }
+        }
     };
 
     const blocksByCategory = blockCategories.map((category) => ({
@@ -119,10 +216,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                                             key={block.type}
                                             type="button"
                                             onClick={() =>
-                                                handleBlockClick(
-                                                    block.type,
-                                                    block.defaultContent,
-                                                )
+                                                handleBlockClick(block)
                                             }
                                             title={`${block.title} (${block.shortcut})`}
                                             className={`group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors duration-150 text-body hover:bg-primary/20 ${!isExpanded ? "justify-center px-0" : ""}`}

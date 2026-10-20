@@ -91,61 +91,62 @@ const RightAside = () => {
                         <DragDropProvider
                             onDragEnd={(event) => {
                                 if (isReadOnly) return;
+
+                                // `move` changes the visual position; assign a new
+                                // numeric order so the position can be persisted.
                                 const newBlocks = move(blocks, event);
-                                const orderUpdatedBlocks = newBlocks.map(
-                                    (b, index) => {
-                                        if (b.id === draggingBlockId) {
-                                            const prevOrder =
-                                                newBlocks[index - 1]?.order;
-                                            const nextOrder =
-                                                newBlocks[index + 1]?.order;
-                                            if (!prevOrder && !nextOrder)
-                                                return b;
-                                            if (b.id === blocks[index].id)
-                                                return b;
-                                            if (!nextOrder) {
-                                                const newOrder =
-                                                    (blocks.at(-1)?.order ||
-                                                        0) + 1;
-                                                pushToBlocksToBeSynced({
-                                                    id: b.id,
-                                                    action: "edit",
-                                                    data: {
-                                                        order: newOrder,
-                                                    },
-                                                });
-                                                return {
-                                                    ...b,
-                                                    order: newOrder,
-                                                };
-                                            }
-                                            const newOrder =
-                                                randomBetweenExclusive(
-                                                    prevOrder ? prevOrder : 0,
-                                                    nextOrder,
-                                                );
-                                            pushToBlocksToBeSynced({
-                                                id: b.id,
-                                                action: "edit",
-                                                data: { order: newOrder },
-                                            });
-                                            return {
-                                                ...b,
-                                                order: newOrder,
-                                            };
-                                        }
-                                        return b;
-                                    },
+
+                                if (!draggingBlockId) return;
+
+                                const draggingBlockIndex = newBlocks.findIndex(
+                                    (item) => item.id === draggingBlockId,
                                 );
-                                setBlocks(orderUpdatedBlocks);
+
+                                if (draggingBlockIndex === -1) {
+                                    return;
+                                }
+
+                                const prevOrder =
+                                    newBlocks[draggingBlockIndex - 1]?.order;
+                                const nextOrder =
+                                    newBlocks[draggingBlockIndex + 1]?.order;
+
+                                if (!prevOrder && !nextOrder) return;
+                                if (
+                                    draggingBlockId ===
+                                    blocks[draggingBlockIndex].id
+                                )
+                                    return;
+
+                                let newOrder = -1;
+
+                                if (!nextOrder) {
+                                    // Appending needs an order greater than the current last block.
+                                    newOrder = (blocks.at(-1)?.order || 0) + 1;
+                                } else {
+                                    // Place between neighbors without renumbering every block.
+                                    newOrder = randomBetweenExclusive(
+                                        prevOrder ? prevOrder : 0,
+                                        nextOrder,
+                                    );
+                                }
+
+                                newBlocks[draggingBlockIndex] = {
+                                    ...newBlocks[draggingBlockIndex],
+                                    order: newOrder,
+                                };
+                                setBlocks(newBlocks);
+                                // Queue the same order change for persistence.
+                                pushToBlocksToBeSynced({
+                                    id: draggingBlockId,
+                                    action: "edit",
+                                    data: { order: newOrder },
+                                });
                                 setDraggingBlockId(null);
                             }}
                         >
                             <div className="flex flex-col gap-0.5">
                                 {filteredBlocks.map((block, ind) => {
-                                    // const index = blocks.findIndex(
-                                    //     (b) => b.id === block.id,
-                                    // );
                                     const isActive =
                                         activeBlockId === block.id ||
                                         draggingBlockId === block.id;

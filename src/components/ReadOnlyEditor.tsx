@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, JSONContent } from "@tiptap/react";
 import { useEffect } from "react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
@@ -24,7 +24,7 @@ export default function ReadOnlyEditor({
     className = "",
     hasTitle = true,
 }: {
-    content: string;
+    content: JSONContent;
     className?: string;
     hasTitle?: boolean;
 }) {
@@ -58,16 +58,16 @@ export default function ReadOnlyEditor({
             Superscript,
             Subscript,
             Selection,
-            Image
+            Image,
         ],
-        content: JSON.parse(content),
+        content: content,
         editable: false,
     });
 
     // Update editor content when content prop changes
     useEffect(() => {
         if (editor && content) {
-            editor.commands.setContent(JSON.parse(content));
+            editor.commands.setContent(content);
         }
     }, [content, editor]);
 

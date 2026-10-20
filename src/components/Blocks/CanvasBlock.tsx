@@ -1,11 +1,14 @@
 import { EditIcon, PenLine, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import { Quickdraw, QuickdrawRef } from "@quickdrawjs/react";
+import { useEffect, useRef } from "react";
+import { CanvasEditorContentType } from "@/types/CanvasEditor";
 
 type CanvasBlockProps = {
     title?: string;
     designId?: number;
     colorOptionId?: number;
-    content: string;
+    content: CanvasEditorContentType;
 
     className?: string;
     readOnly?: boolean;
@@ -13,21 +16,6 @@ type CanvasBlockProps = {
     onDelete: () => void;
 };
 
-type ParsedCanvas = {
-    dataUrl?: string;
-    background?: string;
-};
-
-const parse = (content: string): ParsedCanvas | null => {
-    if (!content) return null;
-    try {
-        const parsed = JSON.parse(content);
-        if (typeof parsed !== "object" || parsed === null) return null;
-        return parsed as ParsedCanvas;
-    } catch {
-        return null;
-    }
-};
 
 export default function CanvasBlock({
     content,
@@ -37,9 +25,20 @@ export default function CanvasBlock({
     onEdit,
     onDelete,
 }: CanvasBlockProps) {
-    const iconClassName = "max-w-5 transition-transform group-hover/button:scale-110";
-    const parsed = parse(content);
-    const dataUrl = parsed?.dataUrl;
+    const iconClassName =
+        "max-w-5 transition-transform group-hover/button:scale-110";
+    const canvasEditor = useRef<QuickdrawRef>(null);
+
+    if (!content) return;
+
+    useEffect(() => {
+        if (canvasEditor.current && content) {
+            canvasEditor.current.editor?.store.loadSnapshot(content.data);
+            canvasEditor.current.editor?.setGrid(content.config.grid);
+            canvasEditor.current.editor?.setTheme(content.config.theme);
+            canvasEditor.current.editor?.fitContent({ animate: 220 });
+        }
+    }, [content, canvasEditor]);
 
     return (
         <figure className={`group relative break-inside-avoid ${className}`}>
@@ -69,19 +68,28 @@ export default function CanvasBlock({
                 </div>
             )}
 
-            {dataUrl ? (
-                <div className="flex justify-center">
+            {content ? (
+                <div className="w-[80%] mx-auto aspect-square">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={dataUrl}
-                        alt={title || "Drawing"}
-                        className="max-h-[640px] w-full max-w-4xl rounded-xl border border-muted object-contain shadow-sm transition-[box-shadow,transform] duration-300 group-hover:shadow-md"
+                    <Quickdraw
+                        ref={canvasEditor}
+                        autoFit
+                        grid={content.config.grid}
+                        theme={content.config.theme}
+                        readonly
+                        snapshot={content.data}
+                        watermark={false}
                     />
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-strong bg-background/80 py-12 text-muted-foreground">
-                    <PenLine size={22} className="opacity-50" />
-                    <p className="text-[13px]">Empty drawing — click Edit to sketch.</p>
+                    <PenLine
+                        size={22}
+                        className="opacity-50"
+                    />
+                    <p className="text-[13px]">
+                        Empty drawing — click Edit to sketch.
+                    </p>
                 </div>
             )}
 
