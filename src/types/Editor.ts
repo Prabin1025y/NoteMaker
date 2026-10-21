@@ -4,6 +4,7 @@ import { MonacoLanguage } from "@/utils/UtilFunctions";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { TableState } from "@/components/EditorModal/TableSection";
 import { PreviewFile } from "@/components/ImageUploader";
+import { ModifiedCanvasEditorContentType } from "@/validation/editorData";
 
 export type blockTypeOptions =
     | "block"
@@ -42,7 +43,7 @@ export type EditorDataType =
       })
     | (BaseEditorDataType & {
           type: "canvas";
-          content: CanvasEditorContentType;
+          content: ModifiedCanvasEditorContentType;
       })
     | (BaseEditorDataType & {
           type: "code";

@@ -1,14 +1,15 @@
 import { EditIcon, PenLine, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
-import { Quickdraw, QuickdrawRef } from "@quickdrawjs/react";
+import { GridId, Quickdraw, QuickdrawRef } from "@quickdrawjs/react";
 import { useEffect, useRef } from "react";
 import { CanvasEditorContentType } from "@/types/CanvasEditor";
+import { ModifiedCanvasEditorContentType } from "@/validation/editorData";
 
 type CanvasBlockProps = {
     title?: string;
     designId?: number;
     colorOptionId?: number;
-    content: CanvasEditorContentType;
+    content: ModifiedCanvasEditorContentType;
 
     className?: string;
     readOnly?: boolean;
@@ -34,7 +35,7 @@ export default function CanvasBlock({
     useEffect(() => {
         if (canvasEditor.current && content) {
             canvasEditor.current.editor?.store.loadSnapshot(content.data);
-            canvasEditor.current.editor?.setGrid(content.config.grid);
+            canvasEditor.current.editor?.setGrid(content.config.grid as GridId);
             canvasEditor.current.editor?.setTheme(content.config.theme);
             canvasEditor.current.editor?.fitContent({ animate: 220 });
         }
@@ -74,7 +75,7 @@ export default function CanvasBlock({
                     <Quickdraw
                         ref={canvasEditor}
                         autoFit
-                        grid={content.config.grid}
+                        grid={content.config.grid as GridId}
                         theme={content.config.theme}
                         readonly
                         snapshot={content.data}
