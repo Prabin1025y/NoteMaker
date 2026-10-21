@@ -64,7 +64,7 @@ const SnapshotSchema = z.custom<Snapshot>((value) => {
     return Object.values(value.document.store).every(isBoardRecord);
 });
 
-type ModifiedCanvasEditorContentType = {
+export type ModifiedCanvasEditorContentType = {
     data: Snapshot;
     config: {
         theme: ThemeId;

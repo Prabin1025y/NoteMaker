@@ -1,15 +1,16 @@
-import { Quickdraw } from "@quickdrawjs/react";
+import { GridId, Quickdraw } from "@quickdrawjs/react";
 import "@quickdrawjs/core/quickdraw.css";
 import { useRef } from "react";
 import { CanvasEditorContentType } from "@/types/CanvasEditor";
+import { ModifiedCanvasEditorContentType } from "@/validation/editorData";
 
 
 const DrawCanvasSection = ({
     content,
     onChangeHandler,
 }: {
-    content: CanvasEditorContentType;
-    onChangeHandler: (value: CanvasEditorContentType) => void;
+    content: ModifiedCanvasEditorContentType;
+    onChangeHandler: (value: ModifiedCanvasEditorContentType) => void;
 }) => {
     const drawCanvasRef = useRef(null);
     return (
@@ -43,7 +44,7 @@ const DrawCanvasSection = ({
                             },
                         });
                     }}
-                    grid={content.config.grid}
+                    grid={content.config.grid as GridId}
                     theme={content.config.theme}
                     watermark={false}
                     snapshot={content.data}

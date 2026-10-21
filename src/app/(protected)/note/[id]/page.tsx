@@ -19,7 +19,6 @@ import { useUnsavedChangesWarning } from "@/hooks/useUnsavedChangesWarning";
 import { toast } from "sonner";
 import AiBlockGenerator from "@/components/note/AiBlockGenerator";
 import { useQueryClient } from "@tanstack/react-query";
-import { allBlocks } from "@/utils/BlocksInfo";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { useGetBlocksByNoteId } from "@/hooks/custom/useBlocks";
