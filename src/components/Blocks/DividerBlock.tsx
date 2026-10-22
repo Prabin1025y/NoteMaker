@@ -1,5 +1,6 @@
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
 
@@ -13,6 +14,8 @@ type DividerBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 export default function DividerBlock({
@@ -22,6 +25,8 @@ export default function DividerBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: DividerBlockProps) {
     const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
@@ -42,6 +47,10 @@ export default function DividerBlock({
                 <div
                     className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
+                    <BlockCopyActions
+                        onCopy={onCopy}
+                        onDuplicate={onDuplicate}
+                    />
                     <BlockActionButton
                         icon={
                             <EditIcon

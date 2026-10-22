@@ -9,6 +9,11 @@ export async function authorizeNoteAccess(userId: string, noteId: string) {
             id: noteId,
             OR: [{ authorId: userId }, { isPublic: true }],
         },
+        include: {
+            folder: {
+                select: { name: true },
+            },
+        },
     });
 
     const authorized = !!note;

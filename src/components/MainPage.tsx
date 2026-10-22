@@ -20,7 +20,9 @@ import {
     TableStateSchema,
 } from "@/validation/editorData";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
+import { copyBlockToClipboard } from "@/utils/blockClipboard";
 import {
+    ClipboardPaste,
     ChevronDown,
     ChevronUp,
     Loader,
@@ -115,9 +117,13 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
     const {
         blocks,
         deleteBlock,
+        addCopiedBlock,
+        duplicateBlock,
+        copiedContent,
         draggingBlockId,
         isReadOnly,
         isGenerating,
+        setCopiedContent,
         setIsAiOpen,
     } = useNoteStore();
     const [showScrollTopBottom, setShowScrollTopBottom] = useState([
@@ -162,19 +168,21 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
         }
     };
 
-    const handleAddBlockInBetween = async (index: number) => {
-        const prevOrder = blocks[index - 1]?.order || 0;
+    const getOrderBetweenBlocks = (index: number) => {
+        const prevOrder = blocks[index - 1]?.order ?? 0;
         const nextOrder = blocks[index]?.order;
 
-        if (!nextOrder) {
+        if (nextOrder === undefined) {
             alert("Something is not right.");
-            return;
+            return null;
         }
 
-        const newOrder = randomBetweenExclusive(
-            prevOrder ? prevOrder : 0,
-            nextOrder,
-        );
+        return randomBetweenExclusive(prevOrder, nextOrder);
+    };
+
+    const handleAddBlockInBetween = (index: number) => {
+        const newOrder = getOrderBetweenBlocks(index);
+        if (newOrder === null) return;
 
         openBlockEditor({
             id: "",
@@ -186,6 +194,42 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
             title: "",
             type: "block",
         });
+    };
+
+    const handleCopyBlock = async (
+        block: (typeof blocks)[number],
+        canvasImage?: Promise<Blob | null>,
+    ) => {
+        setCopiedContent({
+            type: block.type,
+            content: block.content,
+            title: block.title,
+            designId: block.designId,
+            colorOptionId: block.colorOptionId,
+        });
+        try {
+            await copyBlockToClipboard(
+                block,
+                document.getElementById(`block-${block.id}`),
+                canvasImage,
+            );
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Couldn't copy block content to the clipboard.",
+            );
+        }
+    };
+
+    const handlePasteBlock = (order: number | "auto" = "auto") => {
+        if (copiedContent) addCopiedBlock(copiedContent, order);
+    };
+
+    const handlePasteBlockInBetween = (index: number) => {
+        if (!copiedContent) return;
+        const order = getOrderBetweenBlocks(index);
+        if (order !== null) handlePasteBlock(order);
     };
 
     return (
@@ -232,6 +276,11 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                     className: `peer ${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-[color:var(--ds-focus-ring)] ring-offset-2 ring-offset-[color:var(--ds-surface-canvas)]" : ""}`,
                                     onEdit: () => openBlockEditor(editorData),
                                     onDelete: () => deleteBlock(block.id),
+                                    onCopy: (canvasImage?: Promise<
+                                        Blob | null
+                                    >) =>
+                                        handleCopyBlock(block, canvasImage),
+                                    onDuplicate: () => duplicateBlock(block.id),
                                 };
                                 let renderedBlock: React.ReactNode;
 
@@ -310,7 +359,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                         id={`block-${block.id}`}
                                     >
                                         {!isReadOnly && (
-                                            <div className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex -translate-y-2 scale-95 justify-center opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100">
+                                            <div className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex -translate-y-2 scale-95 justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100">
                                                 <div className="absolute top-1/2 h-px w-full border-t border-dashed border-[color:var(--ds-accent-soft)]" />
                                                 <button
                                                     onClick={() =>
@@ -323,6 +372,23 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                     <PlusIcon size={18} />
                                                     <span>Add Block</span>
                                                 </button>
+                                                {copiedContent && (
+                                                    <button
+                                                        onClick={() =>
+                                                            handlePasteBlockInBetween(
+                                                                i,
+                                                            )
+                                                        }
+                                                        title="Paste copied block here"
+                                                        aria-label="Paste copied block here"
+                                                        className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-card px-4 py-1 text-[12px] font-medium text-primary shadow-sm outline-none transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                                    >
+                                                        <ClipboardPaste
+                                                            size={16}
+                                                        />
+                                                        <span>Paste Block</span>
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                         {renderedBlock}
@@ -365,6 +431,21 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                         Add a block
                                     </p>
                                 </button>
+
+                                {copiedContent && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handlePasteBlock()}
+                                        className="group flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-strong bg-card px-4 py-5 outline-none transition-colors duration-150 hover:border-accent hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                    >
+                                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/20 text-primary transition-colors duration-150 group-hover:bg-brand-soft">
+                                            <ClipboardPaste size={18} />
+                                        </div>
+                                        <p className="text-center text-[13px] font-semibold text-ink">
+                                            Paste copied block
+                                        </p>
+                                    </button>
+                                )}
 
                                 <button
                                     type="button"

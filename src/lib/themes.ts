@@ -25,4 +25,8 @@ export const THEMES = {
         name: "Reverbal",
         colors: ["#f46325", "#404040", "#1a1a1a", "#ffffff"],
     },
+    fluorescent_green: {
+        name: "fluorescent green",
+        colors: ["#f3f7ef", "#1b2b22", "#eaf4d4", "#b6e23a"],
+    },
 } as const;

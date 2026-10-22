@@ -1,5 +1,6 @@
 import { EditIcon, PenLine, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { GridId, Quickdraw, QuickdrawRef } from "@quickdrawjs/react";
 import { useEffect, useRef } from "react";
 import { CanvasEditorContentType } from "@/types/CanvasEditor";
@@ -15,8 +16,9 @@ type CanvasBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: (canvasImage?: Promise<Blob | null>) => void;
+    onDuplicate?: () => void;
 };
-
 
 export default function CanvasBlock({
     content,
@@ -25,12 +27,15 @@ export default function CanvasBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: CanvasBlockProps) {
     const iconClassName =
         "max-w-5 transition-transform group-hover/button:scale-110";
     const canvasEditor = useRef<QuickdrawRef>(null);
 
     if (!content) return;
+
 
     useEffect(() => {
         if (canvasEditor.current && content) {
@@ -46,6 +51,15 @@ export default function CanvasBlock({
             {/* Actions */}
             {!readOnly && (
                 <div className="absolute right-2 top-2 z-10 hidden overflow-hidden rounded-md group-hover:flex">
+                    <BlockCopyActions
+                        onCopy={() =>
+                            onCopy?.(
+                                canvasEditor.current?.editor?.exportImage() ??
+                                    Promise.resolve(null),
+                            )
+                        }
+                        onDuplicate={onDuplicate}
+                    />
                     <BlockActionButton
                         icon={
                             <EditIcon

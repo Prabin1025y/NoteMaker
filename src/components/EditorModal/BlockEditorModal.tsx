@@ -250,17 +250,16 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
         setIsEditorOpen(false);
     };
 
-    const panelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === "Escape") setIsEditorOpen(false);
         };
         window.addEventListener("keydown", onKey);
-        const id = window.setTimeout(() => panelRef.current?.focus(), 30);
+        // const id = window.setTimeout(() => panelRef.current?.focus(), 30);
         return () => {
             window.removeEventListener("keydown", onKey);
-            window.clearTimeout(id);
+            // window.clearTimeout(id);
         };
     }, [setIsEditorOpen]);
 
@@ -270,7 +269,7 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
 
     return (
         <div
-            className="ds-animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            className="ds-animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 md:p-4 backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
             aria-label={
@@ -280,15 +279,14 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
             }
         >
             <div
-                ref={panelRef}
                 tabIndex={-1}
-                className="ds-animate-fade-up flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-muted bg-card shadow-2xl outline-none"
+                className="ds-animate-fade-up flex h-full w-full max-w-375 flex-col overflow-hidden md:rounded-2xl border border-muted bg-card shadow-2xl outline-none"
             >
                 <BlockEditorHeader
                     action={editorDataState.action}
                     onClose={handleClose}
                 />
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-1 overflow-hidden relative">
                     <BlockContentEditor
                         state={state}
                         dispatch={dispatch}

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { TableState } from "../EditorModal/TableSection";
 
@@ -14,6 +15,8 @@ type TableBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 // ─── Read-only table ──────────────────────────────────────────────────────────
@@ -176,6 +179,8 @@ export default function TableBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: TableBlockProps) {
     const iconClassName =
         "max-w-5 group-hover/button:scale-110 transition-transform";
@@ -197,6 +202,10 @@ export default function TableBlock({
                 <div
                     className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
+                    <BlockCopyActions
+                        onCopy={onCopy}
+                        onDuplicate={onDuplicate}
+                    />
                     <BlockActionButton
                         icon={
                             <EditIcon

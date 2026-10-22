@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
 import FormulaViewer from "../FormulaViewer";
@@ -15,6 +16,8 @@ type FormulaBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 export default function FormulaBlock({
@@ -26,6 +29,8 @@ export default function FormulaBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: FormulaBlockProps) {
     const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
@@ -53,6 +58,10 @@ export default function FormulaBlock({
                     <div
                         className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                     >
+                        <BlockCopyActions
+                            onCopy={onCopy}
+                            onDuplicate={onDuplicate}
+                        />
                         <BlockActionButton
                             icon={
                                 <EditIcon

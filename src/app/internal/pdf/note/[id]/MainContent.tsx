@@ -58,6 +58,10 @@ const MainContent = ({ blocks }: { blocks: BlockType[] }) => {
                                 readOnly: true,
                                 onEdit: () => {},
                                 onDelete: () => {},
+                                onCopy: () =>
+                                    navigator.clipboard.writeText(
+                                        block.content,
+                                    ),
                             };
 
                             switch (block.type) {

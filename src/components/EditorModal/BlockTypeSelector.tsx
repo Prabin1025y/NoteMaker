@@ -12,7 +12,7 @@ const BlockTypeSelector = ({ currentBlock, onTypeChange }: BlockTypeSelectorProp
     return (
         <div>
             <label className="mb-3 block text-[13px] font-semibold text-body">
-                1. Block type
+                Block type
             </label>
             <DropdownMenu>
                 <DropdownMenuTrigger className="w-full">
