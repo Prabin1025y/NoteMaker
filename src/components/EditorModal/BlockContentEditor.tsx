@@ -238,7 +238,7 @@ const BlockContentEditor = ({
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-8 py-6 min-w-0">
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-8 py-6 min-w-0 mr-10 xl:mr-0">
             {renderTitleInput()}
             {renderEditor()}
         </div>

@@ -31,7 +31,7 @@ const DesignSelection = ({
         <div className={`${className} flex flex-col gap-5`}>
             <div className="flex-1">
                 <label className="mb-3 block text-[13px] font-semibold text-body">
-                    3. Design Type
+                    Design Type
                 </label>
                 <DropdownMenu>
                     <DropdownMenuTrigger className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-strong py-2 outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
@@ -62,28 +62,8 @@ const DesignSelection = ({
             </div>
             <div className="flex-1">
                 <label className="mb-3 block text-[13px] font-semibold text-body">
-                    4. Color Options
+                    Color Options
                 </label>
-                {/* <DropdownMenu>
-                    <DropdownMenuTrigger className="w-full">
-                        <ColorOptionSelect colorOptionId={colorOptionId} />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        {colorOptions.map((colorOption) => (
-                            <DropdownMenuItem
-                                key={colorOption.id}
-                                onSelect={() =>
-                                    setColorOptionId(colorOption.id)
-                                }
-                                className="rounded-none"
-                            >
-                                <ColorOptionSelect
-                                    colorOptionId={colorOption.id}
-                                />
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu> */}
                 <div className="grid grid-cols-5 gap-3">
                     {colorOptions.map((co) => (
                         <button

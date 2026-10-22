@@ -168,6 +168,7 @@ const MainToolbarContent = ({
                 ) : (
                     <LinkButton onClick={onLinkClick} />
                 )}
+
             </ToolbarGroup>
             <ToolbarGroup>
                 <ImageUploadButton text="Add" />
@@ -252,6 +253,7 @@ export function SimpleEditor({
 
     const editor = useEditor({
         immediatelyRender: true,
+        autofocus: true,
         editorProps: {
             attributes: {
                 autocomplete: "off",
@@ -355,6 +357,7 @@ export function SimpleEditor({
 
                 <EditorContent
                     editor={editor}
+                    // autoFocus={true}
                     role="presentation"
                     className="simple-editor-content mx-0! min-w-full"
                 />

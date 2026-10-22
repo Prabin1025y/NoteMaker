@@ -1,8 +1,9 @@
-import { EditIcon, Trash2Icon, CopyIcon, CheckIcon } from "lucide-react";
-import { useState, type CSSProperties } from "react";
+import { EditIcon, Trash2Icon } from "lucide-react";
+import { type CSSProperties } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
 
@@ -18,6 +19,8 @@ type CodeBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 /** Maps common language display names → Prism language identifiers */
@@ -72,9 +75,9 @@ export default function CodeBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: CodeBlockProps) {
-    const [copied, setCopied] = useState(false);
-
     const iconClassName =
         "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
@@ -83,13 +86,6 @@ export default function CodeBlock({
     const isDesignDisabled = designId === 0;
     const lang = normalizeLang(title);
     const highlighterTheme = oneDark;
-
-    function handleCopy() {
-        navigator.clipboard.writeText(content).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
-    }
 
     return (
         <div className={`pt-2 ${!isDesignDisabled && "break-inside-avoid"}`}>
@@ -114,22 +110,11 @@ export default function CodeBlock({
                 <div
                     className={`hidden border border-muted shadow-sm group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
-                    <BlockActionButton
-                        icon={
-                            copied ? (
-                                <CheckIcon
-                                    className={`${iconClassName} hover:text-primary`}
-                                />
-                            ) : (
-                                <CopyIcon
-                                    className={`${iconClassName} hover:text-primary`}
-                                />
-                            )
-                        }
-                        onClick={handleCopy}
-                    >
-                        {copied ? "Copied" : "Copy"}
-                    </BlockActionButton>
+                    <BlockCopyActions
+                        onCopy={onCopy}
+                        onDuplicate={onDuplicate}
+                        readOnly={readOnly}
+                    />
                     {!readOnly && (
                         <>
                             <BlockActionButton

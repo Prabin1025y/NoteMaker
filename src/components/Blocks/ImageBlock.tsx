@@ -1,6 +1,7 @@
 
 import { EditIcon, Trash2Icon } from "lucide-react";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 
 type ImageBlockProps = {
     title?: string;
@@ -19,6 +20,8 @@ type ImageBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 export default function ImageBlock({
@@ -28,6 +31,8 @@ export default function ImageBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: ImageBlockProps) {
     const iconClassName = "max-w-5 transition-transform group-hover/button:scale-110";
 
@@ -47,6 +52,10 @@ export default function ImageBlock({
                         group-hover:flex
                     "
                 >
+                    <BlockCopyActions
+                        onCopy={onCopy}
+                        onDuplicate={onDuplicate}
+                    />
                     <BlockActionButton
                         icon={
                             <EditIcon

@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     try {
+        console.log("requiest incoming")
         const { noteId } = await req.json();
 
         if (!noteId) {
@@ -22,8 +23,10 @@ export async function POST(req: NextRequest) {
             role: user.role,
             userName: user.name,
         });
+        console.log("token incoming")
 
         const note = await authorizeNoteAccess(user.id, noteId);
+        console.log("note incoming")
 
         const response = await fetch(process.env.PDF_API_URL!, {
             method: "POST",
@@ -31,8 +34,13 @@ export async function POST(req: NextRequest) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ noteId, noteTitle: note.title }),
+            body: JSON.stringify({
+                noteId,
+                noteTitle: note.title,
+                folderName: note.folder.name,
+            }),
         });
+        console.log(response)
 
         if (!response.ok) {
             return new NextResponse(await response.text(), {

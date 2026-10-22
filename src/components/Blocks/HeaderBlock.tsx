@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import { JSONContent } from "@tiptap/core";
@@ -15,6 +16,8 @@ type HeaderBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 export default function HeaderBlock({
@@ -26,6 +29,8 @@ export default function HeaderBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: HeaderBlockProps) {
     const iconClassName =
         "max-w-5 group-hover/button:scale-110 transition-transform";
@@ -58,6 +63,10 @@ export default function HeaderBlock({
                     <div
                         className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                     >
+                        <BlockCopyActions
+                            onCopy={onCopy}
+                            onDuplicate={onDuplicate}
+                        />
                         <BlockActionButton
                             icon={
                                 <EditIcon

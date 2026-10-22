@@ -11,7 +11,10 @@ import {
     EditBlockType,
 } from "@/types/dataSotoreTypes";
 import { NoteType } from "@/types/custom/notes";
-import { INITIAL_EDITOR_DATA } from "@/utils/UtilFunctions";
+import {
+    INITIAL_EDITOR_DATA,
+    randomBetweenExclusive,
+} from "@/utils/UtilFunctions";
 import { queryClient } from "@/lib/query-client";
 import { notesKeys } from "@/hooks/custom/useNotes";
 
@@ -23,6 +26,11 @@ const BLOCK_SYNC_COMPARE_KEYS = [
     "title",
     "type",
 ] as const;
+
+export type CopiedBlockType = Pick<
+    BlockType,
+    "type" | "content" | "title" | "designId" | "colorOptionId"
+>;
 
 const getBlockSyncDiffData = (
     previousBlock: BlockType,
@@ -114,6 +122,7 @@ type Store = {
     title: string;
     draggingBlockId: string | null;
     activeBlockId: string | null;
+    copiedContent: CopiedBlockType | null;
     blocksToBeSynced: BlockSyncType[];
     historyPast: BlockType[][];
     historyFuture: BlockType[][];
@@ -134,6 +143,7 @@ type Store = {
     setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
     setActiveBlockId: (id: string | null) => void;
+    setCopiedContent: (content: CopiedBlockType | null) => void;
     setSearchQuery: (query: string) => void;
     setEditorDataState: (data: EditorDataType) => void;
 
@@ -155,6 +165,11 @@ type Store = {
     initializeSyncedBlocks: () => void;
 
     addSaveBlock: (editorData: EditorDataType) => void;
+    addCopiedBlock: (
+        content: CopiedBlockType,
+        order: number | "auto",
+    ) => void;
+    duplicateBlock: (id: string) => void;
     deleteBlock: (id: string) => void;
 
     pushToBlocksToBeSynced: (data: BlockSyncType) => void;
@@ -173,6 +188,7 @@ export const useNoteStore = create<Store>()(
         title: "Untitled Note",
         draggingBlockId: null,
         activeBlockId: null,
+        copiedContent: null,
         blocksToBeSynced: [],
         historyPast: [],
         historyFuture: [],
@@ -210,6 +226,7 @@ export const useNoteStore = create<Store>()(
         },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
         setActiveBlockId: (id) => set({ activeBlockId: id }),
+        setCopiedContent: (content) => set({ copiedContent: content }),
         setReadOnly: (value) => set({ isReadOnly: value }),
 
         initializeSyncedBlocks: () => set({ syncedBlocks: get().blocks }),
@@ -395,6 +412,64 @@ export const useNoteStore = create<Store>()(
                     data: changedBlock,
                 });
             }
+        },
+
+        addCopiedBlock: (content, requestedOrder) => {
+            if (get().isReadOnly) return;
+            const currentNote = get().currentNote;
+            if (!currentNote) return;
+
+            const now = new Date();
+            const publicId = uuidv4();
+            const order =
+                requestedOrder === "auto"
+                    ? (get().blocks.at(-1)?.order ?? 0) + 1
+                    : requestedOrder;
+            const copiedBlock: BlockType = {
+                ...content,
+                id: publicId,
+                publicId,
+                order,
+                createdAt: now,
+                updatedAt: now,
+                noteId: currentNote.id,
+            };
+
+            get().snapshotHistory();
+            set({
+                blocks: [...get().blocks, copiedBlock].sort(
+                    (a, b) => a.order - b.order,
+                ),
+            });
+            get().pushToBlocksToBeSynced({
+                id: copiedBlock.id,
+                action: "add",
+                block: createAddSyncBlock(copiedBlock),
+            });
+        },
+
+        duplicateBlock: (id) => {
+            const currentBlocks = get().blocks;
+            const blockIndex = currentBlocks.findIndex(
+                (block) => block.id === id,
+            );
+            if (blockIndex === -1) return;
+
+            const sourceBlock = currentBlocks[blockIndex];
+            const nextBlock = currentBlocks[blockIndex + 1];
+            const order = nextBlock
+                ? randomBetweenExclusive(sourceBlock.order, nextBlock.order)
+                : sourceBlock.order + 1;
+            get().addCopiedBlock(
+                {
+                    type: sourceBlock.type,
+                    content: sourceBlock.content,
+                    title: sourceBlock.title,
+                    designId: sourceBlock.designId,
+                    colorOptionId: sourceBlock.colorOptionId,
+                },
+                order,
+            );
         },
 
         deleteBlock: (id) => {

@@ -1,9 +1,7 @@
 import { GridId, Quickdraw } from "@quickdrawjs/react";
 import "@quickdrawjs/core/quickdraw.css";
 import { useRef } from "react";
-import { CanvasEditorContentType } from "@/types/CanvasEditor";
 import { ModifiedCanvasEditorContentType } from "@/validation/editorData";
-
 
 const DrawCanvasSection = ({
     content,
@@ -26,7 +24,7 @@ const DrawCanvasSection = ({
                         });
                     }}
                     onGridChange={(grid) => {
-                        console.log(grid)
+                        console.log(grid);
                         onChangeHandler({
                             ...content,
                             config: {
@@ -46,7 +44,6 @@ const DrawCanvasSection = ({
                     }}
                     grid={content.config.grid as GridId}
                     theme={content.config.theme}
-                    watermark={false}
                     snapshot={content.data}
                 />
             </div>

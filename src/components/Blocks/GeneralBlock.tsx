@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import ReadOnlyEditor from "../ReadOnlyEditor";
 import BlockActionButton from "../ui/BlockActionButton";
+import BlockCopyActions from "../ui/BlockCopyActions";
 import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
 import { EditIcon, Trash2Icon } from "lucide-react";
@@ -16,6 +17,8 @@ type GeneralBlockProps = {
     readOnly?: boolean;
     onEdit: () => void;
     onDelete: () => void;
+    onCopy?: () => void;
+    onDuplicate?: () => void;
 };
 
 export default function GeneralBlock({
@@ -27,6 +30,8 @@ export default function GeneralBlock({
     readOnly = false,
     onEdit,
     onDelete,
+    onCopy,
+    onDuplicate,
 }: GeneralBlockProps) {
     const iconClassName = "max-w-5 group-hover/button:scale-110 transition-transform";
     const colorOption =
@@ -59,6 +64,10 @@ export default function GeneralBlock({
                     <div
                         className={`hidden border group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                     >
+                        <BlockCopyActions
+                            onCopy={onCopy}
+                            onDuplicate={onDuplicate}
+                        />
                         <BlockActionButton
                             icon={
                                 <EditIcon
