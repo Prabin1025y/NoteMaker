@@ -17,7 +17,7 @@ import { Typography } from "@tiptap/extension-typography";
 import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
-import { Dropcursor, Selection } from "@tiptap/extensions";
+import { Selection } from "@tiptap/extensions";
 import Image from "@tiptap/extension-image";
 import Mathematics from "@tiptap/extension-mathematics";
 
@@ -168,7 +168,6 @@ const MainToolbarContent = ({
                 ) : (
                     <LinkButton onClick={onLinkClick} />
                 )}
-
             </ToolbarGroup>
             <ToolbarGroup>
                 <ImageUploadButton text="Add" />
@@ -295,7 +294,6 @@ export function SimpleEditor({
                 upload: handleImageUpload,
                 onError: (error) => console.error("Upload failed:", error),
             }),
-            Dropcursor,
             Image.configure({
                 resize: {
                     enabled: true,
