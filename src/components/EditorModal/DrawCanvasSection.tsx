@@ -24,7 +24,6 @@ const DrawCanvasSection = ({
                         });
                     }}
                     onGridChange={(grid) => {
-                        console.log(grid);
                         onChangeHandler({
                             ...content,
                             config: {

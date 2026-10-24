@@ -480,11 +480,7 @@ export const useNoteStore = create<Store>()(
         },
 
         pushToBlocksToBeSynced: (data) => {
-            console.log("inside block to be syncded");
             if (isEqual(get().blocks, get().syncedBlocks)) {
-                console.log("becomes equal");
-                console.log(get().blocks);
-                console.log(get().syncedBlocks);
                 set({ blocksToBeSynced: [] });
                 return;
             }
