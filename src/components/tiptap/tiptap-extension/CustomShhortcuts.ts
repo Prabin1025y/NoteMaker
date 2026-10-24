@@ -10,7 +10,6 @@ export const EditorShortcuts = Extension.create({
                 return true;
             },
             "Mod-Alt--": () => {
-                console.log("Triggered");
                 this.editor.commands.toggleSubscript();
                 return true;
             },
@@ -21,7 +20,6 @@ export const EditorShortcuts = Extension.create({
             },
 
             "Mod-Alt-t": () => {
-                console.log("Triggered");
                 this.editor.commands.toggleHighlight({
                     color: "var(--tt-color-highlight-red)",
                 });

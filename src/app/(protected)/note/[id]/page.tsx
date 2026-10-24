@@ -77,6 +77,9 @@ export default function NotePage() {
     const savingRef = useRef(false);
     const handleSaveRef = useRef<() => Promise<void>>(() => Promise.resolve());
     const savingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const isSyncingRef = useRef(isSyncing);
+    const doSaveImmediatelyRef = useRef(doSaveImmediately);
+    const isEditorOpenRef = useRef(isEditorOpen);
 
     // Resolve the open note exactly once: owner path when it's in the user's
     // own list, otherwise the viewer path (public link → read-only session).
@@ -120,6 +123,10 @@ export default function NotePage() {
     // would clobber unsaved local changes made during the save.
 
     useEffect(() => {
+        isSyncingRef.current = isSyncing;
+        doSaveImmediatelyRef.current = doSaveImmediately;
+        isEditorOpenRef.current = isEditorOpen;
+
         if (!isEditorOpen && doSaveImmediately && !isSyncing) {
             pendingSaveRef.current = true;
             void handleSaveRef.current();
@@ -129,8 +136,8 @@ export default function NotePage() {
 
     useEffect(() => {
         savingTimerRef.current = setInterval(() => {
-            if (isSyncing || doSaveImmediately) return;
-            if (isEditorOpen) {
+            if (isSyncingRef.current || doSaveImmediatelyRef.current) return;
+            if (isEditorOpenRef.current) {
                 setDoSaveImmediately(true);
                 return;
             }
