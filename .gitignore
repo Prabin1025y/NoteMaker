@@ -49,5 +49,9 @@ AGENTS.md
 .cursor
 .gemini
 .opencode
+.impeccable
+docs
 
 /src/generated/prisma
+script.txt
+

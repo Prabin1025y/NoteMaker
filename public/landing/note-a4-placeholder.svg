@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="1188" viewBox="0 0 840 1188" fill="none">
+  <title>Newton’s laws of motion — illustrative A4 study note</title>
+  <desc>An authored, replaceable physics note with a definition, formula, force diagram, and three-law comparison.</desc>
+  <rect width="840" height="1188" fill="#ffffff"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#0f1115">
+    <text x="66" y="111" font-size="46" font-weight="700" letter-spacing="-1.5">Newton’s laws</text>
+    <text x="66" y="166" font-size="46" font-weight="700" letter-spacing="-1.5">of motion</text>
+    <text x="66" y="211" font-size="17" fill="#6b7280">Physics / Mechanics / Concepts &amp; worked examples</text>
+    <text x="774" y="78" text-anchor="end" font-size="13" fill="#6b7280">STUDY NOTE</text>
+    <path d="M66 238H774" stroke="#e5e7eb"/>
+
+    <rect x="66" y="268" width="708" height="125" rx="8" fill="#fceccb"/>
+    <text x="88" y="301" font-size="16" font-weight="700">THE CENTRAL IDEA</text>
+    <text x="88" y="332" font-size="17">An object’s motion changes when a net force acts on it.</text>
+    <text x="88" y="358" font-size="17">The same force produces less acceleration in a heavier object.</text>
+
+    <rect x="66" y="421" width="708" height="144" rx="8" fill="#f3f4f6"/>
+    <text x="420" y="487" text-anchor="middle" font-family="Georgia, serif" font-size="46" font-style="italic">F<tspan font-size="24" baseline-shift="sub">net</tspan><tspan baseline-shift="baseline"> = ma</tspan></text>
+    <text x="420" y="533" text-anchor="middle" font-size="16" fill="#475569">Force (N) = mass (kg) × acceleration (m/s²)</text>
+
+    <text x="66" y="620" font-size="22" font-weight="700" letter-spacing="-.4">A force you can see</text>
+    <rect x="188" y="674" width="138" height="74" rx="3" fill="#ffffff" stroke="#0f1115" stroke-width="2"/>
+    <text x="257" y="719" text-anchor="middle" font-size="20" font-weight="600">2 kg</text>
+    <path d="M326 711H665M652 699L665 711L652 723" fill="none" stroke="#c78316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="496" y="682" text-anchor="middle" font-size="18">F<tspan font-size="12" baseline-shift="sub">net</tspan><tspan baseline-shift="baseline"> = 10 N</tspan></text>
+    <text x="496" y="749" text-anchor="middle" font-size="18" fill="#475569">a = 5 m/s²</text>
+    <text x="66" y="801" font-size="17">For a 2 kg object: a = F<tspan font-size="12" baseline-shift="sub">net</tspan><tspan baseline-shift="baseline"> / m = 10 / 2 = 5 m/s².</tspan></text>
+
+    <text x="66" y="863" font-size="22" font-weight="700" letter-spacing="-.4">Three laws, at a glance</text>
+    <rect x="66" y="890" width="708" height="38" fill="#fceccb"/>
+    <path d="M66 928H774M66 970H774M66 1012H774M66 1054H774M261 890V1054" stroke="#e5e7eb"/>
+    <text x="82" y="915" font-size="14" font-weight="700">LAW</text>
+    <text x="280" y="915" font-size="14" font-weight="700">WHAT TO REMEMBER</text>
+    <g font-size="15.5">
+      <text x="82" y="955" font-weight="600">Inertia</text>
+      <text x="280" y="955">No net force? Velocity stays constant.</text>
+      <text x="82" y="997" font-weight="600">Acceleration</text>
+      <text x="280" y="997">More force, more acceleration: F<tspan font-size="10" baseline-shift="sub">net</tspan><tspan baseline-shift="baseline"> = ma.</tspan></text>
+      <text x="82" y="1039" font-weight="600">Action &amp; reaction</text>
+      <text x="280" y="1039">Opposite, equal forces act on different objects.</text>
+    </g>
+    <text x="66" y="1100" font-size="15" font-weight="700">Study tip</text>
+    <text x="147" y="1100" font-size="15" fill="#475569">Always use the net force, not just one applied force.</text>
+    <path d="M66 1142H774" stroke="#e5e7eb"/>
+    <text x="66" y="1170" font-size="10" letter-spacing="1" fill="#6b7280">ETON NOTE / ILLUSTRATIVE STUDY NOTE</text>
+    <text x="774" y="1170" text-anchor="end" font-size="11" fill="#6b7280">01</text>
+  </g>
+</svg>

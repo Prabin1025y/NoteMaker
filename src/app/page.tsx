@@ -1,184 +1,108 @@
-import {
-    Blocks,
-    Sparkles,
-    Sigma,
-    FolderOpen,
-    PenLine,
-    FileDown,
-    ArrowRight,
-    Star,
-} from "lucide-react";
-import { SignInButton } from "@/components/auth/sign-in-button";
-import { Reveal } from "@/components/landing/Reveal";
-import { auth } from "@/auth";
+import type { Metadata } from "next";
+import Image from "next/image";
 import { redirect } from "next/navigation";
+import {
+    ArrowRight,
+    ArrowUpRight,
+    Check,
+    CloudCheck,
+    Copy,
+    FileDown,
+    FolderOpen,
+    GripVertical,
+    ListPlus,
+    LockKeyhole,
+    Search,
+} from "lucide-react";
+import { auth } from "@/auth";
+import { SignInButton } from "@/components/auth/sign-in-button";
+import {
+    LANDING_ASSETS,
+    type LandingAsset,
+} from "@/components/landing/assets";
 import ThemeToggle from "@/components/ThemeToggle";
+import styles from "./landing.module.css";
 
-const FEATURES = [
+export const metadata: Metadata = {
+    title: "Eton Note — Beautiful study notes, less busywork",
+    description:
+        "Create structured academic notes with rich text, LaTeX, code, tables, images, and drawings. Customize block designs, generate a draft with AI, and export a clean PDF.",
+};
+
+const NAV_LINKS = [
+    { href: "#features", label: "Features" },
+    { href: "#designs", label: "Designs" },
+    { href: "#ai", label: "AI generation" },
+    { href: "#how", label: "How it works" },
+];
+
+const BLOCK_TOOLS = [
     {
-        icon: Blocks,
-        title: "Build with blocks",
-        body: "Headings, code, tables, highlights — drop them in and reorder any time.",
+        icon: GripVertical,
+        title: "Rearrange freely",
+        body: "Move blocks into the order that makes sense.",
     },
     {
-        icon: Sparkles,
-        title: "Summarize with AI",
-        body: "Turn a dense page into a tight recap with a single click.",
+        icon: Copy,
+        title: "Reuse what works",
+        body: "Duplicate a block, or copy and paste it into another note.",
     },
     {
-        icon: Sigma,
-        title: "Math & code, native",
-        body: "LaTeX formulas and syntax-highlighted snippets that stay readable.",
+        icon: ListPlus,
+        title: "Add anywhere",
+        body: "Insert between blocks. Edit or delete whenever you need.",
     },
+    {
+        icon: Search,
+        title: "Find the right piece",
+        body: "Search a block’s title or content instead of scrolling.",
+    },
+];
+
+const WORKFLOW = [
     {
         icon: FolderOpen,
-        title: "Organized by subject",
-        body: "Group notes into folders and star the ones you open most.",
+        title: "Give every subject a home",
+        body: "Create a note, give it a title, and choose a subject—or create a new subject on the spot. Jump between notes in the same subject right from the editor.",
+        detail: "Favorites and pinned notes keep the essentials close.",
     },
     {
-        icon: PenLine,
-        title: "Sketch by hand",
-        body: "Draw diagrams and annotate freehand, right inside a note.",
+        icon: CloudCheck,
+        title: "Keep creating. Stay saved.",
+        body: "Autosave takes care of your changes as you work. Undo and redo give you room to rethink, and the outline and preview help you return to the big picture.",
+        detail: "Your focus belongs on the topic, not the save button.",
     },
     {
         icon: FileDown,
-        title: "Export clean PDFs",
-        body: "Print or hand in a tidy PDF that keeps every block in place.",
+        title: "Revise wherever you are",
+        body: "Export a PDF that keeps your note’s designed structure. Download it for offline revision, print it, or send it to your classmates.",
+        detail: "From your screen to your study desk, still neatly organized.",
     },
 ];
 
-const STEPS = [
-    {
-        n: "01",
-        title: "Add your blocks",
-        body: "Start typing, or pick a block — heading, code, formula, table, or a canvas to draw on.",
-    },
-    {
-        n: "02",
-        title: "Let AI tighten it up",
-        body: "Generate a summary that pulls the key points from across the whole page.",
-    },
-    {
-        n: "03",
-        title: "Export and share",
-        body: "Download a clean PDF, ready for revision or submission.",
-    },
-];
-
-/** Signature illustration: a student note that assembles itself, block by block. */
-function HeroArt() {
+function ProductPreview({
+    asset,
+    sizes,
+}: {
+    asset: LandingAsset;
+    sizes: string;
+}) {
     return (
-        <div
-            className="relative mx-auto w-full max-w-[440px]"
-            aria-hidden="true"
-        >
-            {/* warm ambient glow */}
-            <div
-                className="pointer-events-none absolute -inset-8 rounded-[2.5rem]"
-                style={{
-                    background:
-                        "radial-gradient(58% 58% at 72% 18%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 70%)",
-                }}
-            />
-
-            {/* the note page */}
-                <div
-                    className="relative rounded-2xl border border-muted bg-card/80 p-5"
-                    style={{
-                        boxShadow: `0 20px 25px -5px color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 60%), transparent)`,
-                    }}
-                >
-                {/* window bar */}
-                <div className="mb-4 flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-strong" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-strong" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-strong" />
-                    <span className="ml-2 font-mono text-[11px] text-muted-foreground">
-                        photosynthesis.md
-                    </span>
-                </div>
-
-                <div className="space-y-3">
-                    {/* heading block */}
-                    <div
-                        className="hero-block"
-                        style={{ animationDelay: "120ms" }}
-                    >
-                        <div className="text-[15px] font-bold tracking-tight text-ink">
-                            Photosynthesis
-                        </div>
-                        <div className="mt-1.5 h-1 w-24 rounded-full bg-primary" />
-                    </div>
-
-                    {/* paragraph block */}
-                    <div
-                        className="hero-block space-y-1.5"
-                        style={{ animationDelay: "240ms" }}
-                    >
-                        <div className="h-2 w-full rounded-full bg-muted" />
-                        <div className="h-2 w-11/12 rounded-full bg-muted" />
-                        <div className="h-2 w-3/5 rounded-full bg-muted" />
-                    </div>
-
-                    {/* formula block */}
-                    <div
-                        className="hero-block rounded-lg border border-muted bg-tint px-3 py-2.5"
-                        style={{ animationDelay: "360ms" }}
-                    >
-                        <span className="font-mono text-[12px] leading-none text-ink">
-                            6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂
-                        </span>
-                    </div>
-
-                    {/* canvas / handwriting block */}
-                    <div
-                        className="hero-block rounded-lg border border-dashed border-strong bg-canvas px-3 py-2.5"
-                        style={{ animationDelay: "480ms" }}
-                    >
-                        <svg
-                            viewBox="0 0 200 34"
-                            className="h-8 w-full"
-                            fill="none"
-                        >
-                            <path
-                                className="draw-path"
-                                d="M6 24 C 38 4, 68 4, 94 20 S 150 34, 194 10"
-                                stroke="var(--ds-accent-cta)"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                style={{ animationDelay: "760ms" }}
-                            />
-                        </svg>
-                    </div>
-                </div>
+        <figure className={styles.productPreview}>
+            <div className={styles.previewFrame}>
+                <Image
+                    src={asset.src}
+                    alt={asset.alt}
+                    width={asset.width}
+                    height={asset.height}
+                    sizes={sizes}
+                    className={styles.productImage}
+                />
             </div>
-
-            {/* floating: AI summary chip */}
-            <div
-                className="hero-block float-slow absolute -right-3 -top-3 flex items-center gap-1.5 rounded-full border border-muted bg-elevated px-3 py-1.5 shadow-lg"
-                style={{
-                    animationDelay: "820ms",
-                    boxShadow: `0 10px 15px -3px color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent)`,
-                }}
-            >
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[11px] font-medium text-ink">
-                    Summary ready
-                </span>
-            </div>
-
-            {/* floating: pinned chip */}
-            <div
-                className="hero-block absolute -bottom-3 -left-3 flex items-center gap-1.5 rounded-full border border-muted bg-elevated px-3 py-1.5 shadow-lg"
-                style={{
-                    animationDelay: "940ms",
-                    boxShadow: `0 10px 15px -3px color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent)`,
-                }}
-            >
-                <Star className="h-3.5 w-3.5 fill-current text-primary" />
-                <span className="text-[11px] font-medium text-ink">Pinned</span>
-            </div>
-        </div>
+            <figcaption className={styles.previewCaption}>
+                {asset.caption}
+            </figcaption>
+        </figure>
     );
 }
 
@@ -187,329 +111,300 @@ export default async function LandingPage() {
     if (session) redirect("/dashboard");
 
     return (
-        <div className="min-h-screen w-full bg-canvas text-ink">
-            <style>{`
-                .hero-fade { opacity: 0; animation: heroFadeUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-                .hero-block { opacity: 0; animation: heroPop 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-                @keyframes heroFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-                @keyframes heroPop { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
-                .reveal { opacity: 0; transform: translateY(16px); transition: opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1); }
-                .reveal[data-shown="true"] { opacity: 1; transform: none; }
-                .draw-path { stroke-dasharray: 260; stroke-dashoffset: 260; animation: drawPathAnim 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-                @keyframes drawPathAnim { to { stroke-dashoffset: 0; } }
-                .float-slow { animation: floatAnim 6s ease-in-out infinite; }
-                @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-                @media (prefers-reduced-motion: reduce) {
-                    .hero-fade, .hero-block { animation: none !important; opacity: 1 !important; transform: none !important; }
-                    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-                    .draw-path { animation: none !important; stroke-dashoffset: 0 !important; }
-                    .float-slow { animation: none !important; }
-                }
-            `}</style>
+        <div className={styles.page}>
+            <a href="#main-content" className={styles.skipLink}>
+                Skip to content
+            </a>
 
-            {/* NAV */}
-            <header className="sticky top-0 z-50 border-b border-muted bg-canvas/80 backdrop-blur-md">
-                <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-                    <a
-                        href="#top"
-                        className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                    >
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-                            <Blocks className="h-[18px] w-[18px]" />
-                        </span>
-                        <span className="text-[15px] font-semibold tracking-tight">
-                            Eton Note
-                        </span>
+            <header className={styles.header}>
+                <div className={`${styles.container} ${styles.headerInner}`}>
+                    <a href="#top" className={styles.brand} aria-label="Eton Note home">
+                        <Image src="/logo.png" width={34} height={33} alt="" />
+                        <span>Eton Note</span>
                     </a>
-
-                    <nav className="hidden items-center gap-1 md:flex">
-                        <a
-                            href="#features"
-                            className="rounded-lg px-3 py-2 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        >
-                            Features
-                        </a>
-                        <a
-                            href="#how"
-                            className="rounded-lg px-3 py-2 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        >
-                            How it works
-                        </a>
-                        <a
-                            href="#about"
-                            className="rounded-lg px-3 py-2 text-[13px] font-medium text-body outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        >
-                            About
-                        </a>
+                    <nav aria-label="Main navigation" className={styles.headerNav}>
+                        {NAV_LINKS.map((link) => (
+                            <a key={link.href} href={link.href}>
+                                {link.label}
+                            </a>
+                        ))}
                     </nav>
-
-                    <div className="flex items-center gap-2">
-                        <ThemeToggle />
+                    <div className={styles.headerActions}>
+                        <ThemeToggle className={styles.themeToggle} />
                         <SignInButton
                             label="Sign in"
                             size="sm"
                             variant="outline"
-                            className="h-9 px-3.5 text-[13px]"
+                            className={styles.headerSignIn}
                         />
                     </div>
                 </div>
             </header>
 
-            {/* HERO */}
-            <section
-                id="top"
-                className="relative overflow-hidden"
-            >
-                <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 pb-20 pt-16 md:grid-cols-2 md:gap-8 md:pb-28 md:pt-24">
-                    <div>
-                        <p
-                            className="hero-fade font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary"
-                            style={{ animationDelay: "40ms" }}
-                        >
-                            Built for students
-                        </p>
-                        <h1
-                            className="hero-fade mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-tight md:text-[3.4rem]"
-                            style={{ animationDelay: "120ms" }}
-                        >
-                            Notes that build
-                            <br className="hidden sm:block" /> themselves,{" "}
-                            <span className="text-primary">
-                                block by block.
-                            </span>
-                        </h1>
-                        <p
-                            className="hero-fade mt-5 max-w-md text-[15px] leading-relaxed text-body md:text-base"
-                            style={{ animationDelay: "200ms" }}
-                        >
-                            Mix headings, code, math, tables, and freehand
-                            sketches into one page. Summarize it with AI, then
-                            export a clean PDF — before class ends.
-                        </p>
-                        <div
-                            className="hero-fade mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center"
-                            style={{ animationDelay: "280ms" }}
-                        >
-                            <SignInButton
-                                label="Start for free"
-                                size="lg"
-                            />
-                            <a
-                                href="#features"
-                                className="inline-flex h-11 items-center gap-1.5 rounded-lg px-4 text-[14px] font-medium text-body outline-none transition-colors duration-300 hover:bg-background/80 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                            >
-                                See how it works
-                                <ArrowRight className="h-4 w-4" />
-                            </a>
-                        </div>
-                        <p
-                            className="hero-fade mt-5 text-[12px] text-muted-foreground"
-                            style={{ animationDelay: "360ms" }}
-                        >
-                            Free to start · Sign in with Google · Your notes
-                            stay yours.
-                        </p>
-                    </div>
-
-                    <div
-                        className="hero-fade"
-                        style={{ animationDelay: "240ms" }}
-                    >
-                        <HeroArt />
-                    </div>
-                </div>
-            </section>
-
-            {/* FEATURES */}
-            <section
-                id="features"
-                className="border-t border-muted bg-background/80/60 py-20 md:py-28"
-            >
-                <div className="mx-auto max-w-6xl px-6">
-                    <Reveal className="max-w-2xl">
-                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
-                            Everything in one page
-                        </p>
-                        <h2 className="mt-3 text-[1.75rem] font-bold tracking-tight md:text-[2.25rem]">
-                            Every kind of note, without the mess.
-                        </h2>
-                        <p className="mt-4 text-[15px] leading-relaxed text-body">
-                            Eton Note gives each idea its own block, so a single
-                            page can hold a definition, a diagram, a proof, and
-                            a snippet of code — and still read cleanly.
-                        </p>
-                    </Reveal>
-
-                    <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {FEATURES.map((feature, i) => {
-                            const Icon = feature.icon;
-                            return (
-                                <Reveal
-                                    key={feature.title}
-                                    delay={i * 60}
-                                    className="group h-full rounded-xl border border-muted bg-card/80 p-5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.05]"
-                                >
-                                    <span className="grid h-10 w-10 place-items-center rounded-lg bg-tint text-primary transition-colors duration-150 group-hover:bg-brand-soft">
-                                        <Icon className="h-5 w-5" />
-                                    </span>
-                                    <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-ink">
-                                        {feature.title}
-                                    </h3>
-                                    <p className="mt-1.5 text-[13.5px] leading-relaxed text-body">
-                                        {feature.body}
-                                    </p>
-                                </Reveal>
-                            );
-                        })}
-                    </div>
-                </div>
-            </section>
-
-            {/* HOW IT WORKS */}
-            <section
-                id="how"
-                className="py-20 md:py-28"
-            >
-                <div className="mx-auto max-w-6xl px-6">
-                    <Reveal className="max-w-2xl">
-                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
-                            From blank page to done
-                        </p>
-                        <h2 className="mt-3 text-[1.75rem] font-bold tracking-tight md:text-[2.25rem]">
-                            Three steps, start to submit.
-                        </h2>
-                    </Reveal>
-
-                    <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6">
-                        {STEPS.map((step, i) => (
-                            <Reveal
-                                key={step.n}
-                                delay={i * 80}
-                                className="relative"
-                            >
-                                <div className="font-mono text-[13px] font-semibold text-primary">
-                                    {step.n}
-                                </div>
-                                <div className="mt-3 h-px w-full bg-muted" />
-                                <h3 className="mt-4 text-[17px] font-semibold tracking-tight text-ink">
-                                    {step.title}
-                                </h3>
-                                <p className="mt-2 text-[14px] leading-relaxed text-body">
-                                    {step.body}
-                                </p>
-                            </Reveal>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ABOUT */}
-            <section
-                id="about"
-                className="border-t border-muted bg-background/80/60 py-20 md:py-28"
-            >
-                <div className="mx-auto max-w-3xl px-6">
-                    <Reveal>
-                        <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
-                            About
-                        </p>
-                        <h2 className="mt-3 text-[1.75rem] font-bold tracking-tight md:text-[2.25rem]">
-                            The notebook that keeps up with the lecture.
-                        </h2>
-                        <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-body">
-                            <p>
-                                Eton Note is a note-taking app for students who
-                                think in pieces. Instead of one long text box,
-                                every note is built from blocks — headings,
-                                code, math, tables, images, and freehand
-                                sketches — that you can rearrange, summarize
-                                with AI, and export as a clean PDF when
-                                it&apos;s time to hand something in.
+            <main id="main-content" tabIndex={-1}>
+                <section id="top" className={styles.hero} aria-labelledby="hero-title">
+                    <div className={`${styles.container} ${styles.heroGrid}`}>
+                        <div className={styles.heroCopy}>
+                            <h1 id="hero-title" className={styles.heroTitle}>
+                                Beautiful notes.
+                                <br />
+                                <span>Less busywork.</span>
+                            </h1>
+                            <p className={styles.heroLead}>
+                                Create clear, structured study notes with text,
+                                equations, code, tables, and drawings. Pick a
+                                design, make it yours, and get back to learning.
                             </p>
-                            <p>
-                                It started as a tool for getting messy lecture
-                                notes into a shape worth revising from. The goal
-                                is simple: capture ideas the way they actually
-                                arrive, then leave with something tidy enough to
-                                study.
-                            </p>
-                        </div>
-                    </Reveal>
-                </div>
-            </section>
-
-            {/* CTA */}
-            <section className="py-20 md:py-28">
-                <div className="mx-auto max-w-6xl px-6">
-                    <Reveal className="relative overflow-hidden rounded-2xl border border-muted bg-card/80 px-6 py-14 text-center shadow-sm md:px-10">
-                        <div
-                            className="pointer-events-none absolute inset-0"
-                            style={{
-                                background:
-                                    "radial-gradient(50% 80% at 50% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%)",
-                            }}
-                        />
-                        <div className="relative">
-                            <p className="font-mono text-[12px] font-medium uppercase tracking-[0.18em] text-primary">
-                                Ready when you are
-                            </p>
-                            <h2 className="mx-auto mt-3 max-w-xl text-[1.75rem] font-bold tracking-tight md:text-[2.4rem]">
-                                Start your first note.
-                            </h2>
-                            <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-body">
-                                Sign in and build a page in the next two
-                                minutes.
-                            </p>
-                            <div className="mt-8 flex justify-center">
+                            <div className={styles.heroActions}>
                                 <SignInButton
                                     label="Start for free"
                                     size="lg"
+                                    className={styles.primaryButton}
                                 />
+                                <a href="#features" className={styles.textLink}>
+                                    Explore the editor
+                                    <ArrowRight size={17} aria-hidden="true" />
+                                </a>
+                            </div>
+                            <p className={styles.reassurance}>
+                                <Check size={15} aria-hidden="true" />
+                                Free to start
+                                <span aria-hidden="true">·</span>
+                                Continue with Google
+                            </p>
+                        </div>
+
+                        <figure className={styles.heroNote}>
+                            <a
+                                href={LANDING_ASSETS.note.src}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.noteLink}
+                                aria-label="View the sample physics note at full size (opens in a new tab)"
+                            >
+                                <Image
+                                    src={LANDING_ASSETS.note.src}
+                                    alt={LANDING_ASSETS.note.alt}
+                                    width={LANDING_ASSETS.note.width}
+                                    height={LANDING_ASSETS.note.height}
+                                    sizes="(max-width: 719px) calc(100vw - 48px), (max-width: 1199px) 34vw, 384px"
+                                    loading="eager"
+                                    fetchPriority="high"
+                                    className={styles.noteImage}
+                                />
+                            </a>
+                            <figcaption className={styles.noteCaption}>
+                                <span>{LANDING_ASSETS.note.caption}</span>
+                                <a
+                                    href={LANDING_ASSETS.note.src}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="View the sample note at full size (opens in a new tab)"
+                                >
+                                    View full size
+                                    <ArrowUpRight size={14} aria-hidden="true" />
+                                </a>
+                            </figcaption>
+                        </figure>
+                    </div>
+                </section>
+
+                <section id="features" className={styles.section} aria-labelledby="features-title">
+                    <div className={styles.container}>
+                        <div className={styles.sectionIntro}>
+                            <h2 id="features-title">One page. Every kind of idea.</h2>
+                            <p>
+                                A definition, a diagram, a worked example. Give
+                                each part its own block, and bring it all together
+                                in a note that makes sense when you come back to it.
+                            </p>
+                        </div>
+                        <div className={styles.editorGrid}>
+                            <ProductPreview
+                                asset={LANDING_ASSETS.editor}
+                                sizes="(max-width: 899px) calc(100vw - 48px), (max-width: 1199px) 60vw, 704px"
+                            />
+                            <div className={styles.blockGroups}>
+                                <div>
+                                    <h3>Text, definitions &amp; examples</h3>
+                                    <p>
+                                        Write rich text or paste from ChatGPT and
+                                        other sources, keeping supported formatting.
+                                        Give definitions and examples their own
+                                        styled blocks.
+                                    </p>
+                                    <p className={styles.smallCopy}>
+                                        Bold, italic, underline, highlights,
+                                        alignment, and lists. Add headings and
+                                        dividers for a clear structure.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3>Math, code &amp; comparisons</h3>
+                                    <p>
+                                        Render LaTeX inside text with <code>$$…$$</code>,
+                                        or use a dedicated formula block. Add
+                                        syntax-highlighted code and tables for
+                                        side-by-side comparisons.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3>Images, drawings &amp; diagrams</h3>
+                                    <p>
+                                        Upload an image or place one inside your
+                                        text. Sketch flowcharts, circuit diagrams,
+                                        and freehand explanations in the integrated
+                                        drawing panel.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </Reveal>
-                </div>
-            </section>
 
-            {/* FOOTER */}
-            <footer className="border-t border-muted">
-                <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-2.5">
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-                            <Blocks className="h-[18px] w-[18px]" />
-                        </span>
-                        <div>
-                            <div className="text-[14px] font-semibold tracking-tight text-ink">
-                                Eton Note
+                        <div className={styles.blockManagement}>
+                            <div>
+                                <h3>Your ideas can move.</h3>
+                                <p>Change the order without starting over.</p>
                             </div>
-                            <div className="text-[12px] text-muted-foreground">
-                                Notes that build themselves, block by block.
-                            </div>
+                            <ul className={styles.blockTools}>
+                                {BLOCK_TOOLS.map((tool) => (
+                                    <li key={tool.title}>
+                                        <tool.icon size={19} aria-hidden="true" />
+                                        <div>
+                                            <h4>{tool.title}</h4>
+                                            <p>{tool.body}</p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
+                </section>
 
-                    <nav className="flex items-center gap-5 text-[13px] text-body">
-                        <a
-                            href="#features"
-                            className="rounded outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        >
-                            Features
-                        </a>
-                        <a
-                            href="#how"
-                            className="rounded outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        >
-                            How it works
-                        </a>
-                        <a
-                            href="#about"
-                            className="rounded outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        >
-                            About
-                        </a>
+                <section id="designs" className={`${styles.section} ${styles.softSection}`} aria-labelledby="designs-title">
+                    <div className={`${styles.container} ${styles.featureGrid}`}>
+                        <div className={styles.featureCopy}>
+                            <h2 id="designs-title">
+                                Good design, without designing everything.
+                            </h2>
+                            <p>
+                                Choose a preset for your block, then customize
+                                its colors. Make definitions, examples, headings,
+                                and formulas stand out without styling every
+                                detail by hand.
+                            </p>
+                            <ul className={styles.simpleList}>
+                                <li><Check size={16} aria-hidden="true" />Ready-made block designs</li>
+                                <li><Check size={16} aria-hidden="true" />Color choices to make them yours</li>
+                            </ul>
+                            <p className={styles.supportingCopy}>
+                                Your workspace has its own themes, too—including
+                                light and dark. A comfortable editor and a
+                                beautiful note belong together.
+                            </p>
+                        </div>
+                        <ProductPreview
+                            asset={LANDING_ASSETS.designs}
+                            sizes="(max-width: 899px) calc(100vw - 48px), (max-width: 1199px) 48vw, 576px"
+                        />
+                    </div>
+                </section>
+
+                <section id="ai" className={styles.section} aria-labelledby="ai-title">
+                    <div className={`${styles.container} ${styles.featureGrid} ${styles.reverseGrid}`}>
+                        <div className={styles.featureCopy}>
+                            <h2 id="ai-title">
+                                Bring the topic. Let AI help with the first draft.
+                            </h2>
+                            <p>
+                                Describe what you’re studying and the content
+                                you need. AI generates structured blocks you can
+                                review, edit, rearrange, and style just like any
+                                other part of your note.
+                            </p>
+                            <blockquote className={styles.prompt}>
+                                “Create study notes on Newton’s laws of motion.
+                                Include definitions, formulas, and worked examples.”
+                            </blockquote>
+                            <p className={styles.supportingCopy}>
+                                A useful starting point, with you in control.
+                                Review your draft against your textbooks and
+                                course materials.
+                            </p>
+                        </div>
+                        <ProductPreview
+                            asset={LANDING_ASSETS.ai}
+                            sizes="(max-width: 899px) calc(100vw - 48px), (max-width: 1199px) 48vw, 576px"
+                        />
+                    </div>
+                </section>
+
+                <section id="how" className={`${styles.section} ${styles.softSection}`} aria-labelledby="how-title">
+                    <div className={styles.container}>
+                        <div className={styles.sectionIntro}>
+                            <h2 id="how-title">Made for the whole study routine.</h2>
+                            <p>
+                                Start with a subject. Build your understanding.
+                                Leave with something worth revising from.
+                            </p>
+                        </div>
+                        <ol className={styles.workflow}>
+                            {WORKFLOW.map((step) => (
+                                <li key={step.title}>
+                                    <step.icon size={23} aria-hidden="true" />
+                                    <h3>{step.title}</h3>
+                                    <p>{step.body}</p>
+                                    <p className={styles.smallCopy}>{step.detail}</p>
+                                </li>
+                            ))}
+                        </ol>
+                        <p className={styles.privacyNote}>
+                            <LockKeyhole size={16} aria-hidden="true" />
+                            Private by default. Choose a public, read-only link
+                            when you want to share. Viewers sign in to read it.
+                        </p>
+                    </div>
+                </section>
+
+                <section id="about" className={`${styles.section} ${styles.closing}`} aria-labelledby="about-title">
+                    <div className={`${styles.container} ${styles.closingGrid}`}>
+                        <div>
+                            <h2 id="about-title">
+                                Less time formatting.
+                                <br />
+                                More time understanding.
+                            </h2>
+                            <p>
+                                Eton Note started with a simple frustration:
+                                academic notes took too much time to format.
+                                Now writing, diagrams, design, and AI assistance
+                                come together—so you can focus on learning.
+                            </p>
+                        </div>
+                        <div className={styles.closingAction}>
+                            <SignInButton
+                                label="Create your first note"
+                                size="lg"
+                                className={styles.primaryButton}
+                            />
+                            <p>Free to start. Continue with Google.</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer className={styles.footer}>
+                <div className={`${styles.container} ${styles.footerInner}`}>
+                    <a href="#top" className={styles.brand}>
+                        <Image src="/logo.png" width={28} height={27} alt="" />
+                        <span>Eton Note</span>
+                    </a>
+                    <nav aria-label="Footer navigation" className={styles.footerNav}>
+                        {NAV_LINKS.map((link) => (
+                            <a key={link.href} href={link.href}>{link.label}</a>
+                        ))}
+                        <a href="#about">Our story</a>
                     </nav>
-
-                    <p className="text-[12px] text-muted-foreground">© 2026 Eton Note</p>
+                    <p>© {new Date().getFullYear()} Eton Note</p>
                 </div>
             </footer>
         </div>

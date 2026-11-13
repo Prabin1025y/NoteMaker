@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1000" viewBox="0 0 1440 1000" fill="none">
+  <title>Illustrative block designs and color settings</title>
+  <desc>Replaceable preview of styled definition and example blocks alongside per-block preset and color choices.</desc>
+  <rect width="1440" height="1000" fill="#ffffff"/>
+  <rect x="1000" width="440" height="1000" fill="#f3f4f6"/>
+  <path d="M1000 0V1000" stroke="#e5e7eb"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#0f1115">
+    <text x="64" y="96" font-size="31" font-weight="700" letter-spacing="-.7">Make the important parts stand out.</text>
+    <text x="64" y="135" font-size="18" fill="#6b7280">The same content. A little more clarity.</text>
+
+    <rect x="64" y="204" width="872" height="264" rx="8" fill="#fceccb"/>
+    <text x="100" y="250" font-size="19" font-weight="700">Definition</text>
+    <text x="100" y="310" font-size="28" font-weight="600" letter-spacing="-.4">What is acceleration?</text>
+    <text x="100" y="357" font-size="23">Acceleration is the rate of change of velocity</text>
+    <text x="100" y="392" font-size="23">with time. It tells us how quickly motion changes.</text>
+    <text x="100" y="434" font-size="18" fill="#475569">Measured in metres per second squared (m/s²).</text>
+
+    <rect x="64" y="514" width="872" height="324" rx="8" fill="#ffffff" stroke="#c78316"/>
+    <rect x="65" y="515" width="870" height="54" rx="7" fill="#f3f4f6"/>
+    <text x="100" y="550" font-size="19" font-weight="700">Example</text>
+    <text x="100" y="622" font-size="24">A 2 kg object is pushed with a net force of 10 N.</text>
+    <text x="100" y="665" font-size="22" fill="#475569">Use Newton’s second law to find its acceleration:</text>
+    <text x="500" y="746" text-anchor="middle" font-family="Georgia, serif" font-size="40">a = F<tspan font-size="22" baseline-shift="sub">net</tspan><tspan baseline-shift="baseline"> / m = 5 m/s²</tspan></text>
+    <text x="100" y="903" font-size="18" fill="#6b7280">Preset styling for the blocks that need it.</text>
+
+    <text x="1038" y="83" font-size="25" font-weight="700">Design settings</text>
+    <text x="1038" y="142" font-size="16" font-weight="600">Block type</text>
+    <rect x="1038" y="160" width="362" height="52" rx="6" fill="#ffffff"/>
+    <text x="1056" y="193" font-size="18">General block</text>
+    <text x="1038" y="268" font-size="16" font-weight="600">Apply design</text>
+    <rect x="1348" y="246" width="50" height="28" rx="14" fill="#c78316"/>
+    <circle cx="1384" cy="260" r="10" fill="#ffffff"/>
+    <path d="M1038 303H1400" stroke="#e5e7eb"/>
+    <text x="1038" y="346" font-size="16" font-weight="600">Design type</text>
+
+    <rect x="1038" y="368" width="362" height="82" rx="6" fill="#ffffff" stroke="#c78316"/>
+    <rect x="1056" y="384" width="326" height="48" rx="4" fill="#fceccb"/>
+    <text x="1072" y="414" font-size="16" font-weight="600">Definition</text>
+    <rect x="1038" y="466" width="362" height="82" rx="6" fill="#ffffff"/>
+    <path d="M1056 489H1382" stroke="#c78316"/>
+    <text x="1072" y="522" font-size="16" font-weight="600">Definition</text>
+    <rect x="1038" y="564" width="362" height="82" rx="6" fill="#ffffff"/>
+    <rect x="1056" y="580" width="326" height="48" rx="4" fill="#ffffff" stroke="#c78316"/>
+    <text x="1219" y="610" text-anchor="middle" font-size="16" font-weight="600">Definition</text>
+
+    <path d="M1038 696H1400" stroke="#e5e7eb"/>
+    <text x="1038" y="740" font-size="16" font-weight="600">Color options</text>
+    <circle cx="1058" cy="787" r="18" fill="#c78316"/>
+    <circle cx="1128" cy="787" r="18" fill="#fceccb"/>
+    <circle cx="1198" cy="787" r="18" fill="#475569"/>
+    <circle cx="1268" cy="787" r="18" fill="#0f1115"/>
+    <circle cx="1338" cy="787" r="18" fill="#ffffff" stroke="#e5e7eb"/>
+    <path d="M1050 787L1056 793L1067 781" fill="none" stroke="#0f1115" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
