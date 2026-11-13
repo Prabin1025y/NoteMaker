@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { EditorDataType } from "@/types/Editor";
 import { allBlocks, blockCategories, BlockItem } from "@/utils/BlocksInfo";
 import {
@@ -25,13 +24,18 @@ import { useNoteStore } from "@/Context/DataStore";
 
 interface LeftAsideProps {
     openBlockEditor: (editorData: EditorDataType) => void;
+    isExpanded: boolean;
+    onExpandedChange: (expanded: boolean) => void;
 }
 
-const COLLAPSED_WIDTH = "w-[52px]";
-const EXPANDED_WIDTH = "w-60";
+const COLLAPSED_WIDTH = "w-11 md:w-[52px]";
+const EXPANDED_WIDTH = "w-52 md:w-60";
 
-const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+const LeftAside = ({
+    openBlockEditor,
+    isExpanded,
+    onExpandedChange,
+}: LeftAsideProps) => {
     const { isGenerating, setIsAiOpen } = useNoteStore();
 
     const handleBlockClick = (block: BlockItem) => {
@@ -142,9 +146,13 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
     }));
 
     return (
-        <>
+        <div
+            data-note-sidebar="left"
+            className={`relative h-full shrink-0 transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH} max-[624px]:w-11`}
+        >
             <aside
-                className={`relative group/aside flex h-full shrink-0 flex-col overflow-hidden border-r border-muted bg-card/50 transition-[width] duration-300 ease-out ${isExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH}`}
+                aria-label="Block tools"
+                className={`relative group/aside flex h-full shrink-0 flex-col overflow-hidden border-r border-muted bg-card/50 transition-[width] duration-300 ease-out max-[624px]:absolute max-[624px]:inset-y-0 max-[624px]:left-0 ${isExpanded ? `${EXPANDED_WIDTH} max-[624px]:z-30 max-[624px]:bg-card max-[624px]:shadow-xl` : COLLAPSED_WIDTH}`}
             >
                 <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-3">
                     {/* AI Generator button */}
@@ -165,8 +173,10 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                                 </Button>
                                 <button
                                     type="button"
-                                    onClick={() => setIsExpanded(false)}
+                                    onClick={() => onExpandedChange(false)}
                                     title="Close Left Panel"
+                                    aria-label="Close Left Panel"
+                                    aria-expanded={isExpanded}
                                     className="h-9 w-9 flex cursor-w-resize items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/20"
                                 >
                                     <PanelLeftCloseIcon size={18} />
@@ -178,15 +188,17 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                                     type="button"
                                     onClick={() => setIsAiOpen(true)}
                                     title="AI Block Generator"
-                                    className="group-hover/aside:hidden flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-tint"
+                                    className="group-hover/aside:hidden max-md:hidden flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-tint"
                                 >
                                     <Sparkles size={18} />
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setIsExpanded(true)}
+                                    onClick={() => onExpandedChange(true)}
                                     title="Open Left Panel"
-                                    className="hidden cursor-w-resize group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/20"
+                                    aria-label="Open Left Panel"
+                                    aria-expanded={isExpanded}
+                                    className="hidden max-md:flex cursor-w-resize group-hover/aside:flex h-9 w-9 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/20"
                                 >
                                     <PanelRightCloseIcon size={18} />
                                 </button>
@@ -244,7 +256,7 @@ const LeftAside = ({ openBlockEditor }: LeftAsideProps) => {
                     ))}
                 </div>
             </aside>
-        </>
+        </div>
     );
 };
 

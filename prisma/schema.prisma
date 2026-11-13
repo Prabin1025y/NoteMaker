@@ -67,6 +67,7 @@ model Block {
   designId      Int
   colorOptionId Int
   title         String?
+  language      String?
   order         Float
   noteId        String?
   createdAt     DateTime  @default(now())

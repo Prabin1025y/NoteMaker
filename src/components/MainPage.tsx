@@ -3,7 +3,6 @@ import { useNoteStore } from "@/Context/DataStore";
 import { EditorDataType } from "@/types/Editor";
 import {
     INITIAL_JSON_EDITOR,
-    MONACO_LANGUAGES,
     randomBetweenExclusive,
 } from "@/utils/UtilFunctions";
 import GeneralBlock from "@/components/Blocks/GeneralBlock";
@@ -31,6 +30,7 @@ import {
     Sparkles,
 } from "lucide-react";
 import { RefObject, useEffect, useRef, useState } from "react";
+import { useIsBreakpoint } from "@/hooks/use-is-breakpoint";
 
 const parseStructuredContent = (content: string): unknown => {
     try {
@@ -76,10 +76,7 @@ const getEditorDataForBlock = (
                 ...base,
                 type: "code",
                 content: block.content,
-                language:
-                    MONACO_LANGUAGES.find(
-                        (language) => language === base.title.toLowerCase(),
-                    ) ?? "javascript",
+                language: block.language ?? "javascript",
             };
         case "divider": {
             const divider = ALL_DIVIDERS.find(
@@ -132,6 +129,28 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
     ]);
 
     const contentRef = useRef<HTMLDivElement>(null);
+    const enableTapControls = useIsBreakpoint("max", 768);
+    const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!enableTapControls || !selectedBlockId) return;
+
+        const handleOutsidePointerDown = (event: PointerEvent) => {
+            const block = document.getElementById(`block-${selectedBlockId}`);
+            if (event.target instanceof Node && !block?.contains(event.target)) {
+                setSelectedBlockId(null);
+            }
+        };
+
+        document.addEventListener("pointerdown", handleOutsidePointerDown, true);
+        return () => {
+            document.removeEventListener(
+                "pointerdown",
+                handleOutsidePointerDown,
+                true,
+            );
+        };
+    }, [enableTapControls, selectedBlockId]);
 
     useEffect(() => {
         const contentDiv = contentRef.current;
@@ -155,17 +174,12 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
     }, [contentRef]);
 
     const handleQuickScroll = (direction: "top" | "bottom") => {
-        if (direction === "top") {
-            const firstContentElement: HTMLElement | null =
-                document.getElementById(`block-${blocks[0].id}`);
-            firstContentElement?.scrollIntoView({ behavior: "smooth" });
-        } else {
-            const lastContentElement: HTMLElement | null =
-                document.getElementById(
-                    `block-${blocks[blocks.length - 1].id}`,
-                );
-            lastContentElement?.scrollIntoView({ behavior: "smooth" });
-        }
+        const block = direction === "top" ? blocks.at(0) : blocks.at(-1);
+        if (!block) return;
+
+        document.getElementById(`block-${block.id}`)?.scrollIntoView({
+            behavior: "smooth",
+        });
     };
 
     const getOrderBetweenBlocks = (index: number) => {
@@ -204,6 +218,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
             type: block.type,
             content: block.content,
             title: block.title,
+            language: block.language,
             designId: block.designId,
             colorOptionId: block.colorOptionId,
         });
@@ -233,27 +248,29 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
     };
 
     return (
-        <main className="flex-1 relative">
-            <div className="absolute right-5 h-full w-10">
-                {showScrollTopBottom[0] && (
-                    <button
-                        onClick={() => handleQuickScroll("top")}
-                        title="Scroll to Top"
-                        className="absolute top-5 w-10 h-10 rounded-md grid place-items-center cursor-pointer text-background bg-secondary hover:bg-primary transition-colors duration-500"
-                    >
-                        <ChevronUp size={24} />
-                    </button>
-                )}
-                {showScrollTopBottom[1] && (
-                    <button
-                        onClick={() => handleQuickScroll("bottom")}
-                        title="Scroll to Bottom"
-                        className="absolute bottom-5 w-10 h-10 rounded-md grid place-items-center cursor-pointer text-background bg-secondary hover:bg-primary transition-colors duration-500"
-                    >
-                        <ChevronDown size={24} />
-                    </button>
-                )}
-            </div>
+        <main className="flex-1 relative max-md:min-w-0">
+            {showScrollTopBottom[0] && (
+                <button
+                    type="button"
+                    onClick={() => handleQuickScroll("top")}
+                    title="Scroll to Top"
+                    aria-label="Scroll to Top"
+                    className="absolute right-3 top-3 z-20 w-8 h-8 md:right-5 md:top-5 md:w-10 md:h-10 rounded-md grid place-items-center cursor-pointer text-background bg-secondary hover:bg-primary transition-colors duration-500"
+                >
+                    <ChevronUp className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+            )}
+            {showScrollTopBottom[1] && (
+                <button
+                    type="button"
+                    onClick={() => handleQuickScroll("bottom")}
+                    title="Scroll to Bottom"
+                    aria-label="Scroll to Bottom"
+                    className="absolute right-3 bottom-3 z-20 w-8 h-8 md:right-5 md:bottom-5 md:w-10 md:h-10 rounded-md grid place-items-center cursor-pointer text-background bg-secondary hover:bg-primary transition-colors duration-500"
+                >
+                    <ChevronDown className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+            )}
             <div
                 ref={contentRef}
                 className=" flex-1 h-full overflow-y-auto"
@@ -313,7 +330,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                         renderedBlock = (
                                             <CodeBlock
                                                 {...commonProps}
-                                                title={editorData.language}
+                                                language={editorData.language}
                                                 content={editorData.content}
                                             />
                                         );
@@ -357,9 +374,18 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                         className={`relative group/add ${block.type === "heading" && "break-after-avoid"}`}
                                         key={block.id}
                                         id={`block-${block.id}`}
+                                        data-mobile-active={
+                                            enableTapControls &&
+                                            selectedBlockId === block.id
+                                        }
+                                        onClickCapture={() => {
+                                            if (enableTapControls) {
+                                                setSelectedBlockId(block.id);
+                                            }
+                                        }}
                                     >
                                         {!isReadOnly && (
-                                            <div className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex -translate-y-2 scale-95 justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100">
+                                            <div className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex -translate-y-2 scale-95 justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100 max-md:group-data-[mobile-active=true]/add:pointer-events-auto max-md:group-data-[mobile-active=true]/add:translate-y-0 max-md:group-data-[mobile-active=true]/add:scale-100 max-md:group-data-[mobile-active=true]/add:opacity-100">
                                                 <div className="absolute top-1/2 h-px w-full border-t border-dashed border-[color:var(--ds-accent-soft)]" />
                                                 <button
                                                     onClick={() =>
@@ -367,7 +393,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                             i,
                                                         )
                                                     }
-                                                    className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-card px-4 py-1 text-[12px] font-medium text-primary shadow-sm outline-none transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                                    className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-card px-4 py-1 text-[12px] font-medium text-primary shadow-sm outline-none transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] max-md:gap-0.5 max-md:px-2 max-md:text-[11px]"
                                                 >
                                                     <PlusIcon size={18} />
                                                     <span>Add Block</span>
@@ -381,7 +407,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                         }
                                                         title="Paste copied block here"
                                                         aria-label="Paste copied block here"
-                                                        className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-card px-4 py-1 text-[12px] font-medium text-primary shadow-sm outline-none transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                                                        className="z-10 flex items-center justify-center gap-1 rounded-full border border-[color:var(--ds-accent)] bg-card px-4 py-1 text-[12px] font-medium text-primary shadow-sm outline-none transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] max-md:gap-0.5 max-md:px-2 max-md:text-[11px]"
                                                     >
                                                         <ClipboardPaste
                                                             size={16}

@@ -309,6 +309,7 @@ const Sidebar = () => {
                                             aria-current={
                                                 active ? "page" : undefined
                                             }
+                                            prefetch={false}
                                             className="flex min-w-0 flex-1 items-center gap-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
                                         >
                                             <span
@@ -426,6 +427,7 @@ const NavItem = ({
 }) => (
     <Link
         href={href}
+        prefetch={false}
         aria-current={active ? "page" : undefined}
         className={cn(
             "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium outline-none transition-colors duration-150",

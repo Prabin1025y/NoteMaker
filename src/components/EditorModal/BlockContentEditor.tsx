@@ -44,54 +44,76 @@ const BlockContentEditor = ({
     const showTitleInput = config.showTitleField;
 
     const renderTitleInput = () => {
-        // if (state.currentType === "code") {
-        //     return (
-        //         <div>
-        //             <label className="mb-3 block text-[13px] font-semibold text-body">
-        //                 Language
-        //             </label>
-        //             <DropdownMenu>
-        //                 <DropdownMenuTrigger asChild>
-        //                     <button
-        //                         type="button"
-        //                         className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-(--ds-border-input) bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
-        //                     >
-        //                         <span className="capitalize">
-        //                             {state.language}
-        //                         </span>
-        //                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        //                     </button>
-        //                 </DropdownMenuTrigger>
-        //                 <DropdownMenuContent
-        //                     align="start"
-        //                     className="max-h-80 w-56 overflow-y-auto"
-        //                 >
-        //                     {MONACO_LANGUAGES.map((lang) => (
-        //                         <DropdownMenuItem
-        //                             key={lang}
-        //                             onSelect={() =>
-        //                                 dispatch({
-        //                                     type: "setLanguage",
-        //                                     payload: lang,
-        //                                 })
-        //                             }
-        //                             className="cursor-pointer"
-        //                         >
-        //                             <div className="flex w-full items-center justify-between">
-        //                                 <span className="capitalize">
-        //                                     {lang}
-        //                                 </span>
-        //                                 {state.language === lang && (
-        //                                     <Check className="h-4 w-4" />
-        //                                 )}
-        //                             </div>
-        //                         </DropdownMenuItem>
-        //                     ))}
-        //                 </DropdownMenuContent>
-        //             </DropdownMenu>
-        //         </div>
-        //     );
-        // }
+        if (state.currentType === "code") {
+            return (
+                <>
+                    <div>
+                        <label className="mb-3 block text-[13px] font-semibold text-body">
+                            Language
+                        </label>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-(--ds-border-input) bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
+                                >
+                                    <span className="capitalize">
+                                        {state.language}
+                                    </span>
+                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="start"
+                                className="max-h-80 w-56 overflow-y-auto"
+                            >
+                                {MONACO_LANGUAGES.map((lang) => (
+                                    <DropdownMenuItem
+                                        key={lang}
+                                        onSelect={() =>
+                                            dispatch({
+                                                type: "setLanguage",
+                                                payload: lang,
+                                            })
+                                        }
+                                        className="cursor-pointer"
+                                    >
+                                        <div className="flex w-full items-center justify-between">
+                                            <span className="capitalize">
+                                                {lang}
+                                            </span>
+                                            {state.language === lang && (
+                                                <Check className="h-4 w-4" />
+                                            )}
+                                        </div>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <div>
+                        <label className="mb-3 block text-[13px] font-semibold text-body">
+                            Title{" "}
+                            <span className="font-normal text-muted-foreground">
+                                (optional)
+                            </span>
+                        </label>
+                        <input
+                            type="text"
+                            value={state.title}
+                            onChange={(e) =>
+                                dispatch({
+                                    type: "setTitle",
+                                    payload: e.target.value,
+                                })
+                            }
+                            placeholder="Enter title (optional)"
+                            className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-(--ds-focus-ring) focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                        />
+                    </div>
+                </>
+            );
+        }
 
         if (!showTitleInput) return null;
 

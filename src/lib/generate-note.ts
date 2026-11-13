@@ -1,6 +1,5 @@
 import type { EditorDataType, blockTypeOptions } from "@/types/Editor";
 import { ALL_DIVIDERS } from "@/utils/Dividers";
-import { MONACO_LANGUAGES } from "@/utils/UtilFunctions";
 import {
     CanvasEditorContentSchema,
     TableStateSchema,
@@ -73,19 +72,13 @@ const toEditorData = async (
                 type: generatedBlock.type,
                 content: await markdownToTiptap(generatedBlock.content),
             };
-        case "code": {
-            const language =
-                MONACO_LANGUAGES.find(
-                    (candidate) =>
-                        candidate === generatedBlock.title?.toLowerCase(),
-                ) ?? "javascript";
+        case "code":
             return {
                 ...base,
                 type: "code",
                 content: generatedBlock.content,
-                language,
+                language: "javascript",
             };
-        }
         case "image":
             return { ...base, type: "image", url: generatedBlock.content };
         case "divider": {

@@ -11,6 +11,7 @@ export const AddBlockSchema = z.object({
     content: z.string(),
     order: z.number(),
     title: z.string().optional(),
+    language: z.string().nullable().optional(),
 });
 
 export const createNoteSchema = z

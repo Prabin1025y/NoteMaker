@@ -24,12 +24,13 @@ const BLOCK_SYNC_COMPARE_KEYS = [
     "colorOptionId",
     "content",
     "title",
+    "language",
     "type",
 ] as const;
 
 export type CopiedBlockType = Pick<
     BlockType,
-    "type" | "content" | "title" | "designId" | "colorOptionId"
+    "type" | "content" | "title" | "language" | "designId" | "colorOptionId"
 >;
 
 const getBlockSyncDiffData = (
@@ -57,6 +58,7 @@ const createAddSyncBlock = (block: BlockType): AddBlockType => ({
     content: block.content,
     order: block.order,
     title: block.title,
+    language: block.language,
 });
 
 const getStoredContent = (editorData: EditorDataType): string => {
@@ -346,6 +348,10 @@ export const useNoteStore = create<Store>()(
                     content,
                     type: editorData.type,
                     title: editorData.title,
+                    language:
+                        editorData.type === "code"
+                            ? editorData.language
+                            : null,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     noteId: currentNote.id,
@@ -366,6 +372,7 @@ export const useNoteStore = create<Store>()(
                     content: block.content,
                     order: block.order,
                     title: block.title,
+                    language: block.language,
                 };
 
                 get().pushToBlocksToBeSynced({
@@ -393,6 +400,14 @@ export const useNoteStore = create<Store>()(
                     }),
                     ...(editorData.type !== blockToBeChanged.type && {
                         type: editorData.type,
+                    }),
+                    ...((editorData.type === "code"
+                        ? editorData.language
+                        : null) !== blockToBeChanged.language && {
+                        language:
+                            editorData.type === "code"
+                                ? editorData.language
+                                : null,
                     }),
                 };
 
@@ -465,6 +480,7 @@ export const useNoteStore = create<Store>()(
                     type: sourceBlock.type,
                     content: sourceBlock.content,
                     title: sourceBlock.title,
+                    language: sourceBlock.language,
                     designId: sourceBlock.designId,
                     colorOptionId: sourceBlock.colorOptionId,
                 },

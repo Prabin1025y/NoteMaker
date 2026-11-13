@@ -7,6 +7,7 @@ export interface NoteBlockType {
     designId: number;
     colorOptionId: number;
     title: string | null;
+    language: string | null;
     order: number;
     noteId: string;
     createdAt: Date;

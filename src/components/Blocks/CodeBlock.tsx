@@ -8,8 +8,10 @@ import { allBlockDesigns } from "@/utils/DesignInfo";
 import { colorOptions } from "@/utils/ColorsInfo";
 
 type CodeBlockProps = {
-    /** The programming language label, e.g. "javascript", "typescript", "python" */
+    /** The optional title displayed on the code block */
     title?: string;
+    /** The programming language label, e.g. "javascript", "typescript", "python" */
+    language?: string;
     designId: number;
     colorOptionId: number;
     /** The raw code string to display with syntax highlighting */
@@ -71,6 +73,7 @@ export default function CodeBlock({
     designId,
     colorOptionId,
     title,
+    language,
     className = "",
     readOnly = false,
     onEdit,
@@ -84,7 +87,7 @@ export default function CodeBlock({
         colorOptions.find((co) => co.id === colorOptionId) || colorOptions[0];
 
     const isDesignDisabled = designId === 0;
-    const lang = normalizeLang(title);
+    const lang = normalizeLang(language);
     const highlighterTheme = oneDark;
 
     return (
@@ -108,7 +111,7 @@ export default function CodeBlock({
             >
                 {/* Action buttons (Copy always; Edit / Delete owner-only) */}
                 <div
-                    className={`hidden border border-muted shadow-sm group-hover:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
+                    className={`hidden border border-muted shadow-sm group-hover:flex max-md:group-data-[mobile-active=true]/add:flex absolute right-2 top-2 z-10 items-center w-fit rounded-md overflow-hidden`}
                 >
                     <BlockCopyActions
                         onCopy={onCopy}
@@ -141,21 +144,29 @@ export default function CodeBlock({
                     )}
                 </div>
 
-                {/* Language label / Ribbon */}
+                {/* Title ribbon */}
                 {title &&
                     title.trim() !== "" &&
-                    !isDesignDisabled &&
-                    allBlockDesigns
-                        .find((b) => b.id === designId)
-                        ?.applyDesign(
-                            title,
-                            colorOption.primaryColorHex,
-                            colorOption.secondaryColorHex,
-                            colorOption.titleColorHex,
-                        )}
+                    (isDesignDisabled ? (
+                        <h2 className="text-xl font-bold">{title}</h2>
+                    ) : (
+                        allBlockDesigns
+                            .find((b) => b.id === designId)
+                            ?.applyDesign(
+                                title,
+                                colorOption.primaryColorHex,
+                                colorOption.secondaryColorHex,
+                                colorOption.titleColorHex,
+                            )
+                    ))}
 
                 {/* Code area */}
                 <div className={`relative ${!isDesignDisabled ? "pt-2" : ""}`}>
+                    {language && (
+                        <div className="mb-1 text-right text-xs text-muted-foreground">
+                            {language}
+                        </div>
+                    )}
                     <SyntaxHighlighter
                         language={lang}
                         style={highlighterTheme}

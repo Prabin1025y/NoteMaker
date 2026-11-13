@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
@@ -23,6 +23,7 @@ import { ALL_DIVIDERS } from "@/utils/Dividers";
 import { makeInitialState } from "@/components/EditorModal/TableSection";
 import { useGetBlocksByNoteId } from "@/hooks/custom/useBlocks";
 import { useGetAllNotes, useGetNoteById } from "@/hooks/custom/useNotes";
+import { useIsBreakpoint } from "@/hooks/use-is-breakpoint";
 
 export default function NotePage() {
     const params = useParams();
@@ -30,6 +31,13 @@ export default function NotePage() {
     const noteId = params?.id as string;
 
     const noteRef = useRef<HTMLDivElement>(null);
+    const sidebarLayoutRef = useRef<HTMLDivElement>(null);
+    const isMobileSidebarLayout = useIsBreakpoint("max", 624);
+    const [isLeftExpanded, setIsLeftExpanded] = useState(false);
+    const [isRightExpanded, setIsRightExpanded] = useState(true);
+    const [mobileSidebar, setMobileSidebar] = useState<"left" | "right" | null>(
+        null,
+    );
 
     const {
         addSaveBlock,
@@ -54,6 +62,43 @@ export default function NotePage() {
         setIsPreviewMode,
         setEditorDataState,
     } = useNoteStore();
+
+    useEffect(() => {
+        if (!isMobileSidebarLayout || !mobileSidebar || isPreviewMode) return;
+
+        const closeSidebar = () => setMobileSidebar(null);
+        const handleOutsideInteraction = (event: Event) => {
+            const sidebar = sidebarLayoutRef.current?.querySelector(
+                `[data-note-sidebar="${mobileSidebar}"]`,
+            );
+
+            if (
+                event.target instanceof Node &&
+                !sidebar?.contains(event.target)
+            ) {
+                closeSidebar();
+            }
+        };
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") closeSidebar();
+        };
+
+        document.addEventListener("pointerdown", handleOutsideInteraction, true);
+        document.addEventListener("focusin", handleOutsideInteraction);
+        document.addEventListener("keydown", handleEscape);
+        window.addEventListener("blur", closeSidebar);
+
+        return () => {
+            document.removeEventListener(
+                "pointerdown",
+                handleOutsideInteraction,
+                true,
+            );
+            document.removeEventListener("focusin", handleOutsideInteraction);
+            document.removeEventListener("keydown", handleEscape);
+            window.removeEventListener("blur", closeSidebar);
+        };
+    }, [isMobileSidebarLayout, mobileSidebar, isPreviewMode]);
 
     const queryClient = useQueryClient();
 
@@ -162,6 +207,7 @@ export default function NotePage() {
     useUnsavedChangesWarning(blocksToBeSynced.length !== 0);
 
     const openBlockEditor = (data: EditorDataType) => {
+        setMobileSidebar(null);
         setEditorDataState(data);
         setIsEditorOpen(true);
     };
@@ -365,6 +411,7 @@ export default function NotePage() {
     }, [isEditorOpen]);
 
     const handlePreview = () => {
+        setMobileSidebar(null);
         setIsPreviewMode(!isPreviewMode);
         if (!isPreviewMode) {
             toast.info("Preview mode — sidebars hidden", { duration: 2000 });
@@ -461,9 +508,26 @@ export default function NotePage() {
                 hasUnsaved={hasUnsaved}
             />
 
-            <div className="flex flex-1 overflow-hidden">
+            <div
+                ref={sidebarLayoutRef}
+                className="relative flex min-h-0 flex-1 overflow-hidden"
+            >
                 {!isPreviewMode && !isReadOnly && (
-                    <LeftAside openBlockEditor={openBlockEditor} />
+                    <LeftAside
+                        openBlockEditor={openBlockEditor}
+                        isExpanded={
+                            isMobileSidebarLayout
+                                ? mobileSidebar === "left"
+                                : isLeftExpanded
+                        }
+                        onExpandedChange={(expanded) => {
+                            if (isMobileSidebarLayout) {
+                                setMobileSidebar(expanded ? "left" : null);
+                            } else {
+                                setIsLeftExpanded(expanded);
+                            }
+                        }}
+                    />
                 )}
                 {isFetchingBlocks || isCurrentNoteLoading ? (
                     <MainPageSkeleton />
@@ -473,7 +537,22 @@ export default function NotePage() {
                         openBlockEditor={openBlockEditor}
                     />
                 )}
-                {!isPreviewMode && <RightAside />}
+                {!isPreviewMode && (
+                    <RightAside
+                        isExpanded={
+                            isMobileSidebarLayout
+                                ? mobileSidebar === "right"
+                                : isRightExpanded
+                        }
+                        onExpandedChange={(expanded) => {
+                            if (isMobileSidebarLayout) {
+                                setMobileSidebar(expanded ? "right" : null);
+                            } else {
+                                setIsRightExpanded(expanded);
+                            }
+                        }}
+                    />
+                )}
             </div>
 
             {isEditorOpen && <BlockEditorModal onSave={handleSaveBlock} />}

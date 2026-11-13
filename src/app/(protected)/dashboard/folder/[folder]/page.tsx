@@ -49,6 +49,7 @@ const page = () => {
         <div className="mx-auto max-w-6xl px-5 py-8 md:px-10 md:py-10">
             <Link
                 href={"/dashboard"}
+                prefetch={false}
                 className="mb-4 inline-flex items-center gap-1 text-[12px] font-medium text-muted-foreground outline-none transition-colors duration-150 hover:text-ink focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)"
             >
                 All notes

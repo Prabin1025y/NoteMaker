@@ -214,6 +214,7 @@ export async function saveBlocks({
                     order: item.order,
                     noteId: item.noteId,
                     createdAt: item.createdAt,
+                    language: item.language ?? null,
                 })),
                 select: {
                     id: true,
