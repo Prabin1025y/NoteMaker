@@ -123,7 +123,6 @@ type Store = {
     syncedBlocks: BlockType[];
     title: string;
     draggingBlockId: string | null;
-    activeBlockId: string | null;
     copiedContent: CopiedBlockType | null;
     blocksToBeSynced: BlockSyncType[];
     historyPast: BlockType[][];
@@ -144,7 +143,6 @@ type Store = {
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
-    setActiveBlockId: (id: string | null) => void;
     setCopiedContent: (content: CopiedBlockType | null) => void;
     setSearchQuery: (query: string) => void;
     setEditorDataState: (data: EditorDataType) => void;
@@ -189,7 +187,6 @@ export const useNoteStore = create<Store>()(
         blocks: [],
         title: "Untitled Note",
         draggingBlockId: null,
-        activeBlockId: null,
         copiedContent: null,
         blocksToBeSynced: [],
         historyPast: [],
@@ -227,7 +224,6 @@ export const useNoteStore = create<Store>()(
             set({ blocks });
         },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
-        setActiveBlockId: (id) => set({ activeBlockId: id }),
         setCopiedContent: (content) => set({ copiedContent: content }),
         setReadOnly: (value) => set({ isReadOnly: value }),
 

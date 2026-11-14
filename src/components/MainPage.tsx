@@ -157,21 +157,26 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
         if (!contentDiv) return;
 
         const handleScroll = () => {
-            if (contentDiv.scrollTop > 100)
-                setShowScrollTopBottom((prev) => [true, prev[1]]);
-            else setShowScrollTopBottom((prev) => [false, prev[1]]);
-
-            if (contentDiv.scrollHeight - contentDiv.scrollTop < 1000)
-                setShowScrollTopBottom((prev) => [prev[0], false]);
-            else setShowScrollTopBottom((prev) => [prev[0], true]);
+            const top = contentDiv.scrollTop > 100;
+            const bottom =
+                contentDiv.scrollHeight - contentDiv.clientHeight - contentDiv.scrollTop > 100;
+            if (top === visibility[0] && bottom === visibility[1]) return;
+            visibility = [top, bottom];
+            setShowScrollTopBottom(visibility);
         };
 
-        contentDiv.addEventListener("scroll", handleScroll);
+        let visibility = [false, true];
+        handleScroll();
+        contentDiv.addEventListener("scroll", handleScroll, { passive: true });
+        const observer = new ResizeObserver(handleScroll);
+        observer.observe(contentDiv);
+        if (noteRef.current) observer.observe(noteRef.current);
 
         return () => {
             contentDiv.removeEventListener("scroll", handleScroll);
+            observer.disconnect();
         };
-    }, [contentRef]);
+    }, [noteRef]);
 
     const handleQuickScroll = (direction: "top" | "bottom") => {
         const block = direction === "top" ? blocks.at(0) : blocks.at(-1);
@@ -290,7 +295,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                     designId: editorData.designId,
                                     colorOptionId: editorData.colorOptionId,
                                     readOnly: isReadOnly,
-                                    className: `peer ${draggingBlockId === block.id ? "-translate-y-1 shadow-lg ring-2 ring-[color:var(--ds-focus-ring)] ring-offset-2 ring-offset-[color:var(--ds-surface-canvas)]" : ""}`,
+                                    className: "peer",
                                     onEdit: () => openBlockEditor(editorData),
                                     onDelete: () => deleteBlock(block.id),
                                     onCopy: (canvasImage?: Promise<
@@ -371,7 +376,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
 
                                 return (
                                     <div
-                                        className={`relative group/add ${block.type === "heading" && "break-after-avoid"}`}
+                                        className={`relative group/add ${block.type === "heading" ? "break-after-avoid" : ""} ${draggingBlockId === block.id ? "rounded-xl bg-primary/10 outline-2 outline-dashed outline-primary outline-offset-4 shadow-lg" : ""}`}
                                         key={block.id}
                                         id={`block-${block.id}`}
                                         data-mobile-active={
@@ -384,6 +389,11 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                             }
                                         }}
                                     >
+                                        {draggingBlockId === block.id && (
+                                            <span className="absolute -top-3 right-2 z-20 rounded bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+                                                Moving block
+                                            </span>
+                                        )}
                                         {!isReadOnly && (
                                             <div className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex -translate-y-2 scale-95 justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100 max-md:group-data-[mobile-active=true]/add:pointer-events-auto max-md:group-data-[mobile-active=true]/add:translate-y-0 max-md:group-data-[mobile-active=true]/add:scale-100 max-md:group-data-[mobile-active=true]/add:opacity-100">
                                                 <div className="absolute top-1/2 h-px w-full border-t border-dashed border-[color:var(--ds-accent-soft)]" />

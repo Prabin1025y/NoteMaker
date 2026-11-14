@@ -5,6 +5,8 @@ import LeftAside from "@/components/LeftAside";
 import MainPage from "@/components/MainPage";
 import RightAside from "@/components/RightAside";
 import NoteChromeHeader from "@/components/note/NoteChromeHeader";
+import ExportDrawer from "@/components/note/ExportDrawer";
+import type { PdfExportOptions } from "@/lib/pdf/exportOptions";
 import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorDataType } from "@/types/Editor";
@@ -34,6 +36,7 @@ export default function NotePage() {
     const sidebarLayoutRef = useRef<HTMLDivElement>(null);
     const isMobileSidebarLayout = useIsBreakpoint("max", 624);
     const [isLeftExpanded, setIsLeftExpanded] = useState(false);
+    const [isExportOpen, setIsExportOpen] = useState(false);
     const [isRightExpanded, setIsRightExpanded] = useState(true);
     const [mobileSidebar, setMobileSidebar] = useState<"left" | "right" | null>(
         null,
@@ -52,6 +55,7 @@ export default function NotePage() {
         isReadOnly,
 
         isSyncing,
+        isExporting,
         isPreviewMode,
         isEditorOpen,
         doSaveImmediately,
@@ -418,7 +422,8 @@ export default function NotePage() {
         }
     };
 
-    const handleExport = async () => {
+    const handleExport = async (options: PdfExportOptions) => {
+        if (isExporting) return;
         if (!currentNote) {
             toast.warning("Please wait for note to be loaded.");
             return;
@@ -440,7 +445,7 @@ export default function NotePage() {
                             headers: {
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify({ noteId }),
+                            body: JSON.stringify({ noteId, options }),
                         },
                     );
 
@@ -469,16 +474,13 @@ export default function NotePage() {
                     a.remove();
 
                     URL.revokeObjectURL(url);
+                    setIsExportOpen(false);
                 } catch (error) {
                     if (process.env.NODE_ENV === "development") {
                         console.error(error);
                     }
 
-                    alert(
-                        error instanceof Error
-                            ? error.message
-                            : "Error while exporting!",
-                    );
+                    throw error;
                 } finally {
                     setIsExporting(false);
                 }
@@ -503,7 +505,7 @@ export default function NotePage() {
                     pendingSaveRef.current = true;
                     void handleSave();
                 }}
-                onExport={() => void handleExport()}
+                onExport={() => setIsExportOpen(true)}
                 onPreview={handlePreview}
                 hasUnsaved={hasUnsaved}
             />
@@ -556,6 +558,12 @@ export default function NotePage() {
             </div>
 
             {isEditorOpen && <BlockEditorModal onSave={handleSaveBlock} />}
+            <ExportDrawer
+                open={isExportOpen}
+                onOpenChange={setIsExportOpen}
+                isExporting={isExporting}
+                onExport={(options) => void handleExport(options)}
+            />
 
             <AiBlockGenerator />
         </div>

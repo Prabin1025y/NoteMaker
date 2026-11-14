@@ -10,6 +10,7 @@ export async function authorizeNoteAccess(userId: string, noteId: string) {
             OR: [{ authorId: userId }, { isPublic: true }],
         },
         include: {
+            author: { select: { name: true } },
             folder: {
                 select: { name: true },
             },

@@ -7,6 +7,7 @@ import { move } from "@dnd-kit/helpers";
 import Sortable from "@/components/dnd-Kit/Sortable";
 import { randomBetweenExclusive } from "@/utils/UtilFunctions";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
+import { scrollToBlock } from "@/utils/scrollToBlock";
 
 interface RightAsideProps {
     isExpanded: boolean;
@@ -22,8 +23,6 @@ const RightAside = ({ isExpanded, onExpandedChange }: RightAsideProps) => {
         setBlocks,
         setDraggingBlockId,
         draggingBlockId,
-        activeBlockId,
-        setActiveBlockId,
         pushToBlocksToBeSynced,
     } = useNoteStore();
 
@@ -36,12 +35,6 @@ const RightAside = ({ isExpanded, onExpandedChange }: RightAsideProps) => {
                 b.type.toLowerCase().includes(query),
         );
     }, [blocks, searchQuery]);
-
-    const handleBlockClick = (blockId: string) => {
-        setActiveBlockId(blockId);
-        const el = document.getElementById(`block-${blockId}`);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    };
 
     return (
         <div
@@ -102,7 +95,21 @@ const RightAside = ({ isExpanded, onExpandedChange }: RightAsideProps) => {
                             </p>
                         ) : (
                             <DragDropProvider
+                                onDragStart={(event) => {
+                                    const id = event.operation.source?.id;
+                                    if (isReadOnly || id == null) return;
+                                    setDraggingBlockId(String(id));
+                                    scrollToBlock(String(id));
+                                }}
                                 onDragEnd={(event) => {
+                                    setDraggingBlockId(null);
+                                    if (draggingBlockId) {
+                                        // Scroll after React commits the reordered blocks.
+                                        requestAnimationFrame(() =>
+                                            scrollToBlock(draggingBlockId),
+                                        );
+                                    }
+                                    if (event.canceled) return;
                                     if (isReadOnly) return;
 
                                     // `move` changes the visual position; assign a new
@@ -155,28 +162,22 @@ const RightAside = ({ isExpanded, onExpandedChange }: RightAsideProps) => {
                                         action: "edit",
                                         data: { order: newOrder },
                                     });
-                                    setDraggingBlockId(null);
                                 }}
                             >
                                 <div className="flex flex-col gap-0.5">
                                     {filteredBlocks.map((block, ind) => {
-                                        const isActive =
-                                            activeBlockId === block.id ||
-                                            draggingBlockId === block.id;
-
                                         return (
                                             <Sortable
                                                 key={block.id}
                                                 id={block.id}
                                                 index={ind}
-                                                isActive={isActive}
                                                 disabled={
                                                     isReadOnly ||
                                                     filteredBlocks.length !==
                                                         blocks.length
                                                 }
                                                 onClick={() =>
-                                                    handleBlockClick(block.id)
+                                                    scrollToBlock(block.id)
                                                 }
                                                 otherInfo={{
                                                     type: block.type,

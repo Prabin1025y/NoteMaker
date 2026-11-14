@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import {
@@ -21,13 +20,16 @@ import {
     type LandingAsset,
 } from "@/components/landing/assets";
 import ThemeToggle from "@/components/ThemeToggle";
+import PublicFooter from "@/components/public/PublicFooter";
+import JsonLd from "@/components/seo/JsonLd";
+import { publicMetadata, SITE_DESCRIPTION, SITE_SCHEMA } from "@/lib/seo";
 import styles from "./landing.module.css";
 
-export const metadata: Metadata = {
-    title: "Eton Note — Beautiful study notes, less busywork",
-    description:
-        "Create structured academic notes with rich text, LaTeX, code, tables, images, and drawings. Customize block designs, generate a draft with AI, and export a clean PDF.",
-};
+export const metadata = publicMetadata({
+    title: "Beautiful study notes, less busywork",
+    description: SITE_DESCRIPTION,
+    path: "/",
+});
 
 const NAV_LINKS = [
     { href: "#features", label: "Features" },
@@ -112,6 +114,7 @@ export default async function LandingPage() {
 
     return (
         <div className={styles.page}>
+            <JsonLd data={SITE_SCHEMA} />
             <a href="#main-content" className={styles.skipLink}>
                 Skip to content
             </a>
@@ -277,6 +280,10 @@ export default async function LandingPage() {
                                 ))}
                             </ul>
                         </div>
+                        <a href="/features" className={styles.textLink}>
+                            See all study-note features
+                            <ArrowRight size={17} aria-hidden="true" />
+                        </a>
                     </div>
                 </section>
 
@@ -362,6 +369,10 @@ export default async function LandingPage() {
                             Private by default. Choose a public, read-only link
                             when you want to share. Viewers sign in to read it.
                         </p>
+                        <a href="/guides" className={styles.textLink}>
+                            Read the step-by-step study guides
+                            <ArrowRight size={17} aria-hidden="true" />
+                        </a>
                     </div>
                 </section>
 
@@ -392,21 +403,7 @@ export default async function LandingPage() {
                 </section>
             </main>
 
-            <footer className={styles.footer}>
-                <div className={`${styles.container} ${styles.footerInner}`}>
-                    <a href="#top" className={styles.brand}>
-                        <Image src="/logo.png" width={28} height={27} alt="" />
-                        <span>Eton Note</span>
-                    </a>
-                    <nav aria-label="Footer navigation" className={styles.footerNav}>
-                        {NAV_LINKS.map((link) => (
-                            <a key={link.href} href={link.href}>{link.label}</a>
-                        ))}
-                        <a href="#about">Our story</a>
-                    </nav>
-                    <p>© {new Date().getFullYear()} Eton Note</p>
-                </div>
-            </footer>
+            <PublicFooter homeHref="#top" />
         </div>
     );
 }

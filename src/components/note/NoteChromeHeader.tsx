@@ -80,13 +80,26 @@ const NoteChromeHeader = ({
     const shareLink = typeof window !== "undefined" ? window.location.href : "";
 
     const handleTogglePublic = async () => {
-        if (!currentNote) return;
+        if (!currentNote || isTogglingPublic) return;
+        const noteId = currentNote.id;
+        const setPublic = (value: boolean) => useNoteStore.setState((state) =>
+            state.currentNote?.id === noteId
+                ? { currentNote: { ...state.currentNote, isPublic: value } }
+                : state,
+        );
         setIsTogglingPublic(true);
-        await updateNote.mutateAsync({
-            id: currentNote.id,
-            patch: { isPublic: !isPublic },
-        });
-        setIsTogglingPublic(false);
+        setPublic(!isPublic);
+        try {
+            await updateNote.mutateAsync({
+                id: noteId,
+                patch: { isPublic: !isPublic },
+            });
+        } catch {
+            // The mutation reports the error; roll back only this metadata field.
+            setPublic(isPublic);
+        } finally {
+            setIsTogglingPublic(false);
+        }
     };
 
     const handleCopyLink = async () => {
