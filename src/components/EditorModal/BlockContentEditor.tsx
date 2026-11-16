@@ -1,26 +1,18 @@
 "use client";
 import { useCallback } from "react";
-import type { Dispatch } from "react";
-import { Check, ChevronDown } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+import type { Dispatch, RefCallback } from "react";
 import { SimpleEditor } from "../tiptap/tiptap-templates/simple/simple-editor";
 import {
     BlockEditorAction,
     BlockEditorState,
     EditorDataType,
 } from "@/types/Editor";
-import { MONACO_LANGUAGES } from "@/utils/UtilFunctions";
 import CodeSection from "./CodeSection";
 import FormulaSection from "./FormulaSection";
 import EditableTable from "./TableSection";
 import DividerSelection from "./DividerSelection";
 import { ImageDropZone, PreviewFile } from "../ImageUploader";
-import { getBlockTypeConfig } from "./block-editor-config";
+import BlockEditorFields from "./BlockEditorFields";
 import DrawCanvasSection from "./DrawCanvasSection";
 import { TableState } from "./TableSection";
 import {
@@ -28,124 +20,26 @@ import {
     JSONContentSchema,
     TableStateSchema,
 } from "@/validation/editorData";
+import { ALL_DIVIDERS } from "@/utils/Dividers";
+import { colorOptions } from "@/utils/ColorsInfo";
 
 interface BlockContentEditorProps {
     state: BlockEditorState;
     dispatch: Dispatch<BlockEditorAction>;
     editorData: EditorDataType;
+    inline?: boolean;
+    toolbarTarget?: HTMLDivElement | null;
+    drawingToolbarRef?: RefCallback<HTMLDivElement>;
 }
 
 const BlockContentEditor = ({
     state,
     dispatch,
     editorData,
+    inline = false,
+    toolbarTarget,
+    drawingToolbarRef,
 }: BlockContentEditorProps) => {
-    const config = getBlockTypeConfig(state.currentType);
-    const showTitleInput = config.showTitleField;
-
-    const renderTitleInput = () => {
-        if (state.currentType === "code") {
-            return (
-                <>
-                    <div>
-                        <label className="mb-3 block text-[13px] font-semibold text-body">
-                            Language
-                        </label>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button
-                                    type="button"
-                                    className="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-(--ds-border-input) bg-background/80 px-3 text-sm font-medium text-ink outline-none transition-colors duration-150 hover:bg-background focus-visible:ring-2 focus-visible:ring-primary/60"
-                                >
-                                    <span className="capitalize">
-                                        {state.language}
-                                    </span>
-                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="start"
-                                className="max-h-80 w-56 overflow-y-auto"
-                            >
-                                {MONACO_LANGUAGES.map((lang) => (
-                                    <DropdownMenuItem
-                                        key={lang}
-                                        onSelect={() =>
-                                            dispatch({
-                                                type: "setLanguage",
-                                                payload: lang,
-                                            })
-                                        }
-                                        className="cursor-pointer"
-                                    >
-                                        <div className="flex w-full items-center justify-between">
-                                            <span className="capitalize">
-                                                {lang}
-                                            </span>
-                                            {state.language === lang && (
-                                                <Check className="h-4 w-4" />
-                                            )}
-                                        </div>
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <div>
-                        <label className="mb-3 block text-[13px] font-semibold text-body">
-                            Title{" "}
-                            <span className="font-normal text-muted-foreground">
-                                (optional)
-                            </span>
-                        </label>
-                        <input
-                            type="text"
-                            value={state.title}
-                            onChange={(e) =>
-                                dispatch({
-                                    type: "setTitle",
-                                    payload: e.target.value,
-                                })
-                            }
-                            placeholder="Enter title (optional)"
-                            className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-(--ds-focus-ring) focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                        />
-                    </div>
-                </>
-            );
-        }
-
-        if (!showTitleInput) return null;
-
-        return (
-            <div>
-                <label className="mb-3 block text-[13px] font-semibold text-body">
-                    {state.currentType === "image" ||
-                    state.currentType === "canvas"
-                        ? "Caption"
-                        : "Title"}{" "}
-                    <span className="font-normal text-muted-foreground">
-                        (optional)
-                    </span>
-                </label>
-                <input
-                    type="text"
-                    value={state.title}
-                    onChange={(e) =>
-                        dispatch({ type: "setTitle", payload: e.target.value })
-                    }
-                    placeholder={
-                        state.currentType === "image" ||
-                        state.currentType === "canvas"
-                            ? "Enter caption"
-                            : "Enter title (optional)"
-                    }
-                    className="w-full rounded-md border border-muted bg-background/70 px-3 py-2.5 text-[13px] font-medium text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-(--ds-focus-ring) focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
-                />
-            </div>
-        );
-    };
-
     const updateFile = (file: PreviewFile | null) => {
         dispatch({ type: "setFile", payload: file });
     };
@@ -166,7 +60,14 @@ const BlockContentEditor = ({
                     <ImageDropZone
                         file={state.file}
                         setFile={updateFile}
-                        editorData={editorData}
+                        editorData={{ title: state.title }}
+                        url={inline ? state.url : undefined}
+                        showActions={!inline}
+                        inline={inline}
+                        onRemoveImage={() => {
+                            updateFile(null);
+                            dispatch({ type: "setUrl", payload: "" });
+                        }}
                     />
                 );
             case "block":
@@ -174,13 +75,15 @@ const BlockContentEditor = ({
                 const result = JSONContentSchema.safeParse(state.content);
                 if (!result.success) return null;
                 return (
-                    <div className="flex-1 flex flex-col min-h-0">
-                        <div className="flex-1 flex flex-col min-h-0 border border-muted rounded-lg overflow-hidden">
-                            <div className="flex-1 min-h-0 overflow-y-auto px-4">
+                    <div className={inline ? `min-w-0 ${state.designEnabled || state.title.trim() ? "pt-2" : "pt-1"} pb-1` : "flex-1 flex flex-col min-h-0"}>
+                        <div className={inline ? "min-w-0" : "flex-1 flex flex-col min-h-0 border border-muted rounded-lg overflow-hidden"}>
+                            <div className={inline ? "min-w-0" : "flex-1 min-h-0 overflow-y-auto px-4"}>
                                 <SimpleEditor
                                     key={state.currentType}
                                     className="max-w-full h-full"
                                     initialContent={result.data}
+                                    inline={inline}
+                                    toolbarTarget={toolbarTarget}
                                     onChange={(content) =>
                                         dispatch({
                                             type: "setContent",
@@ -198,6 +101,7 @@ const BlockContentEditor = ({
                 return (
                     <FormulaSection
                         content={state.content}
+                        inline={inline}
                         onChangeHandler={(value) =>
                             dispatch({ type: "setContent", payload: value })
                         }
@@ -209,6 +113,8 @@ const BlockContentEditor = ({
                     <CodeSection
                         language={state.language}
                         content={state.content}
+                        height={inline ? "min(60vh, 480px)" : undefined}
+                        autoFocus={inline}
                         onChangeHandler={(value) =>
                             dispatch({ type: "setContent", payload: value })
                         }
@@ -219,13 +125,24 @@ const BlockContentEditor = ({
                     return null;
                 }
                 return (
-                    <EditableTable
-                        onChangeHandler={handleTableChange}
-                        editorData={editorData}
-                    />
+                    <div className={inline && !state.designEnabled ? "pt-2" : undefined}>
+                        <EditableTable
+                            key={state.currentType}
+                            onChangeHandler={handleTableChange}
+                            editorData={editorData}
+                            initialContent={inline ? TableStateSchema.parse(state.content) : undefined}
+                            toolbarTarget={toolbarTarget}
+                            colorOptionId={state.colorOptionId}
+                        />
+                    </div>
                 );
             case "divider":
                 if (typeof state.content !== "string") return null;
+                if (inline) {
+                    const Divider = ALL_DIVIDERS.find(({ name }) => name === state.content)?.component;
+                    const color = colorOptions.find(({ id }) => id === state.colorOptionId);
+                    return Divider ? <Divider color={color?.borderColorHex} width="full" className="w-full py-4" /> : null;
+                }
                 return (
                     <DividerSelection
                         colorOptionId={state.colorOptionId}
@@ -248,6 +165,9 @@ const BlockContentEditor = ({
                     return (
                         <DrawCanvasSection
                             content={result.data}
+                            inline={inline}
+                            toolbarRef={drawingToolbarRef}
+                            toolbarTarget={toolbarTarget}
                             onChangeHandler={(value) =>
                                 dispatch({ type: "setContent", payload: value })
                             }
@@ -260,8 +180,8 @@ const BlockContentEditor = ({
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-8 py-6 min-w-0 mr-10 xl:mr-0">
-            {renderTitleInput()}
+        <div className={inline ? "min-w-0" : "flex flex-1 flex-col gap-5 overflow-y-auto px-8 py-6 min-w-0 mr-10 xl:mr-0"}>
+            {!inline && <BlockEditorFields state={state} dispatch={dispatch} />}
             {renderEditor()}
         </div>
     );

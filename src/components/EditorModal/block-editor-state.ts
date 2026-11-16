@@ -68,6 +68,10 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
             return state.language === action.payload
                 ? state
                 : { ...state, language: action.payload };
+        case "setUrl":
+            return state.url === action.payload
+                ? state
+                : { ...state, url: action.payload };
         case "setDesignEnabled":
             return state.designEnabled === action.payload
                 ? state
@@ -93,7 +97,10 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
     }
 };
 
-export const useBlockEditorState = (editorData: EditorDataType) => {
+export const useBlockEditorState = (
+    editorData: EditorDataType,
+    { loadImagePreview = true }: { loadImagePreview?: boolean } = {},
+) => {
     const [state, dispatch] = useReducer(reducer, editorData, getInitialState);
 
     useEffect(() => {
@@ -109,7 +116,7 @@ export const useBlockEditorState = (editorData: EditorDataType) => {
     }, []);
 
     useEffect(() => {
-        if (editorData.action !== "save" || editorData.type !== "image") {
+        if (!loadImagePreview || editorData.action !== "save" || editorData.type !== "image") {
             return;
         }
 
@@ -135,7 +142,7 @@ export const useBlockEditorState = (editorData: EditorDataType) => {
         return () => {
             active = false;
         };
-    }, [editorData]);
+    }, [editorData, loadImagePreview]);
 
     useEffect(() => {
         return () => {

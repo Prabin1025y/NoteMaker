@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
     EditorContent,
     EditorContext,
@@ -236,19 +237,29 @@ const MobileToolbarContent = ({
 
 export function SimpleEditor({
     className = "",
-    onChange = (_) => {},
+    onChange = () => {},
     initialContent = INITIAL_JSON_EDITOR,
+    inline = false,
+    toolbarTarget,
 }: {
     className?: string;
     onChange?: (content: JSONContent) => void;
     initialContent: JSONContent;
+    inline?: boolean;
+    toolbarTarget?: HTMLDivElement | null;
 }) {
     const isMobile = useIsBreakpoint();
     const { height } = useWindowSize();
     const [mobileView, setMobileView] = useState<
         "main" | "highlighter" | "link"
     >("main");
-    const toolbarRef = useRef<HTMLDivElement>(null);
+    const [previousMobile, setPreviousMobile] = useState(isMobile);
+    const [toolbarElement, setToolbarElement] = useState<HTMLDivElement | null>(null);
+    const [toolbarHeight, setToolbarHeight] = useState(0);
+    if (previousMobile !== isMobile) {
+        setPreviousMobile(isMobile);
+        if (!isMobile) setMobileView("main");
+    }
 
     const editor = useEditor({
         immediatelyRender: true,
@@ -311,22 +322,31 @@ export function SimpleEditor({
 
     const rect = useCursorVisibility({
         editor,
-        overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
+        overlayHeight: inline ? 0 : toolbarHeight,
     });
 
     useEffect(() => {
-        if (!isMobile && mobileView !== "main") {
-            setMobileView("main");
-        }
-    }, [isMobile, mobileView]);
+        if (!toolbarElement || inline) return;
+        const observer = new ResizeObserver(() => {
+            setToolbarHeight(toolbarElement.getBoundingClientRect().height);
+        });
+        observer.observe(toolbarElement);
+        return () => observer.disconnect();
+    }, [inline, toolbarElement]);
 
-    return (
-        <div className={`simple-editor-wrapper ${className}`}>
-            <EditorContext.Provider value={{ editor }}>
-                <Toolbar
-                    ref={toolbarRef}
+    const toolbar = (
+        <Toolbar
+                    ref={setToolbarElement}
+                    aria-label="Text formatting"
+                    className={inline ? "tiptap-toolbar-external" : undefined}
+                    onKeyDown={(event) => {
+                        if (event.key === "Escape" && mobileView !== "main") {
+                            event.preventDefault();
+                            setMobileView("main");
+                        }
+                    }}
                     style={{
-                        ...(isMobile
+                        ...(isMobile && !inline
                             ? {
                                   bottom: `calc(100% - ${height - rect.y}px)`,
                               }
@@ -351,7 +371,15 @@ export function SimpleEditor({
                             onBack={() => setMobileView("main")}
                         />
                     )}
-                </Toolbar>
+        </Toolbar>
+    );
+
+    return (
+        <div className={`simple-editor-wrapper ${inline ? "simple-editor-inline" : ""} ${className}`}>
+            <EditorContext.Provider value={{ editor }}>
+                {toolbarTarget === undefined
+                    ? toolbar
+                    : toolbarTarget && createPortal(toolbar, toolbarTarget)}
 
                 <EditorContent
                     editor={editor}

@@ -13,6 +13,7 @@ interface DividerSelectiontype {
     setColorOptionId: (id: number) => void;
     content: string;
     onChangeHandler: (value: string) => void;
+    showColorOptions?: boolean;
 }
 
 const DividerSelection = ({
@@ -20,6 +21,7 @@ const DividerSelection = ({
     setColorOptionId,
     content,
     onChangeHandler,
+    showColorOptions = true,
 }: DividerSelectiontype) => {
     const colorOption = colorOptions.find((co) => co.id === colorOptionId);
     return (
@@ -29,7 +31,7 @@ const DividerSelection = ({
                     Design Type
                 </label>
 
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-strong py-4 outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
                         {(() => {
                             const DividerComponent = ALL_DIVIDERS.find(
@@ -68,11 +70,11 @@ const DividerSelection = ({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <div className="flex-1">
+            {showColorOptions && <div className="flex-1">
                 <label className="mb-3 block text-[13px] font-semibold text-body">
                     Color Options
                 </label>
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="w-full">
                         <ColorOptionSelect colorOptionId={colorOptionId} />
                     </DropdownMenuTrigger>
@@ -92,7 +94,7 @@ const DividerSelection = ({
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
+            </div>}
         </div>
     );
 };

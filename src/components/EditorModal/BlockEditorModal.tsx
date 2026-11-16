@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { EditorDataType } from "@/types/Editor";
 import { allBlocks } from "@/utils/BlocksInfo";
 import { useBlockEditorState } from "./block-editor-state";
@@ -7,79 +7,8 @@ import BlockEditorHeader from "./BlockEditorHeader";
 import BlockContentEditor from "./BlockContentEditor";
 import BlockSettingsSidebar from "./BlockSettingsSidebar";
 import BlockEditorFooter from "./BlockEditorFooter";
-import { getBlockTypeConfig } from "./block-editor-config";
-import { getBlobImageFile, removeBlobImageFile } from "@/lib/tiptap-utils";
 import { useNoteStore } from "@/Context/DataStore";
-import type { JSONContent } from "@tiptap/core";
-import {
-    CanvasEditorContentSchema,
-    JSONContentSchema,
-    TableStateSchema,
-} from "@/validation/editorData";
-import { ALL_DIVIDERS } from "@/utils/Dividers";
-
-const uploadBlobImages = async (content: JSONContent): Promise<JSONContent> => {
-    const blobUrls: string[] = [];
-
-    const visit = (node: JSONContent) => {
-        if (node.type === "image" && typeof node.attrs?.src === "string") {
-            const src = node.attrs.src;
-            if (src.startsWith("blob:") && getBlobImageFile(src)) {
-                blobUrls.push(src);
-            }
-        }
-
-        node.content?.forEach(visit);
-    };
-
-    visit(content);
-
-    if (blobUrls.length === 0) {
-        return content;
-    }
-
-    const formData = new FormData();
-    blobUrls.forEach((url) => {
-        const file = getBlobImageFile(url);
-        if (file) {
-            formData.append("images", file);
-        }
-    });
-
-    const response = await fetch("/api/upload-images", {
-        method: "POST",
-        body: formData,
-    });
-    const data = (await response.json()) as {
-        images?: Array<{ url: string }>;
-        error?: string;
-    };
-
-    if (
-        !response.ok ||
-        !data.images ||
-        data.images.length !== blobUrls.length
-    ) {
-        throw new Error(data.error || "Failed to upload images");
-    }
-
-    let imageIndex = 0;
-    const replaceUrls = (node: JSONContent) => {
-        if (node.type === "image" && typeof node.attrs?.src === "string") {
-            const src = node.attrs.src;
-            if (src === blobUrls[imageIndex]) {
-                node.attrs.src = data.images![imageIndex].url;
-                removeBlobImageFile(src);
-                imageIndex += 1;
-            }
-        }
-
-        node.content?.forEach(replaceUrls);
-    };
-
-    replaceUrls(content);
-    return content;
-};
+import { isBlockEditorValid, prepareBlockEditorData } from "./block-editor-save";
 
 interface BlockEditorModalProps {
     onSave: (editorData: EditorDataType) => void;
@@ -96,15 +25,7 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
         [state.currentType],
     );
 
-    const config = getBlockTypeConfig(state.currentType);
-
-    const isValid = config.validate({
-        currentType: state.currentType,
-        title: state.title,
-        content: state.content,
-        file: state.file,
-        language: state.language,
-    });
+    const isValid = isBlockEditorValid(state);
 
     const handleSave = useCallback(async () => {
         if (!isValid) return;
@@ -112,120 +33,7 @@ const BlockEditorModal = ({ onSave }: BlockEditorModalProps) => {
         dispatch({ type: "setAdding", payload: true });
 
         try {
-            const saveData = {
-                id: editorDataState.id,
-                title: state.title,
-                designId: state.designEnabled ? state.designId : 0,
-                colorOptionId: state.colorOptionId || 1,
-                order: editorDataState.order,
-                action: editorDataState.action,
-            };
-
-            switch (state.currentType) {
-                case "image": {
-                    if (!state.file) {
-                        throw new Error("Select an image before saving");
-                    }
-
-                    const formData = new FormData();
-                    formData.append("image", state.file);
-
-                    const response = await fetch("/api/upload-image", {
-                        method: "POST",
-                        body: formData,
-                    });
-                    const data = (await response.json()) as {
-                        url?: string;
-                        error?: string;
-                    };
-
-                    if (!response.ok || !data.url) {
-                        throw new Error(data.error || "Failed to upload image");
-                    }
-
-                    onSave({
-                        ...saveData,
-                        type: "image",
-                        url: data.url,
-                    });
-                    break;
-                }
-                case "block":
-                case "heading": {
-                    const result = JSONContentSchema.safeParse(state.content);
-                    if (!result.success) {
-                        throw new Error("Invalid block editor content");
-                    }
-                    const content = await uploadBlobImages(result.data);
-                    onSave({
-                        ...saveData,
-                        type: state.currentType,
-                        content,
-                    });
-                    break;
-                }
-                case "table": {
-                    const result = TableStateSchema.safeParse(state.content);
-                    if (!result.success) {
-                        throw new Error("Invalid table content");
-                    }
-                    onSave({
-                        ...saveData,
-                        type: "table",
-                        content: result.data,
-                    });
-                    break;
-                }
-                case "canvas": {
-                    const result = CanvasEditorContentSchema.safeParse(
-                        state.content,
-                    );
-                    if (!result.success) {
-                        throw new Error("Invalid canvas content");
-                    }
-                    onSave({
-                        ...saveData,
-                        type: "canvas",
-                        content: result.data,
-                    });
-                    break;
-                }
-                case "code":
-                    if (typeof state.content !== "string") {
-                        throw new Error(`Invalid ${state.currentType} content`);
-                    }
-                    onSave({
-                        ...saveData,
-                        type: "code",
-                        content: state.content,
-                        language: state.language,
-                    });
-                    break;
-                case "divider": {
-                    const divider = ALL_DIVIDERS.find(
-                        ({ name }) => name === state.content,
-                    );
-                    if (!divider) {
-                        throw new Error("Invalid divider content");
-                    }
-                    onSave({
-                        ...saveData,
-                        type: "divider",
-                        content: divider.name,
-                    });
-                    break;
-                }
-                case "formula":
-                    if (typeof state.content !== "string") {
-                        throw new Error(`Invalid ${state.currentType} content`);
-                    }
-                    onSave({
-                        ...saveData,
-                        type: "formula",
-                        content: state.content,
-                    });
-                    break;
-            }
+            onSave(await prepareBlockEditorData(editorDataState, state));
         } finally {
             dispatch({ type: "setAdding", payload: false });
         }

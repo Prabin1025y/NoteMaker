@@ -7,7 +7,8 @@ import RightAside from "@/components/RightAside";
 import NoteChromeHeader from "@/components/note/NoteChromeHeader";
 import ExportDrawer from "@/components/note/ExportDrawer";
 import type { PdfExportOptions } from "@/lib/pdf/exportOptions";
-import BlockEditorModal from "@/components/EditorModal/BlockEditorModal";
+import InlineBlockEditor from "@/components/note/InlineBlockEditor";
+import { useInlineBlockEditor } from "@/hooks/useInlineBlockEditor";
 import { useNoteStore } from "@/Context/DataStore";
 import { EditorDataType } from "@/types/Editor";
 import {
@@ -32,6 +33,19 @@ export default function NotePage() {
     const router = useRouter();
     const noteId = params?.id as string;
 
+    const {
+        activeEditor,
+        editorRef,
+        openBlockEditor: startBlockEditing,
+        finishEditing,
+        saveBlock,
+        deleteEditedBlock,
+        closeEditor,
+    } = useInlineBlockEditor(noteId);
+    const [editorContentTarget, setEditorContentTarget] = useState<HTMLDivElement | null>(null);
+    const [editorToolbarTarget, setEditorToolbarTarget] = useState<HTMLDivElement | null>(null);
+    const [editorSettingsTarget, setEditorSettingsTarget] = useState<HTMLDivElement | null>(null);
+
     const noteRef = useRef<HTMLDivElement>(null);
     const sidebarLayoutRef = useRef<HTMLDivElement>(null);
     const isMobileSidebarLayout = useIsBreakpoint("max", 624);
@@ -43,7 +57,6 @@ export default function NotePage() {
     );
 
     const {
-        addSaveBlock,
         loadNote,
         loadPublicNote,
         syncToDB,
@@ -62,9 +75,7 @@ export default function NotePage() {
         setIsSyncing,
         setDoSaveImmediately,
         setIsExporting,
-        setIsEditorOpen,
         setIsPreviewMode,
-        setEditorDataState,
     } = useNoteStore();
 
     useEffect(() => {
@@ -201,43 +212,16 @@ export default function NotePage() {
         };
     }, []);
 
-    useEffect(() => {
-        document.body.style.overflow = isEditorOpen ? "hidden" : "";
-        return () => {
-            document.body.style.overflow = "";
-        };
-    }, [isEditorOpen]);
+    useUnsavedChangesWarning(blocksToBeSynced.length !== 0 || isEditorOpen);
 
-    useUnsavedChangesWarning(blocksToBeSynced.length !== 0);
-
-    const openBlockEditor = (data: EditorDataType) => {
+    const openBlockEditor = useCallback((data: EditorDataType) => {
         setMobileSidebar(null);
-        setEditorDataState(data);
-        setIsEditorOpen(true);
-    };
+        startBlockEditing(data);
+    }, [startBlockEditing]);
 
-    const closeBlockEditor = () => {
-        setIsEditorOpen(false);
-        setEditorDataState({
-            title: "",
-            content: INITIAL_JSON_EDITOR,
-            type: "block",
-            action: "add",
-            id: "",
-            colorOptionId: 1,
-            order: "auto",
-            designId: 1,
-        });
-    };
-
-    // add or save a new block after editing.
-    const handleSaveBlock = (data: EditorDataType) => {
-        addSaveBlock(data);
-        closeBlockEditor();
-    };
-
-    const handleHomeClick = () => {
-        if (blocksToBeSynced.length != 0) {
+    const handleHomeClick = async () => {
+        if (!(await finishEditing())) return;
+        if (useNoteStore.getState().blocksToBeSynced.length !== 0) {
             const leave = window.confirm(
                 "You have unsaved changes. Are you sure you want to leave?",
             );
@@ -250,7 +234,7 @@ export default function NotePage() {
 
     const handleSave = useCallback(async () => {
         if (
-            blocksToBeSynced.length === 0 ||
+            useNoteStore.getState().blocksToBeSynced.length === 0 ||
             !pendingSaveRef.current ||
             savingRef.current
         )
@@ -285,9 +269,9 @@ export default function NotePage() {
             if (pendingSaveRef.current) handleSave();
             setIsSyncing(false);
         }
-    }, [syncToDB, blocksToBeSynced, pendingSaveRef.current]);
+    }, [queryClient, setIsSyncing, syncToDB]);
 
-    handleSaveRef.current = handleSave;
+    useEffect(() => { handleSaveRef.current = handleSave; }, [handleSave]);
 
     // Shortcuts for undo redo and save
     useEffect(() => {
@@ -412,9 +396,10 @@ export default function NotePage() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [isEditorOpen]);
+    }, [isEditorOpen, openBlockEditor]);
 
-    const handlePreview = () => {
+    const handlePreview = async () => {
+        if (!(await finishEditing())) return;
         setMobileSidebar(null);
         setIsPreviewMode(!isPreviewMode);
         if (!isPreviewMode) {
@@ -502,11 +487,23 @@ export default function NotePage() {
                 onHomeClick={handleHomeClick}
                 isLoading={isCurrentNoteLoading || isFetchingBlocks}
                 onSave={() => {
-                    pendingSaveRef.current = true;
-                    void handleSave();
+                    void finishEditing().then((finished) => {
+                        if (!finished) return;
+                        pendingSaveRef.current = true;
+                        void handleSaveRef.current();
+                    });
                 }}
-                onExport={() => setIsExportOpen(true)}
+                onExport={() => {
+                    void finishEditing().then((finished) => {
+                        if (finished) setIsExportOpen(true);
+                    });
+                }}
                 onPreview={handlePreview}
+                onNavigateNote={(id) => {
+                    void finishEditing().then((finished) => {
+                        if (finished) router.push(`/note/${id}`);
+                    });
+                }}
                 hasUnsaved={hasUnsaved}
             />
 
@@ -514,6 +511,14 @@ export default function NotePage() {
                 ref={sidebarLayoutRef}
                 className="relative flex min-h-0 flex-1 overflow-hidden"
             >
+                {activeEditor && (
+                    <div
+                        ref={setEditorToolbarTarget}
+                        role="region"
+                        aria-label="Block editor toolbar"
+                        className="peer absolute inset-x-0 top-0 z-40 border-b border-muted bg-card empty:hidden"
+                    />
+                )}
                 {!isPreviewMode && !isReadOnly && (
                     <LeftAside
                         openBlockEditor={openBlockEditor}
@@ -537,27 +542,46 @@ export default function NotePage() {
                     <MainPage
                         noteRef={noteRef}
                         openBlockEditor={openBlockEditor}
+                        editingBlock={activeEditor?.data ?? null}
+                        editorContentRef={setEditorContentTarget}
                     />
                 )}
                 {!isPreviewMode && (
-                    <RightAside
-                        isExpanded={
-                            isMobileSidebarLayout
-                                ? mobileSidebar === "right"
-                                : isRightExpanded
-                        }
-                        onExpandedChange={(expanded) => {
-                            if (isMobileSidebarLayout) {
-                                setMobileSidebar(expanded ? "right" : null);
-                            } else {
-                                setIsRightExpanded(expanded);
+                    <div className={activeEditor ? "invisible contents" : "contents"} inert={!!activeEditor}>
+                        <RightAside
+                            isExpanded={
+                                isMobileSidebarLayout
+                                    ? mobileSidebar === "right"
+                                    : isRightExpanded
                             }
-                        }}
-                    />
+                            onExpandedChange={(expanded) => {
+                                if (isMobileSidebarLayout) {
+                                    setMobileSidebar(expanded ? "right" : null);
+                                } else {
+                                    setIsRightExpanded(expanded);
+                                }
+                            }}
+                        />
+                    </div>
+                )}
+                {activeEditor && !isPreviewMode && (
+                    <div ref={setEditorSettingsTarget} className="absolute inset-y-0 right-0 z-30 peer-[:not(:empty)]:top-[calc(--spacing(11)+1px)]" />
                 )}
             </div>
 
-            {isEditorOpen && <BlockEditorModal onSave={handleSaveBlock} />}
+            {activeEditor && (
+                <InlineBlockEditor
+                    key={activeEditor.key}
+                    ref={editorRef}
+                    editorData={activeEditor.data}
+                    contentTarget={editorContentTarget}
+                    toolbarTarget={editorToolbarTarget}
+                    settingsTarget={editorSettingsTarget}
+                    onSave={saveBlock}
+                    onDelete={deleteEditedBlock}
+                    onClose={() => closeEditor(activeEditor.key)}
+                />
+            )}
             <ExportDrawer
                 open={isExportOpen}
                 onOpenChange={setIsExportOpen}

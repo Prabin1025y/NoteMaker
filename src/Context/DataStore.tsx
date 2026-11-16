@@ -182,6 +182,8 @@ type Store = {
     snapshotHistory: () => void;
 };
 
+let syncInFlight: Promise<void> | null = null;
+
 export const useNoteStore = create<Store>()(
     devtools((set, get) => ({
         blocks: [],
@@ -492,7 +494,12 @@ export const useNoteStore = create<Store>()(
         },
 
         pushToBlocksToBeSynced: (data) => {
-            if (isEqual(get().blocks, get().syncedBlocks)) {
+            console.log("inside block to be syncded");
+            // A save in flight may still change the last confirmed state.
+            if (!syncInFlight && isEqual(get().blocks, get().syncedBlocks)) {
+                console.log("becomes equal");
+                console.log(get().blocks);
+                console.log(get().syncedBlocks);
                 set({ blocksToBeSynced: [] });
                 return;
             }
@@ -554,7 +561,13 @@ export const useNoteStore = create<Store>()(
         },
 
         syncToDB: async () => {
-            if (get().isReadOnly) return;
+            const noteAtSave = get().currentNote;
+            // Wait for the previous request and its ID reconciliation.
+            while (syncInFlight) {
+                await syncInFlight;
+            }
+
+            if (get().currentNote !== noteAtSave || get().isReadOnly) return;
             if (get().blocksToBeSynced.length === 0) return;
 
             const backupBlocksToBeSynced = structuredClone(
@@ -563,9 +576,13 @@ export const useNoteStore = create<Store>()(
 
             // Snapshot the blocks state representing what we are sending right now
             const blocksSnapshotAtSave = structuredClone(get().blocks);
-            set({ blocksToBeSynced: [] });
+            let finishSync!: () => void;
+            syncInFlight = new Promise<void>((resolve) => {
+                finishSync = resolve;
+            });
 
             try {
+                set({ blocksToBeSynced: [] });
                 const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
                     {
@@ -575,14 +592,10 @@ export const useNoteStore = create<Store>()(
                 );
 
                 const data = await res.json();
+                if (get().currentNote !== noteAtSave) return;
 
                 if (!res.ok) {
-                    alert("Couldn't save!");
-                    // Merge backup items back cleanly using pushToBlocksToBeSynced to avoid duplicate/conflicting entries
-                    for (const item of backupBlocksToBeSynced) {
-                        get().pushToBlocksToBeSynced(item);
-                    }
-                    return;
+                    throw new Error("Couldn't save!");
                 }
 
                 const addedData = data.addedData as
@@ -612,12 +625,10 @@ export const useNoteStore = create<Store>()(
                         },
                     );
 
-                    // 3. Remap IDs in any actions that were added to blocksToBeSynced while saving
-                    const updatedBlocksToBeSynced = get().blocksToBeSynced.map(
-                        (item) => {
-                            const newId = idMap.get(item.id);
-                            return newId ? { ...item, id: newId } : item;
-                        },
+                    // 3. Rebuild pending changes against what was actually saved.
+                    const updatedBlocksToBeSynced = buildBlockSyncDiff(
+                        updatedSnapshot,
+                        updatedBlocks,
                     );
 
                     // 4. Remap IDs in historyPast and historyFuture so undo/redo doesn't resurrect stale client UUIDs
@@ -639,13 +650,23 @@ export const useNoteStore = create<Store>()(
                 } else {
                     set({
                         syncedBlocks: blocksSnapshotAtSave,
+                        blocksToBeSynced: buildBlockSyncDiff(
+                            blocksSnapshotAtSave,
+                            get().blocks,
+                        ),
                     });
                 }
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
 
-                for (const item of backupBlocksToBeSynced) {
-                    get().pushToBlocksToBeSynced(item);
+                if (get().currentNote === noteAtSave) {
+                    // Retry the latest local state, not stale actions from the failed save.
+                    set({
+                        blocksToBeSynced: buildBlockSyncDiff(
+                            get().syncedBlocks,
+                            get().blocks,
+                        ),
+                    });
                 }
 
                 alert(
@@ -653,6 +674,9 @@ export const useNoteStore = create<Store>()(
                         ? error.message
                         : "Error while saving document",
                 );
+            } finally {
+                syncInFlight = null;
+                finishSync();
             }
         },
     })),

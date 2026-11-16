@@ -31,7 +31,11 @@
 .tiptap.ProseMirror {
   white-space: pre-wrap;
   outline: none;
-  caret-color: var(--secondary);
+  caret-color: currentColor;
+
+  :where(p, h1, h2, h3, h4, h5, h6, span, a) {
+    caret-color: currentColor;
+  }
 
   // Paragraph spacing
   p:not(:first-child):not(td p):not(th p) {

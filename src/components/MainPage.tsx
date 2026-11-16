@@ -29,7 +29,7 @@ import {
     PlusIcon,
     Sparkles,
 } from "lucide-react";
-import { RefObject, useEffect, useRef, useState } from "react";
+import { Fragment, RefCallback, RefObject, useEffect, useRef, useState } from "react";
 import { useIsBreakpoint } from "@/hooks/use-is-breakpoint";
 
 const parseStructuredContent = (content: string): unknown => {
@@ -108,9 +108,11 @@ const getEditorDataForBlock = (
 interface MainPageProps {
     openBlockEditor: (editorData: EditorDataType) => void;
     noteRef: RefObject<HTMLDivElement | null>;
+    editingBlock: EditorDataType | null;
+    editorContentRef: RefCallback<HTMLDivElement>;
 }
 
-const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
+const MainPage = ({ openBlockEditor, noteRef, editingBlock, editorContentRef }: MainPageProps) => {
     const {
         blocks,
         deleteBlock,
@@ -252,6 +254,15 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
         if (order !== null) handlePasteBlock(order);
     };
 
+    const draftOrder = editingBlock?.action === "add" ? editingBlock.order : null;
+    const insertionIndex = typeof draftOrder === "number"
+        ? blocks.findIndex((block) => block.order > draftOrder)
+        : blocks.length;
+    const draftIndex = draftOrder === null ? -1 : insertionIndex < 0 ? blocks.length : insertionIndex;
+    const draftEditor = (
+        <div id="new-block-editor" ref={editorContentRef} data-inline-block-editor-slot />
+    );
+
     return (
         <main className="flex-1 relative max-md:min-w-0">
             {showScrollTopBottom[0] && (
@@ -290,6 +301,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                             blocks.map((block, i) => {
                                 const editorData = getEditorDataForBlock(block);
                                 if (!editorData) return null;
+                                const isEditing = editingBlock?.action === "save" && editingBlock.id === block.id;
                                 const commonProps = {
                                     title: editorData.title,
                                     designId: editorData.designId,
@@ -375,16 +387,18 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                 }
 
                                 return (
+                                    <Fragment key={block.id}>
+                                    {draftIndex === i && draftEditor}
                                     <div
-                                        className={`relative group/add ${block.type === "heading" ? "break-after-avoid" : ""} ${draggingBlockId === block.id ? "rounded-xl bg-primary/10 outline-2 outline-dashed outline-primary outline-offset-4 shadow-lg" : ""}`}
-                                        key={block.id}
+                                        className={`relative ${isEditing ? "" : "group/add"} ${block.type === "heading" ? "break-after-avoid" : ""} ${draggingBlockId === block.id ? "rounded-xl bg-primary/10 outline-2 outline-dashed outline-primary outline-offset-4 shadow-lg" : ""}`}
                                         id={`block-${block.id}`}
                                         data-mobile-active={
                                             enableTapControls &&
+                                            !isEditing &&
                                             selectedBlockId === block.id
                                         }
                                         onClickCapture={() => {
-                                            if (enableTapControls) {
+                                            if (enableTapControls && !isEditing) {
                                                 setSelectedBlockId(block.id);
                                             }
                                         }}
@@ -394,7 +408,7 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                 Moving block
                                             </span>
                                         )}
-                                        {!isReadOnly && (
+                                        {!isReadOnly && !isEditing && (
                                             <div className="pointer-events-none absolute inset-x-0 -top-4 z-10 flex -translate-y-2 scale-95 justify-center gap-2 opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-hover/add:pointer-events-auto group-hover/add:translate-y-0 group-hover/add:scale-100 group-hover/add:opacity-100 max-md:group-data-[mobile-active=true]/add:pointer-events-auto max-md:group-data-[mobile-active=true]/add:translate-y-0 max-md:group-data-[mobile-active=true]/add:scale-100 max-md:group-data-[mobile-active=true]/add:opacity-100">
                                                 <div className="absolute top-1/2 h-px w-full border-t border-dashed border-[color:var(--ds-accent-soft)]" />
                                                 <button
@@ -427,10 +441,14 @@ const MainPage = ({ openBlockEditor, noteRef }: MainPageProps) => {
                                                 )}
                                             </div>
                                         )}
-                                        {renderedBlock}
+                                        {isEditing
+                                            ? <div ref={editorContentRef} data-inline-block-editor-slot />
+                                            : renderedBlock}
                                     </div>
+                                    </Fragment>
                                 );
                             })}
+                        {draftIndex === blocks.length && draftEditor}
                         {isGenerating && (
                             <div className="my-5 flex h-40 w-full animate-pulse items-center justify-center gap-3 rounded-xl border border-muted bg-card text-muted-foreground">
                                 <Loader className="animate-spin" />

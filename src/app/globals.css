@@ -321,7 +321,7 @@
 
 div.tiptap.ProseMirror.simple-editor {
     width: 100% !important;
-    padding-bottom: 48px !important;
+    /* padding-bottom: 48px !important; */
     height: 370px !important;
 }
 

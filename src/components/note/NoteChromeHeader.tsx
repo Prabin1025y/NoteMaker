@@ -24,7 +24,6 @@ import {
     useGetNotesInFolderOfNote,
     useUpdateNote,
 } from "@/hooks/custom/useNotes";
-import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,6 +36,7 @@ interface NoteChromeHeaderProps {
     onSave: () => void;
     onExport: () => void;
     onPreview: () => void;
+    onNavigateNote: (id: string) => void;
     hasUnsaved: boolean;
     isLoading: boolean;
 }
@@ -47,6 +47,7 @@ const NoteChromeHeader = ({
     onSave,
     onExport,
     onPreview,
+    onNavigateNote,
     hasUnsaved,
 }: NoteChromeHeaderProps) => {
     const {
@@ -59,6 +60,7 @@ const NoteChromeHeader = ({
         isExporting,
         isPreviewMode,
         isReadOnly,
+        isEditorOpen,
         searchQuery,
         setSearchQuery,
         currentNote,
@@ -69,7 +71,6 @@ const NoteChromeHeader = ({
     const [copied, setCopied] = useState(false);
 
     const updateNote = useUpdateNote();
-    const router = useRouter();
     const { data: folderNotes = [], isLoading: isFolderNotesLoading } =
         useGetNotesInFolderOfNote(currentNote?.id ?? "");
     const otherFolderNotes = folderNotes.filter(
@@ -172,7 +173,7 @@ const NoteChromeHeader = ({
                                     <DropdownMenuItem
                                         key={note.id}
                                         onSelect={() =>
-                                            router.push(`/note/${note.id}`)
+                                            onNavigateNote(note.id)
                                         }
                                         className="cursor-pointer"
                                     >
@@ -244,7 +245,7 @@ const NoteChromeHeader = ({
                             variant="ghost"
                             size="icon-sm"
                             onClick={undo}
-                            disabled={!canUndo()}
+                            disabled={isEditorOpen || !canUndo()}
                             title="Undo"
                             className="text-muted-foreground hover:text-foreground disabled:opacity-30"
                         >
@@ -254,7 +255,7 @@ const NoteChromeHeader = ({
                             variant="ghost"
                             size="icon-sm"
                             onClick={redo}
-                            disabled={!canRedo()}
+                            disabled={isEditorOpen || !canRedo()}
                             title="Redo"
                             className="text-muted-foreground hover:text-foreground  disabled:opacity-30"
                         >

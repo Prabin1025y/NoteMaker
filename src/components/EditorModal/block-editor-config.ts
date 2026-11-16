@@ -20,6 +20,7 @@ export interface BlockEditorValidationContext {
     title: string;
     content: ContentType;
     file: PreviewFile | null;
+    url?: string;
     language: string;
 }
 
@@ -142,7 +143,7 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         supportsDesign: false,
         initialContent: "",
         titleLabel: "Caption",
-        validate: ({ file }) => Boolean(file),
+        validate: ({ file, url }) => Boolean(file || url),
         previewContent: ({ content, file }) => file?.preview || content || "",
     },
     table: {
