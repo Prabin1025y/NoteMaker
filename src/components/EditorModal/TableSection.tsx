@@ -1,6 +1,9 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Plus, X, Trash2, Check } from "lucide-react";
 import { EditorDataType } from "@/types/Editor";
+import { createPortal } from "react-dom";
+import type { CSSProperties } from "react";
+import { colorOptions } from "@/utils/ColorsInfo";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,18 +57,20 @@ interface ToolbarButtonProps {
     icon: React.ReactNode;
     label: string;
     danger?: boolean;
+    disabled?: boolean;
 }
 
-function ToolbarButton({ onClick, icon, label, danger }: ToolbarButtonProps) {
+function ToolbarButton({ onClick, icon, label, danger, disabled = false }: ToolbarButtonProps) {
     return (
         <button
             onClick={onClick}
             title={label}
             aria-label={label}
+            disabled={disabled}
             className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
         border bg-card/80 transition-colors duration-150 active:scale-95 select-none
-        outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]
+        outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40
         ${
             danger
                 ? "border-muted text-destructive bg-background/80 hover:bg-background/60"
@@ -82,6 +87,9 @@ function ToolbarButton({ onClick, icon, label, danger }: ToolbarButtonProps) {
 interface EditableTableProps {
     onChangeHandler: (content: TableState) => void;
     editorData: EditorDataType;
+    initialContent?: TableState;
+    toolbarTarget?: HTMLDivElement | null;
+    colorOptionId?: number;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -89,11 +97,28 @@ interface EditableTableProps {
 export default function EditableTable({
     onChangeHandler,
     editorData,
+    initialContent,
+    toolbarTarget,
+    colorOptionId = 1,
 }: EditableTableProps) {
+    const inline = toolbarTarget !== undefined;
+    const color = colorOptions.find(({ id }) => id === colorOptionId) ?? colorOptions[0];
+    const surfaceStyle = inline ? {
+        "--tbl-accent": color.borderColorHex,
+        "--tbl-border-src": color.borderColorHex,
+        "--tbl-header-bg-src": color.primaryColorHex + "33",
+        "--tbl-header-text-src": "#000000",
+        borderColor: "var(--tbl-border)",
+    } as CSSProperties : undefined;
+    const headerStyle = inline ? {
+        background: "var(--tbl-header-bg)",
+        borderColor: "var(--tbl-border)",
+        color: "var(--tbl-header-text)",
+    } : undefined;
     const [state, setState] = useState<TableState>(
-        editorData.action === "add" || editorData.type !== "table"
+        initialContent ?? (editorData.action === "add" || editorData.type !== "table"
             ? makeInitialState()
-            : editorData.content,
+            : editorData.content),
     );
     // const [pendingFocus, setPendingFocus] = useState<FocusTarget>(null);
     const [confirmClear, setConfirmClear] = useState(false);
@@ -301,10 +326,8 @@ export default function EditableTable({
         onChangeHandler(state);
     }, [state, onChangeHandler]);
 
-    return (
-        <div className="p-4">
-            {/* Toolbar */}
-            <div className="flex flex-wrap gap-2 mb-3">
+    const toolbar = (
+            <div role="toolbar" aria-label="Table editing" className={`flex gap-2 ${toolbarTarget === undefined ? "mb-3 flex-wrap" : "min-h-11 items-center whitespace-nowrap"}`}>
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-background/60 rounded-lg border border-muted">
                     <span className="text-xs text-muted-foreground uppercase tracking-wide mr-1">
                         Col
@@ -319,6 +342,13 @@ export default function EditableTable({
                         icon={<Plus size={14} />}
                         label="Add right"
                     />
+                    {toolbarTarget !== undefined && <ToolbarButton
+                        onClick={() => deleteColumn(lastFocused.current?.colId ?? cols.at(-1)!)}
+                        icon={<Trash2 size={14} />}
+                        label="Delete column"
+                        disabled={cols.length <= 1}
+                        danger
+                    />}
                 </div>
 
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-background/60 rounded-lg border border-muted">
@@ -335,6 +365,13 @@ export default function EditableTable({
                         icon={<Plus size={14} />}
                         label="Add below"
                     />
+                    {toolbarTarget !== undefined && <ToolbarButton
+                        onClick={() => deleteRow(lastFocused.current?.kind === "cell" ? lastFocused.current.rowId : rows.at(-1)!)}
+                        icon={<Trash2 size={14} />}
+                        label="Delete row"
+                        disabled={rows.length <= 1}
+                        danger
+                    />}
                 </div>
 
                 {confirmClear ? (
@@ -364,14 +401,22 @@ export default function EditableTable({
                     />
                 )}
             </div>
+    );
+
+    return (
+        <div className={toolbarTarget === undefined ? "p-4" : "min-w-0"}>
+            {toolbarTarget === undefined
+                ? toolbar
+                : toolbarTarget && createPortal(toolbar, toolbarTarget)}
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-xl border border-muted bg-card/80">
+            <div className={`overflow-x-auto rounded-xl border ${inline ? "ds-table-surface" : "border-muted bg-card/80"}`} style={surfaceStyle}>
                 <table
                     className="border-collapse w-full"
                     style={{
                         tableLayout: "fixed",
                         minWidth: cols.length * 140,
+                        background: "transparent",
                     }}
                 >
                     {/* Column widths */}
@@ -389,12 +434,13 @@ export default function EditableTable({
                     <thead>
                         <tr>
                             {/* Corner */}
-                            <th className="bg-background/60 border-b border-muted" />
+                            <th className={`border-b ${inline ? "" : "bg-background/60 border-muted"}`} style={headerStyle} />
 
                             {cols.map((colId, ci) => (
                                 <th
                                     key={colId}
-                                    className="bg-background/60 border-b border-l border-muted p-0 group/th"
+                                    className={`border-b border-l p-0 group/th ${inline ? "" : "bg-background/60 border-muted"}`}
+                                    style={headerStyle}
                                 >
                                     <div className="flex items-center h-10">
                                         <input
@@ -415,14 +461,15 @@ export default function EditableTable({
                                             onKeyDown={(e) =>
                                                 handleKeyDown(e, -1, ci)
                                             }
-                                            className="
+                                            className={`
                         flex-1 h-full px-3 bg-transparent border-none outline-none
-                        text-sm font-medium text-ink
-                        placeholder:text-muted-foreground
+                        text-sm caret-current
+                        ${inline ? "font-bold placeholder:text-current placeholder:opacity-40" : "font-medium text-ink placeholder:text-muted-foreground"}
                         min-w-0
-                      "
+                      `}
+                                            style={inline ? { color: "var(--tbl-header-text)" } : undefined}
                                         />
-                                        {cols.length > 1 && (
+                                        {toolbarTarget === undefined && cols.length > 1 && (
                                             <button
                                                 onClick={() =>
                                                     deleteColumn(colId)
@@ -452,11 +499,11 @@ export default function EditableTable({
                                 className="group/row"
                             >
                                 {/* Row number + delete */}
-                                <td className="bg-background/60 border-t border-muted relative p-0 text-center">
-                                    <span className="group-hover/row:opacity-0 text-xs text-muted-foreground transition-opacity">
+                                <td className={`border-t relative p-0 text-center ${inline ? "" : "bg-background/60 border-muted"}`} style={headerStyle}>
+                                    <span className={`${inline ? "font-bold opacity-70" : "group-hover/row:opacity-0 text-muted-foreground"} text-xs transition-opacity`}>
                                         {ri + 1}
                                     </span>
-                                    {rows.length > 1 && (
+                                    {toolbarTarget === undefined && rows.length > 1 && (
                                         <button
                                             onClick={() => deleteRow(rowId)}
                                             aria-label={`Delete row ${ri + 1}`}
@@ -475,7 +522,8 @@ export default function EditableTable({
                                 {cols.map((colId, ci) => (
                                     <td
                                         key={colId}
-                                        className="border-t border-l bg-background/40 border-muted p-0 focus-within:ring-1 focus-within:ring-[color:var(--ds-focus-ring)] focus-within:ring-inset focus-within:z-10 relative"
+                                        className={`border-t border-l p-0 focus-within:ring-1 focus-within:ring-[color:var(--ds-focus-ring)] focus-within:ring-inset focus-within:z-10 relative ${inline ? "h-10" : "bg-background/40 border-muted"}`}
+                                        style={inline ? { borderColor: "var(--tbl-border)", background: "transparent" } : undefined}
                                     >
                                         <input
                                             ref={registerRef(
@@ -504,12 +552,12 @@ export default function EditableTable({
                                             onKeyDown={(e) =>
                                                 handleKeyDown(e, ri, ci)
                                             }
-                                            className="
-                        w-full h-10 px-3 bg-transparent border-none outline-none
-                        text-sm text-ink
-                        focus:bg-tint
+                                            className={`
+                        w-full ${inline ? "h-[calc(--spacing(10)-1px)]" : "h-10"} px-3 bg-transparent border-none outline-none
+                        text-sm caret-current
+                        ${inline ? "" : "text-ink focus:bg-tint"}
                         transition-colors duration-150
-                      "
+                      `}
                                         />
                                     </td>
                                 ))}
@@ -517,7 +565,7 @@ export default function EditableTable({
                         ))}
 
                         {/* Add row button */}
-                        <tr>
+                        {toolbarTarget === undefined && <tr>
                             <td
                                 colSpan={cols.length + 1}
                                 className="border-t border-muted p-0"
@@ -537,20 +585,25 @@ export default function EditableTable({
                                     Add row
                                 </button>
                             </td>
-                        </tr>
+                        </tr>}
                     </tbody>
                 </table>
+                {inline && (
+                    <div className="flex items-center gap-2 border-t px-3 py-1.5 text-xs opacity-70" style={headerStyle}>
+                        {rows.length} rows × {cols.length} cols
+                    </div>
+                )}
             </div>
 
             {/* Status bar */}
-            <div className="flex items-center gap-3 mt-2.5 text-xs text-muted-foreground">
+            {!inline && <div className="flex items-center gap-3 mt-2.5 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5 bg-background/60 border border-muted text-body rounded-full px-3 py-0.5">
                     {rows.length} rows × {cols.length} cols
                 </span>
                 <span className="hidden sm:inline">
-                    Tab / Enter to navigate · hover row or column to delete
+                    Tab / Enter to navigate{toolbarTarget === undefined ? " · hover row or column to delete" : " · use the toolbar to add or remove rows and columns"}
                 </span>
-            </div>
+            </div>}
         </div>
     );
 }

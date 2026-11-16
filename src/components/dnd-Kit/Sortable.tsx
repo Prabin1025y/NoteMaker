@@ -1,20 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { GripVerticalIcon } from "lucide-react";
-import { useNoteStore } from "@/Context/DataStore";
 import { colorOptions } from "@/utils/ColorsInfo";
 
 function Sortable({
     id,
     index,
     otherInfo,
-    isActive,
     onClick,
     disabled = false,
 }: {
     id: string;
     index: number;
-    isActive?: boolean;
     onClick?: () => void;
     disabled?: boolean;
     otherInfo: {
@@ -26,7 +23,6 @@ function Sortable({
 }) {
     const [element, setElement] = useState<Element | null>(null);
     const handleRef = useRef<HTMLDivElement | null>(null);
-    const { setDraggingBlockId } = useNoteStore();
     const { isDragging } = useSortable({
         id,
         index,
@@ -40,20 +36,12 @@ function Sortable({
     );
     const isDesignEnabled = otherInfo.designId !== 0;
 
-    useEffect(() => {
-        if (isDragging) {
-            setDraggingBlockId(id);
-        } else {
-            setDraggingBlockId(null);
-        }
-    }, [isDragging, id, setDraggingBlockId]);
-
     return (
         <div
             ref={setElement}
             onClick={onClick}
             style={
-                isDesignEnabled && !isActive
+                isDesignEnabled
                     ? {
                           backgroundColor: colorOption?.primaryColorHex + "20",
                           borderColor: colorOption?.borderColorHex + "80",
@@ -73,11 +61,6 @@ function Sortable({
             )}
             <div className="flex-1 min-w-0">
                 <p
-                    // style={
-                    //     isDesignEnabled && !isActive
-                    //         ? { color: colorOption?.borderColorHex }
-                    //         : {}
-                    // }
                     className={`text-[12px] font-medium truncate transition-colors text-ink group-hover:text-ink`}
                 >
                     {otherInfo.title}

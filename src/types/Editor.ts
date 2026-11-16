@@ -97,6 +97,7 @@ export type BlockEditorAction =
           payload: ContentType;
       }
     | { type: "setFile"; payload: PreviewFile | null }
+    | { type: "setUrl"; payload: string }
     | { type: "setLanguage"; payload: MonacoLanguage }
     | { type: "setDesignEnabled"; payload: boolean }
     | { type: "setDesignId"; payload: number }

@@ -142,8 +142,9 @@ export function useMenuNavigation<T>({
         }
 
         case "Escape": {
+          if (!onClose) return false
           event.preventDefault()
-          onClose?.()
+          onClose()
           return true
         }
 

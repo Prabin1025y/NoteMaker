@@ -3,7 +3,6 @@ import {
     INITIAL_JSON_CANVAS,
     INITIAL_JSON_EDITOR,
     INITIAL_JSON_HEADING,
-    MONACO_LANGUAGES,
 } from "@/utils/UtilFunctions";
 import { blockTypeOptions, ContentType } from "@/types/Editor";
 import { PreviewFile } from "./../ImageUploader";
@@ -21,6 +20,7 @@ export interface BlockEditorValidationContext {
     title: string;
     content: ContentType;
     file: PreviewFile | null;
+    url?: string;
     language: string;
 }
 
@@ -35,11 +35,6 @@ export interface BlockTypeConfig {
         context: BlockEditorValidationContext,
     ) => BlockEditorValidationContext["content"];
 }
-
-const codeLanguageFromTitle = (title: string) => {
-    const normalized = title.trim().toLowerCase();
-    return MONACO_LANGUAGES.includes(normalized) ? normalized : "javascript";
-};
 
 const previewContentForType = (
     type: blockTypeOptions,
@@ -148,7 +143,7 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
         supportsDesign: false,
         initialContent: "",
         titleLabel: "Caption",
-        validate: ({ file }) => Boolean(file),
+        validate: ({ file, url }) => Boolean(file || url),
         previewContent: ({ content, file }) => file?.preview || content || "",
     },
     table: {
@@ -219,9 +214,6 @@ export const blockTypeConfigs: Record<blockTypeOptions, BlockTypeConfig> = {
 
 export const getBlockTypeConfig = (type: blockTypeOptions) =>
     blockTypeConfigs[type];
-
-export const getDefaultLanguage = (title: string) =>
-    codeLanguageFromTitle(title);
 
 export const getPreviewContent = (
     type: blockTypeOptions,

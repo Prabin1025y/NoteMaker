@@ -5,9 +5,10 @@ import FormulaViewer from "../FormulaViewer";
 interface FormulaSectionProps {
     content: string;
     onChangeHandler: (content: string) => void;
+    inline?: boolean;
 }
 
-const FormulaSection = ({ content, onChangeHandler }: FormulaSectionProps) => {
+const FormulaSection = ({ content, onChangeHandler, inline = false }: FormulaSectionProps) => {
     return (
         <div className="flex-1 w-full flex flex-col gap-5">
             <div className="flex-1 flex flex-col">
@@ -15,9 +16,10 @@ const FormulaSection = ({ content, onChangeHandler }: FormulaSectionProps) => {
                     Formula
                 </label>
                 <textarea
-                defaultValue={content}
+                    value={content}
+                    rows={inline ? 3 : undefined}
                     onChange={(e) => onChangeHandler(e.target.value)}
-                    className="flex-1 size-full rounded-md border border-input bg-background/50 p-4 font-mono text-[13px] text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]"
+                    className={`flex-1 size-full rounded-md border border-input ${inline ? "bg-transparent" : "bg-background/50"} p-4 font-mono text-[13px] text-ink caret-current outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-[color:var(--ds-focus-ring)] focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]`}
                 />
             </div>
             <div className="flex-1 flex flex-col">
@@ -25,7 +27,7 @@ const FormulaSection = ({ content, onChangeHandler }: FormulaSectionProps) => {
                     Preview
                 </label>
                 <FormulaViewer
-                    className="flex-1 size-full grid place-items-center rounded-md border border-muted bg-background/70 p-4"
+                    className={`flex-1 size-full grid place-items-center rounded-md border border-muted ${inline ? "bg-transparent" : "bg-background/70"} p-4`}
                     latex={content}
                 />
             </div>

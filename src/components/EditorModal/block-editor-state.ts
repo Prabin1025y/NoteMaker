@@ -4,7 +4,7 @@ import {
     BlockEditorState,
     EditorDataType,
 } from "@/types/Editor";
-import { getBlockTypeConfig, getDefaultLanguage } from "./block-editor-config";
+import { getBlockTypeConfig } from "./block-editor-config";
 
 const getInitialState = (editorData: EditorDataType): BlockEditorState => {
     const content = "content" in editorData ? editorData.content : "";
@@ -41,9 +41,7 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
         case "setType": {
             const config = getBlockTypeConfig(action.payload);
             const language =
-                action.payload === "code"
-                    ? getDefaultLanguage(state.title)
-                    : state.language;
+                action.payload === "code" ? "javascript" : state.language;
 
             return {
                 ...state,
@@ -69,7 +67,11 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
         case "setLanguage":
             return state.language === action.payload
                 ? state
-                : { ...state, language: action.payload, title: action.payload };
+                : { ...state, language: action.payload };
+        case "setUrl":
+            return state.url === action.payload
+                ? state
+                : { ...state, url: action.payload };
         case "setDesignEnabled":
             return state.designEnabled === action.payload
                 ? state
@@ -95,7 +97,10 @@ const reducer = (state: BlockEditorState, action: BlockEditorAction) => {
     }
 };
 
-export const useBlockEditorState = (editorData: EditorDataType) => {
+export const useBlockEditorState = (
+    editorData: EditorDataType,
+    { loadImagePreview = true }: { loadImagePreview?: boolean } = {},
+) => {
     const [state, dispatch] = useReducer(reducer, editorData, getInitialState);
 
     useEffect(() => {
@@ -111,7 +116,7 @@ export const useBlockEditorState = (editorData: EditorDataType) => {
     }, []);
 
     useEffect(() => {
-        if (editorData.action !== "save" || editorData.type !== "image") {
+        if (!loadImagePreview || editorData.action !== "save" || editorData.type !== "image") {
             return;
         }
 
@@ -137,7 +142,7 @@ export const useBlockEditorState = (editorData: EditorDataType) => {
         return () => {
             active = false;
         };
-    }, [editorData]);
+    }, [editorData, loadImagePreview]);
 
     useEffect(() => {
         return () => {

@@ -24,12 +24,13 @@ const BLOCK_SYNC_COMPARE_KEYS = [
     "colorOptionId",
     "content",
     "title",
+    "language",
     "type",
 ] as const;
 
 export type CopiedBlockType = Pick<
     BlockType,
-    "type" | "content" | "title" | "designId" | "colorOptionId"
+    "type" | "content" | "title" | "language" | "designId" | "colorOptionId"
 >;
 
 const getBlockSyncDiffData = (
@@ -57,6 +58,7 @@ const createAddSyncBlock = (block: BlockType): AddBlockType => ({
     content: block.content,
     order: block.order,
     title: block.title,
+    language: block.language,
 });
 
 const getStoredContent = (editorData: EditorDataType): string => {
@@ -121,7 +123,6 @@ type Store = {
     syncedBlocks: BlockType[];
     title: string;
     draggingBlockId: string | null;
-    activeBlockId: string | null;
     copiedContent: CopiedBlockType | null;
     blocksToBeSynced: BlockSyncType[];
     historyPast: BlockType[][];
@@ -142,7 +143,6 @@ type Store = {
     setTitle: (title: string) => void;
     setBlocks: (blocks: BlockType[], recordHistory?: boolean) => void;
     setDraggingBlockId: (id: string | null) => void;
-    setActiveBlockId: (id: string | null) => void;
     setCopiedContent: (content: CopiedBlockType | null) => void;
     setSearchQuery: (query: string) => void;
     setEditorDataState: (data: EditorDataType) => void;
@@ -182,12 +182,13 @@ type Store = {
     snapshotHistory: () => void;
 };
 
+let syncInFlight: Promise<void> | null = null;
+
 export const useNoteStore = create<Store>()(
     devtools((set, get) => ({
         blocks: [],
         title: "Untitled Note",
         draggingBlockId: null,
-        activeBlockId: null,
         copiedContent: null,
         blocksToBeSynced: [],
         historyPast: [],
@@ -225,7 +226,6 @@ export const useNoteStore = create<Store>()(
             set({ blocks });
         },
         setDraggingBlockId: (id) => set({ draggingBlockId: id }),
-        setActiveBlockId: (id) => set({ activeBlockId: id }),
         setCopiedContent: (content) => set({ copiedContent: content }),
         setReadOnly: (value) => set({ isReadOnly: value }),
 
@@ -346,6 +346,10 @@ export const useNoteStore = create<Store>()(
                     content,
                     type: editorData.type,
                     title: editorData.title,
+                    language:
+                        editorData.type === "code"
+                            ? editorData.language
+                            : null,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     noteId: currentNote.id,
@@ -366,6 +370,7 @@ export const useNoteStore = create<Store>()(
                     content: block.content,
                     order: block.order,
                     title: block.title,
+                    language: block.language,
                 };
 
                 get().pushToBlocksToBeSynced({
@@ -393,6 +398,14 @@ export const useNoteStore = create<Store>()(
                     }),
                     ...(editorData.type !== blockToBeChanged.type && {
                         type: editorData.type,
+                    }),
+                    ...((editorData.type === "code"
+                        ? editorData.language
+                        : null) !== blockToBeChanged.language && {
+                        language:
+                            editorData.type === "code"
+                                ? editorData.language
+                                : null,
                     }),
                 };
 
@@ -465,6 +478,7 @@ export const useNoteStore = create<Store>()(
                     type: sourceBlock.type,
                     content: sourceBlock.content,
                     title: sourceBlock.title,
+                    language: sourceBlock.language,
                     designId: sourceBlock.designId,
                     colorOptionId: sourceBlock.colorOptionId,
                 },
@@ -480,7 +494,12 @@ export const useNoteStore = create<Store>()(
         },
 
         pushToBlocksToBeSynced: (data) => {
-            if (isEqual(get().blocks, get().syncedBlocks)) {
+            console.log("inside block to be syncded");
+            // A save in flight may still change the last confirmed state.
+            if (!syncInFlight && isEqual(get().blocks, get().syncedBlocks)) {
+                console.log("becomes equal");
+                console.log(get().blocks);
+                console.log(get().syncedBlocks);
                 set({ blocksToBeSynced: [] });
                 return;
             }
@@ -542,7 +561,13 @@ export const useNoteStore = create<Store>()(
         },
 
         syncToDB: async () => {
-            if (get().isReadOnly) return;
+            const noteAtSave = get().currentNote;
+            // Wait for the previous request and its ID reconciliation.
+            while (syncInFlight) {
+                await syncInFlight;
+            }
+
+            if (get().currentNote !== noteAtSave || get().isReadOnly) return;
             if (get().blocksToBeSynced.length === 0) return;
 
             const backupBlocksToBeSynced = structuredClone(
@@ -551,9 +576,13 @@ export const useNoteStore = create<Store>()(
 
             // Snapshot the blocks state representing what we are sending right now
             const blocksSnapshotAtSave = structuredClone(get().blocks);
-            set({ blocksToBeSynced: [] });
+            let finishSync!: () => void;
+            syncInFlight = new Promise<void>((resolve) => {
+                finishSync = resolve;
+            });
 
             try {
+                set({ blocksToBeSynced: [] });
                 const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_WEBSITE_URL}/api/notes/save`,
                     {
@@ -563,14 +592,10 @@ export const useNoteStore = create<Store>()(
                 );
 
                 const data = await res.json();
+                if (get().currentNote !== noteAtSave) return;
 
                 if (!res.ok) {
-                    alert("Couldn't save!");
-                    // Merge backup items back cleanly using pushToBlocksToBeSynced to avoid duplicate/conflicting entries
-                    for (const item of backupBlocksToBeSynced) {
-                        get().pushToBlocksToBeSynced(item);
-                    }
-                    return;
+                    throw new Error("Couldn't save!");
                 }
 
                 const addedData = data.addedData as
@@ -600,12 +625,10 @@ export const useNoteStore = create<Store>()(
                         },
                     );
 
-                    // 3. Remap IDs in any actions that were added to blocksToBeSynced while saving
-                    const updatedBlocksToBeSynced = get().blocksToBeSynced.map(
-                        (item) => {
-                            const newId = idMap.get(item.id);
-                            return newId ? { ...item, id: newId } : item;
-                        },
+                    // 3. Rebuild pending changes against what was actually saved.
+                    const updatedBlocksToBeSynced = buildBlockSyncDiff(
+                        updatedSnapshot,
+                        updatedBlocks,
                     );
 
                     // 4. Remap IDs in historyPast and historyFuture so undo/redo doesn't resurrect stale client UUIDs
@@ -627,13 +650,23 @@ export const useNoteStore = create<Store>()(
                 } else {
                     set({
                         syncedBlocks: blocksSnapshotAtSave,
+                        blocksToBeSynced: buildBlockSyncDiff(
+                            blocksSnapshotAtSave,
+                            get().blocks,
+                        ),
                     });
                 }
             } catch (error) {
                 if (process.env.NODE_ENV === "development") console.log(error);
 
-                for (const item of backupBlocksToBeSynced) {
-                    get().pushToBlocksToBeSynced(item);
+                if (get().currentNote === noteAtSave) {
+                    // Retry the latest local state, not stale actions from the failed save.
+                    set({
+                        blocksToBeSynced: buildBlockSyncDiff(
+                            get().syncedBlocks,
+                            get().blocks,
+                        ),
+                    });
                 }
 
                 alert(
@@ -641,6 +674,9 @@ export const useNoteStore = create<Store>()(
                         ? error.message
                         : "Error while saving document",
                 );
+            } finally {
+                syncInFlight = null;
+                finishSync();
             }
         },
     })),

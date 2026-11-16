@@ -2,11 +2,16 @@ import { signInternalToken } from "@/lib/auth-jwt";
 import { ForbiddenError, UnauthorizedError } from "@/lib/Error/custom-errors";
 import { authorizeNoteAccess } from "@/lib/pdf/authorizeNoteAccess";
 import requireAuth from "@/lib/requireAuth";
+import { pdfExportOptionsSchema } from "@/lib/pdf/exportOptions";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     try {
-        const { noteId } = await req.json();
+        const { noteId, options } = await req.json();
+        const parsedOptions = pdfExportOptionsSchema.safeParse(options ?? {});
+        if (!parsedOptions.success) {
+            return NextResponse.json({ message: "Invalid PDF options" }, { status: 400 });
+        }
 
         if (!noteId) {
             return NextResponse.json(
@@ -35,6 +40,8 @@ export async function POST(req: NextRequest) {
                 noteId,
                 noteTitle: note.title,
                 folderName: note.folder.name,
+                authorName: note.author.name,
+                options: parsedOptions.data,
             }),
         });
 

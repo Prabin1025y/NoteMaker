@@ -9,7 +9,6 @@ interface BlockPreviewProps {
 
 const BlockPreview = ({ currentBlock, state }: BlockPreviewProps) => {
     const PreviewComponent = mapTypeToElement(state.currentType);
-    const title = state.currentType === "code" ? state.language : state.title;
 
     if (!PreviewComponent) return null;
 
@@ -44,7 +43,10 @@ const BlockPreview = ({ currentBlock, state }: BlockPreviewProps) => {
     return (
         <div className="mt-2">
             <PreviewComponent
-                title={title ? "Title" : ""}
+                title={state.title}
+                {...(state.currentType === "code"
+                    ? { language: state.language }
+                    : {})}
                 content={getPreviewContent() as any}
                 designId={state.designEnabled ? state.designId : 0}
                 colorOptionId={state.colorOptionId}

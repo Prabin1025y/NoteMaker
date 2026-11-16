@@ -24,7 +24,6 @@ import {
     useGetNotesInFolderOfNote,
     useUpdateNote,
 } from "@/hooks/custom/useNotes";
-import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,6 +36,7 @@ interface NoteChromeHeaderProps {
     onSave: () => void;
     onExport: () => void;
     onPreview: () => void;
+    onNavigateNote: (id: string) => void;
     hasUnsaved: boolean;
     isLoading: boolean;
 }
@@ -47,6 +47,7 @@ const NoteChromeHeader = ({
     onSave,
     onExport,
     onPreview,
+    onNavigateNote,
     hasUnsaved,
 }: NoteChromeHeaderProps) => {
     const {
@@ -59,6 +60,7 @@ const NoteChromeHeader = ({
         isExporting,
         isPreviewMode,
         isReadOnly,
+        isEditorOpen,
         searchQuery,
         setSearchQuery,
         currentNote,
@@ -69,7 +71,6 @@ const NoteChromeHeader = ({
     const [copied, setCopied] = useState(false);
 
     const updateNote = useUpdateNote();
-    const router = useRouter();
     const { data: folderNotes = [], isLoading: isFolderNotesLoading } =
         useGetNotesInFolderOfNote(currentNote?.id ?? "");
     const otherFolderNotes = folderNotes.filter(
@@ -80,13 +81,26 @@ const NoteChromeHeader = ({
     const shareLink = typeof window !== "undefined" ? window.location.href : "";
 
     const handleTogglePublic = async () => {
-        if (!currentNote) return;
+        if (!currentNote || isTogglingPublic) return;
+        const noteId = currentNote.id;
+        const setPublic = (value: boolean) => useNoteStore.setState((state) =>
+            state.currentNote?.id === noteId
+                ? { currentNote: { ...state.currentNote, isPublic: value } }
+                : state,
+        );
         setIsTogglingPublic(true);
-        await updateNote.mutateAsync({
-            id: currentNote.id,
-            patch: { isPublic: !isPublic },
-        });
-        setIsTogglingPublic(false);
+        setPublic(!isPublic);
+        try {
+            await updateNote.mutateAsync({
+                id: noteId,
+                patch: { isPublic: !isPublic },
+            });
+        } catch {
+            // The mutation reports the error; roll back only this metadata field.
+            setPublic(isPublic);
+        } finally {
+            setIsTogglingPublic(false);
+        }
     };
 
     const handleCopyLink = async () => {
@@ -159,7 +173,7 @@ const NoteChromeHeader = ({
                                     <DropdownMenuItem
                                         key={note.id}
                                         onSelect={() =>
-                                            router.push(`/note/${note.id}`)
+                                            onNavigateNote(note.id)
                                         }
                                         className="cursor-pointer"
                                     >
@@ -231,7 +245,7 @@ const NoteChromeHeader = ({
                             variant="ghost"
                             size="icon-sm"
                             onClick={undo}
-                            disabled={!canUndo()}
+                            disabled={isEditorOpen || !canUndo()}
                             title="Undo"
                             className="text-muted-foreground hover:text-foreground disabled:opacity-30"
                         >
@@ -241,7 +255,7 @@ const NoteChromeHeader = ({
                             variant="ghost"
                             size="icon-sm"
                             onClick={redo}
-                            disabled={!canRedo()}
+                            disabled={isEditorOpen || !canRedo()}
                             title="Redo"
                             className="text-muted-foreground hover:text-foreground  disabled:opacity-30"
                         >

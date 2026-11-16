@@ -49,7 +49,7 @@ export default function ImageBlock({
                     className="
                         absolute right-2 top-2 z-10
                         hidden overflow-hidden rounded-md border border-muted shadow-sm
-                        group-hover:flex
+                        group-hover:flex max-md:group-data-[mobile-active=true]/add:flex
                     "
                 >
                     <BlockCopyActions

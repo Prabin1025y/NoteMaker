@@ -16,6 +16,8 @@ interface DesignSelectiontype {
     setColorOptionId: (id: number) => void;
     currentBlock: BlockItem | null;
     className?: string;
+    showDesign?: boolean;
+    designDisabled?: boolean;
 }
 
 const DesignSelection = ({
@@ -24,17 +26,19 @@ const DesignSelection = ({
     setDesignId,
     setColorOptionId,
     className = "",
+    showDesign = true,
+    designDisabled = false,
     // currentBlock,
 }: DesignSelectiontype) => {
     // const colorOption = colorOptions.find((co) => co.id === colorOptionId);
     return (
         <div className={`${className} flex flex-col gap-5`}>
-            <div className="flex-1">
+            {showDesign && <div className="flex-1">
                 <label className="mb-3 block text-[13px] font-semibold text-body">
                     Design Type
                 </label>
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-strong py-2 outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)]">
+                <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger disabled={designDisabled} className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-strong py-2 outline-none transition-colors duration-150 hover:bg-tint focus-visible:ring-2 focus-visible:ring-[color:var(--ds-focus-ring)] disabled:cursor-not-allowed disabled:opacity-40">
                         {allBlockDesigns
                             .find((b) => b.id === designId)
                             ?.exampleDesign(
@@ -59,7 +63,7 @@ const DesignSelection = ({
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
+            </div>}
             <div className="flex-1">
                 <label className="mb-3 block text-[13px] font-semibold text-body">
                     Color Options
@@ -67,7 +71,10 @@ const DesignSelection = ({
                 <div className="grid grid-cols-5 gap-3">
                     {colorOptions.map((co) => (
                         <button
+                            type="button"
                             key={co.id}
+                            aria-label={`${co.name} block color`}
+                            aria-pressed={colorOptionId === co.id}
                             style={
                                 {
                                     backgroundColor: co.primaryColorHex,
@@ -78,7 +85,7 @@ const DesignSelection = ({
                                 } as React.CSSProperties
                             }
                             onClick={() => setColorOptionId(co.id)}
-                            className={` ${co.name.toLowerCase() === "white" ? "border border-black" : ""} ${colorOptionId === co.id && "ring-2"} cursor-pointer size-8 ring-offset-2 rounded-full aspect-square grid place-items-center`}
+                            className={` ${co.name.toLowerCase() === "white" ? "border border-black" : ""} ${colorOptionId === co.id && "ring-2"} cursor-pointer size-8 ring-offset-2 rounded-full aspect-square grid place-items-center outline-none focus-visible:ring-2 focus-visible:ring-(--ds-focus-ring)`}
                         >
                             {colorOptionId === co.id && (
                                 <Check
@@ -88,7 +95,6 @@ const DesignSelection = ({
                             )}
                         </button>
                     ))}
-                    <button className="" />
                 </div>
             </div>
         </div>

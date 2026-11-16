@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" fill="none">
+  <title>Illustrative prompt-to-block AI generation</title>
+  <desc>An example physics prompt becoming editable definition, formula, and worked-example blocks. This is a replaceable illustration, not a live generation result.</desc>
+  <rect width="1440" height="960" fill="#f3f4f6"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#0f1115">
+    <text x="72" y="98" font-size="31" font-weight="700" letter-spacing="-.7">A topic becomes a starting point.</text>
+    <text x="72" y="139" font-size="18" fill="#6b7280">Describe what you need. Keep the result editable.</text>
+
+    <rect x="72" y="202" width="530" height="570" rx="10" fill="#ffffff"/>
+    <text x="108" y="261" font-size="24" font-weight="700">AI Block Generator</text>
+    <text x="108" y="306" font-size="18" fill="#475569">Describe your topic</text>
+    <rect x="108" y="334" width="458" height="241" rx="6" fill="#f3f4f6"/>
+    <g font-size="21">
+      <text x="131" y="377">Create study notes on Newton’s</text>
+      <text x="131" y="412">laws of motion. Include definitions,</text>
+      <text x="131" y="447">formulas, and worked examples.</text>
+    </g>
+    <rect x="108" y="618" width="250" height="55" rx="6" fill="#c78316"/>
+    <text x="233" y="653" text-anchor="middle" font-size="20" font-weight="600">Generate with AI</text>
+    <text x="108" y="724" font-size="17" fill="#6b7280">Your prompt sets the direction.</text>
+
+    <path d="M635 476H715M703 464L715 476L703 488" fill="none" stroke="#c78316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="750" y="202" width="618" height="165" rx="8" fill="#fceccb"/>
+    <text x="780" y="246" font-size="20" font-weight="700">Definition</text>
+    <text x="780" y="290" font-size="21">An object’s motion changes when a net</text>
+    <text x="780" y="324" font-size="21">force acts on it.</text>
+    <rect x="750" y="393" width="618" height="151" rx="8" fill="#ffffff"/>
+    <text x="780" y="429" font-size="17" fill="#475569">Formula</text>
+    <text x="1059" y="502" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-style="italic">F<tspan font-size="23" baseline-shift="sub">net</tspan><tspan baseline-shift="baseline"> = ma</tspan></text>
+    <rect x="750" y="570" width="618" height="202" rx="8" fill="#ffffff"/>
+    <text x="780" y="616" font-size="20" font-weight="700">Worked example</text>
+    <text x="780" y="660" font-size="21">A net force of 10 N acts on a 2 kg object.</text>
+    <text x="780" y="713" font-family="Georgia, serif" font-size="28">a = 10 / 2 = 5 m/s²</text>
+    <text x="750" y="830" font-size="18" fill="#6b7280">Review, edit, and style every block.</text>
+  </g>
+</svg>

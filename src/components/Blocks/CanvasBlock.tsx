@@ -50,7 +50,7 @@ export default function CanvasBlock({
         <figure className={`group relative break-inside-avoid ${className}`}>
             {/* Actions */}
             {!readOnly && (
-                <div className="absolute right-2 top-2 z-10 hidden overflow-hidden rounded-md group-hover:flex">
+                <div className="absolute right-2 top-2 z-10 hidden overflow-hidden rounded-md group-hover:flex max-md:group-data-[mobile-active=true]/add:flex">
                     <BlockCopyActions
                         onCopy={() =>
                             onCopy?.(

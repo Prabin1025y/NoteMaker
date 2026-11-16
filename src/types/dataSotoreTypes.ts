@@ -11,6 +11,7 @@ export interface BlockType {
     designId: number;
     colorOptionId: number;
     title: string | null;
+    language: string | null;
     order: number;
 }
 
